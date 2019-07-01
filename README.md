@@ -38,6 +38,8 @@ It currently implements the following:
  - Ubuntu 14.04 LTS (http://www.ubuntu.com/download/alternative-downloads) 
  - ROS Indigo (http://wiki.ros.org/indigo/Installation/Ubuntu)
  - MoveIt! (http://moveit.ros.org/install/)
+ - cv_camera
+ - [ROS People Object Detection & Action Recognition Tensorflow](https://github.com/cagbal/ros_people_object_detection_tensorflow)
 
 ### How to Install It:
 Copy these packages into your {inmoov_ros}/src folder
@@ -63,3 +65,5 @@ Run the following commands:
  - node:  write node that sends joint commands to arduino through service calls
  - pose:  migrate pose module to pyqt4
  - headdemo:  migrate headdemo module to pyqt4
+
+###
