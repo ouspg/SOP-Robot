@@ -1,0 +1,6 @@
+controller_list:
+  - name: fake_head_controller
+    joints:
+      - head_roll_joint
+      - head_tilt_joint
+      - head_pan_joint

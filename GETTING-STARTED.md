@@ -72,9 +72,43 @@ to suit the Arduino. If you run into servo communication problems (such as `Ther
 ```sh
 roslaunch dynamixel-test.launch
 ```
+## MoveIt!
 
-TODO: add moveit support
+Currently, only has planning group for the head.
 
-Create the moveit config package as shown here:
+You can edit the moveit config package as shown here:
 http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
 
+The moveit config is in `src/moveit-config`.
+
+### Simulation
+
+![gazebo inmoov](img/inmoov_gazebo.png)
+
+#### rviz
+
+Launch in rviz:
+```
+roslaunch moveit-config demo.launch
+```
+
+#### Gazebo
+
+Launch empty gazebo world:
+
+```sh
+roslaunch gazebo_ros empty_world.launch paused:=true use_sim_time:=false gui:=true throttled:=false recording:=false debug:=true
+```
+
+Add robot to the world:
+
+```sh
+rosrun gazebo_ros spawn_model -file $WORKSPACE/src/inmoov_description/urdf/inmoov-moveit-gazebo.urdf -urdf -x 0 -y 0 -z 1 -model inmoov
+```
+
+## Joint controllers
+
+TODO: Implement action services for joint trajectory controllers:
+http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/controller_configuration/controller_configuration_tutorial.html
+
+http://wiki.ros.org/ros_control
