@@ -9,7 +9,7 @@
     </node>
 
     <node pkg="cob_people_object_detection_tensorflow" name="cob_people_object_detection_detection" type="cob_people_object_detection_tensorflow.py" output="screen">
-        <rosparam command="load" file="params/cob_people_object_detection_tensorflow_params.yaml"/>
+        <rosparam command="load" file="config/cob_people_object_detection_tensorflow_params.yaml"/>
     </node>
 
 </launch>

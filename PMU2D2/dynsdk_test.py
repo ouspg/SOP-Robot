@@ -3,7 +3,7 @@ import serial
 import time
 import binascii
 
-DEVICENAME = "COM3"
+DEVICENAME = "/dev/ttyACM0"
 BAUDRATE = 9600
 
 DXL_ID = 1
@@ -37,7 +37,7 @@ port_num.setBaudRate(BAUDRATE)
 # Initialize PacketHandler Structs
 packetHandler = dynamixel.packet_handler.PacketHandler(PROTOCOL_VERSION)
 
-print("Wait 4 arduino")
+print("Wait for arduino")
 time.sleep(2) # Wait for arduino init
 
 print("Test R/W")
@@ -50,6 +50,10 @@ print(packetHandler.broadcastPing(port_num))
 print(packetHandler.write1ByteTxRx(port_num, DXL_ID, ADDR_PRO_TORQUE_ENABLE, TORQUE_ENABLE))
 print(packetHandler.read1ByteTxRx(port_num, DXL_ID, ADDR_PRO_TORQUE_ENABLE))
 
+print(packetHandler.write4ByteTxRx(port_num, DXL_ID, ADDR_PRO_GOAL_POSITION, 200))
+print(packetHandler.read4ByteTxRx(port_num, DXL_ID, ADDR_PRO_PRESENT_POSITION))
+print("Sleep 2 secs and move again")
+time.sleep(2)
 print(packetHandler.write4ByteTxRx(port_num, DXL_ID, ADDR_PRO_GOAL_POSITION, 400))
 print(packetHandler.read4ByteTxRx(port_num, DXL_ID, ADDR_PRO_PRESENT_POSITION))
 
