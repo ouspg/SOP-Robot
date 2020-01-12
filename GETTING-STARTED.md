@@ -29,7 +29,7 @@ Remember to `source ./devel/setup.sh` after `catkin_make` (`build.sh` does this)
 
 ## Servos
 
-Dynamixel ROS instructions are [here](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_workbench/)
+Dynamixel ROS instructions are [here](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_workbench/).
 
 How to find connected dynamixel servos (serial port could be different for you):
 
@@ -72,3 +72,9 @@ to suit the Arduino. If you run into servo communication problems (such as `Ther
 ```sh
 roslaunch dynamixel-test.launch
 ```
+
+TODO: add moveit support
+
+Create the moveit config package as shown here:
+http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
+
