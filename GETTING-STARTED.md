@@ -61,12 +61,12 @@ $ rosrun dynamixel_workbench_controllers find_dynamixel /dev/ttyACM0
 
 Commands can be send to servos using rqt when testing:
 
-![](./img/rqt_servo.png)
+![](img/rqt_servo.PNG)
 
 Address names are in `Camel_Case`.
-Check the [dynamixel_item.cpp](.\src\dynamixel-workbench\dynamixel_workbench_toolbox\src\dynamixel_workbench_toolbox\dynamixel_item.cpp) for full list of address names.
+Check the [dynamixel_item.cpp](https://github.com/ROBOTIS-GIT/dynamixel-workbench/blob/master/dynamixel_workbench_toolbox/src/dynamixel_workbench_toolbox/dynamixel_item.cpp) for full list of address names.
 
-Note that servo communication packet timeout values were increased in [protocol2_packet_handler.cpp](.\src\DynamixelSDK\ros\src\dynamixel_sdk\protocol2_packet_handler.cpp)
+Note that servo communication packet timeout values were increased in [protocol2_packet_handler.cpp](src/DynamixelSDK/ros/src/dynamixel_sdk/protocol2_packet_handler.cpp)
 to suit the Arduino. If you run into servo communication problems (such as `There is no status packet!`) you may want to change those.
 
 ```sh
