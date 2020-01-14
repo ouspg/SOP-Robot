@@ -74,6 +74,10 @@ roslaunch dynamixel-test.launch
 ```
 ## MoveIt!
 
+![](./img/moveit_pipeline.png)
+
+https://moveit.ros.org/documentation/concepts/
+
 Currently, only has planning group for the head.
 
 You can edit the moveit config package as shown here:
