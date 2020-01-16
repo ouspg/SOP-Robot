@@ -40,23 +40,10 @@ $ rosrun dynamixel_workbench_controllers find_dynamixel /dev/ttyACM0
 [ INFO] [1578781118.899728953]: Find 1 Dynamixels
 [ INFO] [1578781118.899810859]: id : 1, model name : XL-320
 [ INFO] [1578781118.903439606]: Succeed to init(57600)
-[ INFO] [1578781118.903485860]: Wait for scanning...
-[ INFO] [1578781137.000997438]: Find 0 Dynamixels
-[ INFO] [1578781137.004462202]: Succeed to init(115200)
-[ INFO] [1578781137.004485675]: Wait for scanning...
-[ INFO] [1578781154.744700503]: Find 0 Dynamixels
-[ INFO] [1578781154.749514742]: Succeed to init(1000000)
-[ INFO] [1578781154.749554728]: Wait for scanning...
-[ INFO] [1578781172.191639197]: Find 0 Dynamixels
-[ INFO] [1578781172.196411325]: Succeed to init(2000000)
-[ INFO] [1578781172.196453934]: Wait for scanning...
-[ INFO] [1578781189.600787542]: Find 0 Dynamixels
-[ INFO] [1578781189.605546002]: Succeed to init(3000000)
-[ INFO] [1578781189.605608034]: Wait for scanning...
-[ INFO] [1578781206.979183036]: Find 0 Dynamixels
-[ INFO] [1578781206.983838865]: Succeed to init(4000000)
-[ INFO] [1578781206.983877742]: Wait for scanning...
-[ INFO] [1578781224.336032479]: Find 0 Dynamixels
+```
+
+```sh
+roslaunch dynamixel-test.launch
 ```
 
 Commands can be send to servos using rqt when testing:
@@ -69,9 +56,61 @@ Check the [dynamixel_item.cpp](https://github.com/ROBOTIS-GIT/dynamixel-workbenc
 Note that servo communication packet timeout values were increased in [protocol2_packet_handler.cpp](src/DynamixelSDK/ros/src/dynamixel_sdk/protocol2_packet_handler.cpp)
 to suit the Arduino. If you run into servo communication problems (such as `There is no status packet!`) you may want to change those.
 
+Now that we have verified that the servo can be controlled,
+let's move to configuring and testing joints.
+
+Joint communication happens using topics.
+
+By default, dynamixel_workbench
+publishes following topics:
+
 ```sh
-roslaunch dynamixel-test.launch
+$ rostopic list
+/dynamixel_workbench/dynamixel_state
+/dynamixel_workbench/joint_states
+/dynamixel_workbench/joint_trajectory
 ```
+
+The type of the topic can be seen as follows:
+```sh
+$ rostopic type /dynamixel_workbench/joint_trajectory
+trajectory_msgs/JointTrajectory
+```
+
+The message structure can be seen using `rowmsg show` command:
+```sh
+$ rosmsg show trajectory_msgs/JointTrajectory
+std_msgs/Header header
+  uint32 seq
+  time stamp
+  string frame_id
+string[] joint_names
+trajectory_msgs/JointTrajectoryPoint[] points
+  float64[] positions
+  float64[] velocities
+  float64[] accelerations
+  float64[] effort
+  duration time_from_start
+```
+
+Example joint config:
+
+```yaml
+head_pan_joint:
+  ID: 1 # servo id
+  Return_Delay_Time: 0
+```
+
+If the joint was configured correctly it should move to position 1
+when publishing the following message:
+
+```sh
+rostopic pub -1 /dynamixel_workbench/joint_trajectory trajectory_msgs/JointTrajectory -- '{header: auto, joint_names: ["head_pan_joint"], points: [{positions: [1], velocities: [1], accelerations: [1], effort: [1], time_from_start: 0}]}'
+```
+
+Read more about the YAML command line:
+http://wiki.ros.org/ROS/YAMLCommandLine
+
 ## MoveIt!
 
 ![](./img/moveit_pipeline.png)
@@ -83,7 +122,7 @@ Currently, only has planning group for the head.
 You can edit the moveit config package as shown here:
 http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
 
-The moveit config is in `src/moveit-config`.
+The moveit config is in `src/moveit_config`.
 
 ### Simulation
 
@@ -93,8 +132,11 @@ The moveit config is in `src/moveit-config`.
 
 Launch in rviz:
 ```
-roslaunch moveit-config demo.launch
+roslaunch moveit_config demo.launch
 ```
+
+rviz tutorial: http://docs.ros.org/kinetic/api/moveit_tutorials/html/doc/quickstart_in_rviz/quickstart_in_rviz_tutorial.html
+
 
 #### Gazebo
 

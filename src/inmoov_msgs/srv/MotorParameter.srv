@@ -1,4 +1,0 @@
-uint8   id                        # motor id
-uint8   parameter                 # parameter
----
-float32 data
