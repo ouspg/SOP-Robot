@@ -16,8 +16,14 @@ VM username & password: ros
 
 The VM comes with ROS melodic and [MoveIt](https://moveit.ros.org/) motion planning framework pre-installed.
 
+Clone the repository:
+
+```sh
+git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
+```
+
 Verify that `$WORKSPACE` defined in `.bashrc`
-is set to the workspace directory.
+is set to the workspace directory aka to the repository location.
 
 Remember to `source ./devel/setup.sh` after `catkin_make` (`build.sh` does this)
 
