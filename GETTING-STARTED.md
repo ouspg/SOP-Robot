@@ -10,11 +10,18 @@ The ROS runtime "graph" is a peer-to-peer network of processes (potentially dist
 
 ## Setup
 
-TODO: add VM download link
-
-VM username & password: ros
-
 The VM comes with ROS melodic and [MoveIt](https://moveit.ros.org/) motion planning framework pre-installed.
+It is on the shared drive @ `\\kaappi\virtuaalikoneet$\VMware\SOP20\` (size 8,57 GB).
+If you want to access it remotely
+follow the VPN instructions: https://www.oulu.fi/th/vpn
+
+The drive can be mounted as follows:
+
+```
+net use Z: \\kaappi\virtuaalikoneet$
+```
+
+VM username & password: `ros`
 
 Clone the repository:
 
@@ -24,14 +31,20 @@ git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
 
 Verify that `$WORKSPACE` defined in `.bashrc`
 is set to the workspace directory aka to the repository location.
+Remember to `source ./devel/setup.sh` after `catkin_make`.
 
-Remember to `source ./devel/setup.sh` after `catkin_make` (`build.sh` does this)
+If you wish to do development
+outside the VM. Run `copy-ros-headers.sh`,
+which copies header files from the VM
+to `devel` directory and put this repo into a folder that is shared between the host and the guest machines.
+The vscode workspace is configured to
+use these headers.
+If you use python do your own setup.
 
 ## Project structure
 
 * /src - all packages (3rd party and ours)
 * /PMU2D2 - Arduino controller (just forwards data) for Dynamixel servos (is not 100% reliable)
-* /config - Configuration files for servos, camera, etc
 
 ## Servos
 
@@ -61,25 +74,25 @@ Check the [dynamixel_item.cpp](https://github.com/ROBOTIS-GIT/dynamixel-workbenc
 
 Note that servo communication packet timeout values were increased in [protocol2_packet_handler.cpp](src/DynamixelSDK/ros/src/dynamixel_sdk/protocol2_packet_handler.cpp)
 to suit the Arduino. If you run into servo communication problems (such as `There is no status packet!`) you may want to change those.
+Feel free to improve the arduino controller; for example,
+by using tri-state buffer (see [this](https://robottini.altervista.org/dynamixel-ax-12a-and-arduino-how-to-use-the-serial-port))
 
 Now that we have verified that the servo can be controlled,
 let's move to configuring and testing joints.
-
 Joint communication happens using topics.
-
-By default, dynamixel_workbench
+Dynamixel_workbench
 publishes following topics:
 
 ```sh
 $ rostopic list
 /dynamixel_workbench/dynamixel_state
-/dynamixel_workbench/joint_states
-/dynamixel_workbench/joint_trajectory
+/inmoov/joint_trajectory
+/joint_states
 ```
 
 The type of the topic can be seen as follows:
 ```sh
-$ rostopic type /dynamixel_workbench/joint_trajectory
+$ rostopic type /inmoov/joint_trajectory
 trajectory_msgs/JointTrajectory
 ```
 
@@ -111,7 +124,7 @@ If the joint was configured correctly it should move to position 1
 when publishing the following message:
 
 ```sh
-rostopic pub -1 /dynamixel_workbench/joint_trajectory trajectory_msgs/JointTrajectory -- '{header: auto, joint_names: ["head_pan_joint"], points: [{positions: [1], velocities: [1], accelerations: [1], effort: [1], time_from_start: 0}]}'
+rostopic pub -1 /inmoov/joint_trajectory trajectory_msgs/JointTrajectory -- '{header: auto, joint_names: ["head_pan_joint"], points: [{positions: [1], velocities: [1], accelerations: [1], effort: [1], time_from_start: 0}]}'
 ```
 
 Read more about the YAML command line:
@@ -123,8 +136,6 @@ http://wiki.ros.org/ROS/YAMLCommandLine
 
 https://moveit.ros.org/documentation/concepts/
 
-Currently, only has planning group for the head.
-
 You can edit the moveit config package as shown here:
 http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
 
@@ -134,17 +145,48 @@ The moveit config is in `src/moveit_config`.
 
 ![gazebo inmoov](img/inmoov_gazebo.png)
 
-#### rviz
+#### Rviz
 
-Launch in rviz:
-```
+##### Fake controllers
+
+Allows testing in a simulated
+environment without the real robot (creates fake joint state publisher):
+
+```sh
 roslaunch moveit_config demo.launch
 ```
 
-rviz tutorial: http://docs.ros.org/kinetic/api/moveit_tutorials/html/doc/quickstart_in_rviz/quickstart_in_rviz_tutorial.html
+##### Real controllers
 
+To launch the head controller and turn the head
+run following launch files:
 
-#### Gazebo
+```sh
+roslaunch dynamixel-test.launch
+roslaunch head_controller.launch
+roslaunch moveit_config real.launch
+roslaunch inmoov_behaviours turn_head.launch
+```
+
+Rviz receives joint states from the dynamixel workbench node;
+therefore, the robot pose should update in Rviz
+to match servos.
+
+The head controller (`JointTrajectoryAction` action server) listens
+on `/head_controller/follow_joint_trajectory/` namespace and publishes to `/inmoov/joint_trajectory`.
+
+The [ros_controllers.launch](src/moveit_config/launch/ros_controllers.launch), included by `real.launch` is responsible for publishing data
+to `/head_controller/follow_joint_trajectory/` and to other
+controllers when configured so.
+
+Rviz tutorial: http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/quickstart_in_rviz/quickstart_in_rviz_tutorial.html
+
+Note that sometimes the `turn_head`
+script may fail to `Failed to fetch current robot state`
+error if the dynamixel controller
+has not updated joint states for some reason.
+
+#### Gazebo [WIP]
 
 Launch empty gazebo world:
 
@@ -158,9 +200,4 @@ Add robot to the world:
 rosrun gazebo_ros spawn_model -file $WORKSPACE/src/inmoov_description/urdf/inmoov-moveit-gazebo.urdf -urdf -x 0 -y 0 -z 1 -model inmoov
 ```
 
-## Joint controllers
-
-TODO: Implement action services for joint trajectory controllers:
-http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/controller_configuration/controller_configuration_tutorial.html
-
-http://wiki.ros.org/ros_control
+Feel free to create pull requests.

@@ -27,8 +27,8 @@ controller_list:
     default: True
     type: FollowJointTrajectory
     joints:
-      - head_roll_joint
-      - head_tilt_joint
+      # - head_roll_joint
+      # - head_tilt_joint
       - head_pan_joint
   - name: eyes_controller
     action_ns: follow_joint_trajectory

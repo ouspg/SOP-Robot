@@ -105,10 +105,10 @@ int main(int argc, char** argv)
   std::copy(joint_values.begin(), joint_values.end(),
             std::ostream_iterator<double>(std::cout, ", "));
 
-  joint_values[2] = -1;
+  joint_values[0] = -1; // set head pan joint to -1
 
   move_group.setJointValueTarget(joint_values);
-  std::cout << "Current RPY:" << rpy[0] << ", " << rpy[1] << ", " << rpy[2] << std::endl;
+  // std::cout << "Current RPY:" << rpy[0] << ", " << rpy[1] << ", " << rpy[2] << std::endl;
 
   // Now, we call the planner to compute the plan and visualize it.
   // Note that we are just planning, not asking move_group

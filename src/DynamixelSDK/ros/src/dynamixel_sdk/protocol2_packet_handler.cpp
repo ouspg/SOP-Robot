@@ -444,11 +444,11 @@ int Protocol2PacketHandler::txRxPacket(PortHandler *port, uint8_t *txpacket, uin
   // set packet timeout
   if (txpacket[PKT_INSTRUCTION] == INST_READ)
   {
-    port->setPacketTimeout((uint16_t)(DXL_MAKEWORD(txpacket[PKT_PARAMETER0+2], txpacket[PKT_PARAMETER0+3]) + 1100));
+    port->setPacketTimeout((uint16_t)(DXL_MAKEWORD(txpacket[PKT_PARAMETER0+2], txpacket[PKT_PARAMETER0+3]) + 100));
   }
   else
   {
-    port->setPacketTimeout((uint16_t)1100);
+    port->setPacketTimeout((uint16_t)100);
     // HEADER0 HEADER1 HEADER2 RESERVED ID LENGTH_L LENGTH_H INST ERROR CRC16_L CRC16_H
   }
 
@@ -669,7 +669,7 @@ int Protocol2PacketHandler::readTx(PortHandler *port, uint8_t id, uint16_t addre
 
   // set packet timeout
   if (result == COMM_SUCCESS)
-    port->setPacketTimeout((uint16_t)(length + 1100));
+    port->setPacketTimeout((uint16_t)(length + 100));
 
   return result;
 }
@@ -982,8 +982,8 @@ int Protocol2PacketHandler::syncReadTx(PortHandler *port, uint16_t start_address
 
   result = txPacket(port, txpacket);
   if (result == COMM_SUCCESS)
-    port->setPacketTimeout((uint16_t)((11 + data_length) * param_length + 10000));
-
+    // port->setPacketTimeout((uint16_t)((11 + data_length) * param_length + 1000));
+    port->setPacketTimeout((uint16_t)((11 + data_length) * param_length * 10));
   free(txpacket);
   return result;
 }
@@ -1042,7 +1042,7 @@ int Protocol2PacketHandler::bulkReadTx(PortHandler *port, uint8_t *param, uint16
   {
     int wait_length = 0;
     for (uint16_t i = 0; i < param_length; i += 5)
-      wait_length += DXL_MAKEWORD(param[i+3], param[i+4]) + 1000;
+      wait_length += DXL_MAKEWORD(param[i+3], param[i+4]) + 100;
     port->setPacketTimeout((uint16_t)wait_length);
   }
   

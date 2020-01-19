@@ -5,7 +5,8 @@
         <param name="trajectory_topic" type="string" value="/inmoov/joint_trajectory" />
         <!-- Todo: load from joint config file -->
         <rosparam param="joints">
-          [head_pan_joint, head_roll_joint, head_tilt_joint]
+          [head_pan_joint]
+          <!--[head_pan_joint, head_roll_joint, head_tilt_joint]-->
         </rosparam>
   </node>
 </launch>
