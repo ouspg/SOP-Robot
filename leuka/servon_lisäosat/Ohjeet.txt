@@ -1,0 +1,21 @@
+Täällä servon lisäosat, joita tarvitaan jos/kun leuan servo vaihdetaan uuteen.
+
+Käyttö:
+1. lue päähän kiinnitetyn servon asento tiedoston 'servon_asennon_luku.ino' avulla (ohjeet kommenteissa siellä)
+
+2. liikuta servoa pikkuhiljaa saman tiedoston kirjoitusoperaatioilla jotta saat selville maksimi/minimiasennot leualle
+
+3. ota arvot ylös
+   esim. ekalle pään servolle min. oli 900 ja max. 990  
+
+4. käytä tiedostoa 'servon_arvojen_muunnos' jotta saat selville kohdan 3 arvojen tarkistussummat ja heksadesimaalimuodot
+
+5. ota ylös arvot hex_L, hex_H, CRC_L ja CRC_H kullekin asennolle (tulostuvat monitorille)
+   esim. arvoille 900 ja 990
+         hex_L:   0x84   0xDE 
+	 hex_H:	  0x03   0x03
+         CRC_L:   0x42   0x59
+         CRC_H:   0xC5   0x8D
+
+6. laita kyseiset arvot servon ROS-solmun koodiin funktioon servo_cb(const std_msgs::UInt16& cmd_msg) 
+   if-else if -else rakenteeseen (laita else-haaraan default-tapaukseksi suun minimiasento kaiken varalta)
