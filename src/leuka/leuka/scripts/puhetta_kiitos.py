@@ -6,7 +6,7 @@ from tts import onko_kaynnissa
 
 valamis = False
 
-def Onko_puhe_valmis(data):
+def onko_puhe_valmis(data):
     global valamis
     rospy.loginfo("On puhetta")
     if data.data and not valamis:
@@ -23,7 +23,7 @@ def talker():
     rospy.spin()
 
 pub = rospy.Publisher('text', String, queue_size = 100)
-sub0 = rospy.Subscriber("tts_ready", Bool, Onko_puhe_valmis)
+sub0 = rospy.Subscriber("tts_ready", Bool, onko_puhe_valmis)
 pub3 = rospy.Publisher("servo_ready", Bool, queue_size = 1)
 pub2 = rospy.Publisher("gender", String, queue_size = 5)
 

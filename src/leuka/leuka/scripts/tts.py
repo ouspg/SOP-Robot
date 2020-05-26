@@ -15,10 +15,10 @@ from scipy.io.wavfile import write
 
 
 tts_settings = {
-"Language" : "FI",
-"Gender" : "man",
-"Prosody" : None,
-"Type": "concat"
+    "Language" : "FI",
+    "Gender" : "man",
+    "Prosody" : None,
+    "Type": "concat"
 }
 
 sanottava_sana = ""
@@ -27,7 +27,7 @@ super_type = 0
 
 aalto2 = np.array([])
 ajat = []
-kaynnissa = False #Turned on when tts process is requested, ends when the robot talks
+kaynnissa = False # Turned on when tts process is requested, ends when the robot talks
 
 def callback(data):
     global kaynnissa, sanottava_sana, super_type, aalto2, ajat
