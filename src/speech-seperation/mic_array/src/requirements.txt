@@ -1,0 +1,7 @@
+torch
+tqdm
+librosa
+scipy
+numpy
+PyYAML
+rospy
