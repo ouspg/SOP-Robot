@@ -21,6 +21,8 @@ The drive can be mounted as follows:
 net use Z: \\kaappi\virtuaalikoneet$
 ```
 
+**UPDATE: THE VM CAN BE DOWNLOADED FROM THIS [LINK](https://bit.ly/32qr1Eg)**
+
 VM username & password: `ros`
 
 Clone the repository:
@@ -47,6 +49,9 @@ If you use python do your own setup.
 * /PMU2D2 - Arduino controller (just forwards data) for Dynamixel servos (is not 100% reliable)
 
 ## Servos
+
+**UPDATE: WE NOW HAVE U2D2, WHICH SUPPORTS DAISY CHAINING AND IS THE MOST ROBUST METHOD TO COMMUNICATE WITH THE SERVOS**
+
 
 Dynamixel ROS instructions are [here](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_workbench/).
 
@@ -140,64 +145,5 @@ You can edit the moveit config package as shown here:
 http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
 
 The moveit config is in `src/moveit_config`.
-
-### Simulation
-
-![gazebo inmoov](img/inmoov_gazebo.png)
-
-#### Rviz
-
-##### Fake controllers
-
-Allows testing in a simulated
-environment without the real robot (creates fake joint state publisher):
-
-```sh
-roslaunch moveit_config demo.launch
-```
-
-##### Real controllers
-
-To launch the head controller and turn the head
-run following launch files:
-
-```sh
-roslaunch dynamixel-test.launch
-roslaunch head_controller.launch
-roslaunch moveit_config real.launch
-roslaunch inmoov_behaviours turn_head.launch
-```
-
-Rviz receives joint states from the dynamixel workbench node;
-therefore, the robot pose should update in Rviz
-to match servos.
-
-The head controller (`JointTrajectoryAction` action server) listens
-on `/head_controller/follow_joint_trajectory/` namespace and publishes to `/inmoov/joint_trajectory`.
-
-The [ros_controllers.launch](src/moveit_config/launch/ros_controllers.launch), included by `real.launch` is responsible for publishing data
-to `/head_controller/follow_joint_trajectory/` and to other
-controllers when configured so.
-
-Rviz tutorial: http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/quickstart_in_rviz/quickstart_in_rviz_tutorial.html
-
-Note that sometimes the `turn_head`
-script may fail to `Failed to fetch current robot state`
-error if the dynamixel controller
-has not updated joint states for some reason.
-
-#### Gazebo [WIP]
-
-Launch empty gazebo world:
-
-```sh
-roslaunch gazebo_ros empty_world.launch paused:=true use_sim_time:=false gui:=true throttled:=false recording:=false debug:=true
-```
-
-Add robot to the world:
-
-```sh
-rosrun gazebo_ros spawn_model -file $WORKSPACE/src/inmoov_description/urdf/inmoov-moveit-gazebo.urdf -urdf -x 0 -y 0 -z 1 -model inmoov
-```
 
 Feel free to create pull requests.
