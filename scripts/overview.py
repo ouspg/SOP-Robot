@@ -43,7 +43,7 @@ with Diagram("High level overview of the robot", filename="img/overview", direct
     servo_controller << Edge(label="sub /inmoov/joint_trajectory\npub /inmoov/joint_states") >> core
 
     jaw_controller >> Edge(label="pub /inmoov/joint_trajectory") >> core
-    head >> Edge(label="pub /inmoov/joint_trajectory\nsub /inmoov/do_gesture") << core
+    head >> Edge(label="pub /inmoov/joint_trajectory\nsub /inmoov/head/gesture") << core
 
     servo_controller << Edge(label="USB") >> Edge(label="Control servos") >> u2d2 << Edge() >> dynamixel
 
