@@ -77,7 +77,11 @@
 			"random": "cpp",
 			"set": "cpp",
 			"string": "cpp",
-			"string_view": "cpp"
-		}
+			"string_view": "cpp",
+			"bit": "cpp",
+			"shared_mutex": "cpp",
+			"variant": "cpp"
+		},
+		"python.pythonPath": "/bin/python3"
 	}
 }

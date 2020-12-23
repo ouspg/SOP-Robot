@@ -1,4 +1,0 @@
-<launch>
-  <node name="turn_head" pkg="inmoov_behaviours" type="turn_head" output="screen">
-  </node>
-</launch>

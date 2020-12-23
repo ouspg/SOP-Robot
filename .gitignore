@@ -10,4 +10,7 @@
 
 build
 devel
+log
+install
 
+.vagrant
