@@ -2,7 +2,6 @@
 
 sudo -u vagrant echo "export WORKSPACE='/workspace/'" >> /home/vagrant/.bashrc
 sudo -u vagrant echo "cd /workspace" >> /home/vagrant/.bashrc
-# sudo -u vagrant echo "source /opt/ros/noetic/setup.bash" >> /home/vagrant/.bashrc
 sudo -u vagrant echo "source /opt/ros/foxy/setup.bash" >> /home/vagrant/.bashrc
 
 # Set keyboard layout
@@ -46,6 +45,7 @@ apt install -y \
   build-essential \
   cmake \
   git \
+  libyaml-cpp-dev \
   libbullet-dev \
   python3-colcon-common-extensions \
   python3-flake8 \
@@ -104,8 +104,21 @@ udevadm trigger
 # ln -s /usr/bin/python3.7 /usr/bin/python3
 
 # Clone submodules
-cd /workspace # && git submodule update --init --recursive
+cd /workspace && git submodule update --init --recursive
 
 # Install package dependencies
 apt install -y \
-  ros-foxy-sensor-msgs
+  ros2-foxy-test-msgs ros2-foxy-control-msgs \
+  ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-angles
+
+
+# Install ros2_control (https://github.com/ros-controls/ros2_control)
+
+mkdir -p /ros2_control_ws/src
+cd /ros2_control_ws
+wget https://raw.githubusercontent.com/ros-controls/ros2_control/master/ros2_control/ros2_control.repos
+vcs import src < ros2_control.repos
+
+source /opt/ros/foxy/setup.bash
+colcon build
+sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagrant/.bashrc

@@ -4,7 +4,8 @@
             "name": "ros",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/ros/foxy/include/"
+                "/opt/ros/foxy/include/",
+                "/ros2_control_ws/install/hardware_interface/include/"
             ],
             "defines": [],
             "cStandard": "c11",
