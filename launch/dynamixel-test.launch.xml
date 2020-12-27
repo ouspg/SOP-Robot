@@ -1,6 +1,6 @@
 <launch>
-  <arg name="usb_port"                default="/dev/ttyACM0"/>
-  <arg name="dxl_baud_rate"           default="9600"/>
+  <arg name="usb_port"                default="/dev/ttyUSB0"/>
+  <arg name="dxl_baud_rate"           default="57600"/>
   <arg name="namespace"               default="dynamixel"/>
 
   <arg name="use_moveit"              default="true"/>

@@ -6,7 +6,7 @@ Dynamixel ROS instructions are [here](http://emanual.robotis.com/docs/en/softwar
 How to find connected dynamixel servos (serial port could be different for you):
 
 ```sh
-$ rosrun dynamixel_workbench_controllers find_dynamixel /dev/ttyACM0
+$ rosrun dynamixel_workbench_controllers find_dynamixel /dev/ttyUSB0
 [ INFO] [1578781097.059273105]: Succeed to init(9600)
 [ INFO] [1578781097.059380826]: Wait for scanning...
 [ INFO] [1578781118.899728953]: Find 1 Dynamixels
@@ -15,12 +15,12 @@ $ rosrun dynamixel_workbench_controllers find_dynamixel /dev/ttyACM0
 ```
 
 ```sh
-roslaunch dynamixel-test.launch
+ros2 launch launch/dynamixel-test.launch
 ```
 
 Commands can be send to servos using rqt when testing:
 
-![](img/rqt_servo.PNG)
+![](../img/rqt_servo.PNG)
 
 Address names are in `Camel_Case`.
 Check the [dynamixel_item.cpp](https://github.com/ROBOTIS-GIT/dynamixel-workbench/blob/master/dynamixel_workbench_toolbox/src/dynamixel_workbench_toolbox/dynamixel_item.cpp) for full list of address names.
@@ -37,32 +37,34 @@ Dynamixel_workbench
 publishes following topics:
 
 ```sh
-$ rostopic list
-/dynamixel_workbench/dynamixel_state
-/inmoov/joint_trajectory
+$ ros2 topic list
+/dynamixel_state
 /joint_states
+/joint_trajectory
+/parameter_events
+/rosout
 ```
 
 The type of the topic can be seen as follows:
 ```sh
-$ rostopic type /inmoov/joint_trajectory
+$ ros2 topic type /inmoov/joint_trajectory
 trajectory_msgs/JointTrajectory
 ```
 
-The message structure can be seen using `rowmsg show` command:
+The message structure can be seen using `ros2 interface show` command:
 ```sh
-$ rosmsg show trajectory_msgs/JointTrajectory
+$ ros2 interface show trajectory_msgs/msg/JointTrajectory
+# The header is used to specify the coordinate frame and the reference time for
+# the trajectory durations
 std_msgs/Header header
-  uint32 seq
-  time stamp
-  string frame_id
+
+# The names of the active joints in each trajectory point. These names are
+# ordered and must correspond to the values in each trajectory point.
 string[] joint_names
-trajectory_msgs/JointTrajectoryPoint[] points
-  float64[] positions
-  float64[] velocities
-  float64[] accelerations
-  float64[] effort
-  duration time_from_start
+
+# Array of trajectory points, which describe the positions, velocities,
+# accelerations and/or efforts of the joints at each time point.
+JointTrajectoryPoint[] points
 ```
 
 Example joint config:
@@ -73,11 +75,11 @@ head_pan_joint:
   Return_Delay_Time: 0
 ```
 
-If the joint was configured correctly it should move to position 1
+If the joint was configured correctly, it should move to position 1
 when publishing the following message:
 
 ```sh
-rostopic pub -1 /inmoov/joint_trajectory trajectory_msgs/JointTrajectory -- '{header: auto, joint_names: ["head_pan_joint"], points: [{positions: [1], velocities: [1], accelerations: [1], effort: [1], time_from_start: 0}]}'
+ros2 topic pub --once /joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [\"head_pan_joint\"], points: [{positions: [1], velocities: [1], accelerations: [1], effort: [1], time_from_start: {sec: 0, nanosec: 0}  }]}"
 ```
 
 Read more about the YAML command line:
