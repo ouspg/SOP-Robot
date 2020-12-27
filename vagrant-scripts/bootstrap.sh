@@ -106,9 +106,11 @@ udevadm trigger
 # Clone submodules
 cd /workspace && git submodule update --init --recursive
 
+source /opt/ros/foxy/setup.bash
+
 # Install package dependencies
 apt install -y \
-  ros2-foxy-test-msgs ros2-foxy-control-msgs \
+  ros-foxy-test-msgs ros-foxy-control-msgs \
   ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-angles
 
 
@@ -119,6 +121,8 @@ cd /ros2_control_ws
 wget https://raw.githubusercontent.com/ros-controls/ros2_control/master/ros2_control/ros2_control.repos
 vcs import src < ros2_control.repos
 
-source /opt/ros/foxy/setup.bash
 colcon build
 sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagrant/.bashrc
+
+# Allow access to shared folders
+adduser vagrant vboxsf
