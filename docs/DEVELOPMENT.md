@@ -1,11 +1,14 @@
-# Development
+# Development Environment Setup
 
 ## Prerequisites
 
-* [Visual Code](https://code.visualstudio.com/)
+* [Visual Studio Code](https://code.visualstudio.com/)
 * [Vagrant](https://www.vagrantup.com/)
 * [Git](https://git-scm.com/)
-* HyperV, VirtualBox or VMWare (tested on HyperV)
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+  * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
+
+**Note: if you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
 
 If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
 
@@ -24,7 +27,7 @@ The vagrant syncs the repository (workspace) directory to `/workspace` directory
 To provision the guest (you may have to set the provider manually):
 
 ```pwsh
-vagrant up
+vagrant up --provider=virtualbox
 ```
 
 Provisioning the machine for the first time can take up to 1 hour. In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
@@ -59,7 +62,7 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 
 ## Using GUI Apps
 
-If you are using `Hyper-V`, you can open `Hyper-V Manager` and click `Connect...`. VirtualBox and VMWare should launch with GUI when executing `vagrant up`.
+When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`.
 
 ### X11 Forwarding
 

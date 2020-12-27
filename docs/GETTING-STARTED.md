@@ -85,13 +85,6 @@ http://wiki.ros.org/ROS/YAMLCommandLine
 
 ## MoveIt!
 
-![](./img/moveit_pipeline.png)
+![](./../img/moveit_pipeline.png)
 
 https://moveit.ros.org/documentation/concepts/
-
-You can edit the moveit config package as shown here:
-http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
-
-The moveit config is in `src/moveit_config`.
-
-Feel free to create pull requests.

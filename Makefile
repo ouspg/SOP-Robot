@@ -2,7 +2,7 @@ update-overview-diagram:
 	python scripts/overview.py
 
 vup:
-	vagrant up --provider=hyperv
+	vagrant up --provider=virtualbox
 
 vsh:
 	vagrant ssh
