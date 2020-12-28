@@ -1,0 +1,15 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1  # Hz
+
+    head_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+
+head_controller:
+  ros__parameters:
+    joints:
+    - head_pan_joint
+    interface_name: position

@@ -14,7 +14,7 @@
     <param name="use_cmd_vel_topic"       value="$(var use_cmd_vel)"/>
     <param name="dynamixel_info"        value="$(env WORKSPACE)/config/dynamixel.yaml"/>
 
-    <remap from="$(var namespace)/joint_trajectory" to="inmoov/joint_trajectory"/>
+    <remap from="$(var namespace)/joint_trajectory" to="/joint_trajectory"/>
     <remap from="$(var namespace)/joint_states" to="/joint_states"/>
     <rosparam>
       publish_period: 0.1

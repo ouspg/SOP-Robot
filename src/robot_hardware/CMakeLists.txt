@@ -19,6 +19,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 ## COMPILE
 add_library(
@@ -49,6 +50,7 @@ ament_target_dependencies(
   hardware_interface
   pluginlib
   rclcpp
+  sensor_msgs
 )
 
 pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)
@@ -77,4 +79,4 @@ ament_export_dependencies(
   rclcpp
 )
 
-ament_package()
+ament_package() 
