@@ -82,6 +82,20 @@ when publishing the following message:
 ros2 topic pub --once /joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [\"head_pan_joint\"], points: [{positions: [1], velocities: [1], accelerations: [1], effort: [1], time_from_start: {sec: 0, nanosec: 0}  }]}"
 ```
 
+```sh`
+ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
+  trajectory: {
+    joint_names: [head_pan_joint],
+    points: [
+      { positions: [0.5], velocities: [0.1], accelerations: [0.1], time_from_start: { sec: 0, nanosec: 0 } }
+    ]
+  },
+  goal_tolerance: [
+    { name: head_pan_joint, position: 0.01 }
+  ]
+}"
+```
+
 Read more about the YAML command line:
 http://wiki.ros.org/ROS/YAMLCommandLine
 

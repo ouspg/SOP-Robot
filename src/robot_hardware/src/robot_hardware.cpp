@@ -119,7 +119,7 @@ void RobotHardware::joint_states_cb(const sensor_msgs::msg::JointState::SharedPt
 
       RCLCPP_INFO(
         logger_,
-        "Joint %s pos %.5f", pos);
+        "Joint %s pos %.5f, vel %.5f", pos, vel);
     }
     
   }
@@ -145,7 +145,7 @@ return_type RobotHardware::start()
   }*/
 
   // set some default values
-  for (uint i = 0; i < hw_states_.size(); i++) {
+  /*for (uint i = 0; i < hw_states_.size(); i++) {
     if (std::isnan(hw_states_[i])) {
       hw_states_[i] = 0;
       hw_commands_[i] = 0;
@@ -153,7 +153,7 @@ return_type RobotHardware::start()
     if (std::isnan(hw_states_velocity_[i])) {
       hw_states_velocity_[i] = 0;
     }
-  }
+  }*/
 
   status_ = hardware_interface::status::STARTED;
 
@@ -192,15 +192,13 @@ hardware_interface::return_type RobotHardware::read()
     logger_,
     "Reading...");
 
-  /*for (uint i = 0; i < hw_states_.size(); i++) {
+  for (uint i = 0; i < hw_states_.size(); i++) {
     // Simulate RRBot's movement
-    hw_states_[i] = hw_commands_[i] + (hw_states_[i] - hw_commands_[i]) / hw_slowdown_;
+    // hw_states_[i] = hw_commands_[i] + (hw_states_[i] - hw_commands_[i]) / hw_slowdown_;
     RCLCPP_INFO(
       logger_,
       "Got state %.5f for joint %d!", hw_states_[i], i);
-  }*/
-
-
+  }
   
   RCLCPP_INFO(
     logger_,
