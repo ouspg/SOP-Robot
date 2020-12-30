@@ -26,12 +26,12 @@ all nodes that wish to drive servos must publish message to the `/inmoov/joint_t
 
 **Todo Add servo configurations here: max angle, max velocity, etc. Servos can be configured using dynamixel wizard**
 
-| Servo ID | Model | Joint                |     |     |
+| Servo ID | Model | Joint name               | Description    |     |
 | -------- | ----- | -------------------- | --- | --- |
-| 1        | XL430 | Head tilt right-side |     |     |
-| 2        | XL430 | Head tilt up/down    |     |     |
-| 3        | XL430 | Head tilt left-side  |     |     |
-| 4        | XL430 | Head turn left/right |     |     |
+| 1        | XL430 | head_tilt_right |  Head tilt right-side   |     |
+| 2        | XL430 | head_tilt_vertical    |  Head tilt up/down   |     |
+| 3        | XL430 | head_tilt_left  |  Head tilt left-side   |     |
+| 4        | XL430 | head_pan_joint | Head turn left/right    |     |
 
 **Note: head tilt range of motion is poor**
 

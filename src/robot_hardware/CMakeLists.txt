@@ -20,6 +20,7 @@ find_package(ament_cmake REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 
 ## COMPILE
 add_library(
@@ -51,6 +52,7 @@ ament_target_dependencies(
   pluginlib
   rclcpp
   sensor_msgs
+  trajectory_msgs
 )
 
 pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)

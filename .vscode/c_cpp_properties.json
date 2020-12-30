@@ -3,8 +3,9 @@
         {
             "name": "ros",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}/src/**",
                 "/opt/ros/foxy/include/",
+                "${workspaceFolder}/install/**",
                 "/ros2_control_ws/install/hardware_interface/include/"
             ],
             "defines": [],

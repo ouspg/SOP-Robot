@@ -76,6 +76,8 @@ private:
 
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_sub_;
 
+  rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_traj_pub_;
+
   void joint_states_cb(const sensor_msgs::msg::JointState::SharedPtr msg);
 };
 
