@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "rclcpp/macros.hpp"
+#include <yaml-cpp/yaml.h>
 
 #include "hardware_interface/base_interface.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -22,9 +23,17 @@
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <trajectory_msgs/msg/joint_trajectory_point.hpp>
 
+#include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
+
 using hardware_interface::return_type;
 
 namespace robot_hardware {
+
+typedef struct
+{
+  std::string item_name;
+  int32_t value;
+} ItemValue;
 
 class RobotHardware : public
   hardware_interface::BaseInterface<hardware_interface::SystemInterface>
@@ -77,6 +86,20 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_sub_;
 
   rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_traj_pub_;
+
+  DynamixelWorkbench dxl_wb_;
+
+  std::map<std::string, uint32_t> dynamixel_;
+  std::map<std::string, const ControlItem *> control_items_;
+  std::vector<std::pair<std::string, ItemValue>> dynamixel_info_;
+
+  bool configure_dynamixels();
+  bool load_dynamixel_config(const std::string yaml_file);
+  bool init_dynamixel_control_items();
+  bool init_dynamixel_sdk_handlers();
+
+  bool arm_servos();
+  bool disarm_servos();
 
   void joint_states_cb(const sensor_msgs::msg::JointState::SharedPtr msg);
 };

@@ -17,3 +17,4 @@ head_controller:
     - head_tilt_vertical_joint
     allow_partial_joints_goal: true
     interface_name: position
+    

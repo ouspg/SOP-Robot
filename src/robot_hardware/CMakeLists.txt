@@ -21,6 +21,8 @@ find_package(hardware_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(dynamixel_workbench_toolbox REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 ## COMPILE
 add_library(
@@ -53,6 +55,8 @@ ament_target_dependencies(
   rclcpp
   sensor_msgs
   trajectory_msgs
+  yaml-cpp
+  dynamixel_workbench_toolbox
 )
 
 pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)
