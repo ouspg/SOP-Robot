@@ -1,14 +1,24 @@
 # You can find control table of Dynamixel on emanual (http://emanual.robotis.com/#control-table)
 # Control table item has to be set Camel_Case and not included whitespace
 # You are supposed to set at least Dynamixel ID
-head_pan_joint:
-  ID: 4
 
 head_tilt_right_joint:
   ID: 1
 
+head_tilt_vertical_joint:
+  ID: 2
+
 head_tilt_left_joint:
   ID: 3
 
-head_tilt_vertical_joint:
-  ID: 2
+head_pan_joint:
+  ID: 4
+
+eyes_shift_horizontal_joint:
+  ID: 10
+
+eyes_shift_vertical_joint:
+  ID: 11
+
+head_jaw_joint:
+  ID: 12
