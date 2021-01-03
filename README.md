@@ -24,20 +24,27 @@ all nodes that wish to drive servos must publish message to the `/inmoov/joint_t
 
 ## Servo Table
 
-**Todo Add servo configurations here: max angle, max velocity, etc. Servos can be configured using dynamixel wizard**
+Baud rate: 57600
 
-| Servo ID | Model | Joint name               | Description    |     |
-| -------- | ----- | -------------------- | --- | --- |
-| 1        | XL430 | head_tilt_right |  Head tilt right-side   |     |
-| 2        | XL430 | head_tilt_vertical    |  Head tilt up/down   |     |
-| 3        | XL430 | head_tilt_left  |  Head tilt left-side   |     |
-| 4        | XL430 | head_pan_joint | Head turn left/right    |     |
+**Note: Servos can be configured using dynamixel wizard**
+
+| Servo ID | Model | Joint name                  | Description           |     |
+| -------- | ----- | --------------------------- | --------------------- | --- |
+| 1        | XL430 | head_tilt_right_joint       | Head tilt right-side  |     |
+| 2        | XL430 | head_tilt_vertical_joint    | Head tilt up/down     |     |
+| 3        | XL430 | head_tilt_left_joint        | Head tilt left-side   |     |
+| 4        | XL430 | head_pan_joint              | Head turn left/right  |     |
+| 10       | XL320 | eyes_shift_horizontal_joint | Eyes shift left/right |     |
+| 11       | XL320 | eyes_shift_vertical_joint   | Eyes shift up/down    |     |
+| 12       | XL320 | head_jaw_joint              | Open/close jaw        |     |
 
 **Note: head tilt range of motion is poor**
 
 **Note: servo angle limits are not configured**
 
-## Next
+## Getting started
 
 1. See [Development](./docs/DEVELOPMENT.md)
 2. See [Getting started](./docs/GETTING-STARTED.md)
+
+**Note: Be careful not to move joints too much, limits are not set yet**

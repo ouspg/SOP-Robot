@@ -1,9 +1,12 @@
 controller_manager:
   ros__parameters:
-    update_rate: 2  # Hz
+    update_rate: 100  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+
+    jaw_controller:
+      type: forward_command_controller/ForwardCommandController
 
     joint_state_controller:
       type: joint_state_controller/JointStateController
@@ -16,5 +19,11 @@ head_controller:
     - head_tilt_left_joint
     - head_tilt_vertical_joint
     allow_partial_joints_goal: true
+    interface_name: position
+
+jaw_controller:
+  ros__parameters:
+    joints:
+    - head_jaw_joint
     interface_name: position
     
