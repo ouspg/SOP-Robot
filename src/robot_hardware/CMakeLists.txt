@@ -59,6 +59,10 @@ ament_target_dependencies(
   dynamixel_workbench_toolbox
 )
 
+target_link_libraries(${PROJECT_NAME}
+  ${YAML_CPP_LIBRARIES}
+)
+
 pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)
 
 # INSTALL

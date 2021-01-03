@@ -26,8 +26,9 @@ namespace robot_hardware
     }
 
     hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-    hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_states_velocity_.resize(info_.joints.size(), 0.0f);
     hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_commands_velocity_.resize(info_.joints.size(), 0.0f);
 
     int idx = 0;
 
@@ -36,7 +37,7 @@ namespace robot_hardware
 
       joint_indices_[joint.name] = idx++;
 
-      if (joint.command_interfaces.size() != 1)
+      /*if (joint.command_interfaces.size() != 1)
       {
         RCLCPP_FATAL(
             logger_,
@@ -53,7 +54,7 @@ namespace robot_hardware
             joint.name.c_str(), joint.command_interfaces[0].name.c_str(),
             hardware_interface::HW_IF_POSITION);
         return return_type::ERROR;
-      }
+      }*/
 
       /*if (joint.state_interfaces.size() != 1) {
       RCLCPP_FATAL(
@@ -104,6 +105,9 @@ namespace robot_hardware
       command_interfaces.emplace_back(
           hardware_interface::CommandInterface(
               info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_[i]));
+      command_interfaces.emplace_back(
+          hardware_interface::CommandInterface(
+              info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_[i]));
     }
 
     return command_interfaces;
@@ -132,7 +136,7 @@ namespace robot_hardware
           continue;
         }
 
-        hw_states_velocity_[joint_idx] = vel;
+        // hw_states_velocity_[joint_idx] = vel;
         hw_states_[joint_idx] = pos;
 
         /*RCLCPP_INFO(
@@ -199,6 +203,8 @@ namespace robot_hardware
   bool RobotHardware::disarm_servos()
   {
     bool res = true;
+
+    RCLCPP_INFO(logger_, "Disarm servos");
 
     for (auto const &dxl : dynamixel_)
     {
@@ -349,6 +355,8 @@ namespace robot_hardware
 
   return_type RobotHardware::start()
   {
+    RCLCPP_INFO(logger_, "Velocity control is not supported yet, so the trajectory is coarse")
+
     RCLCPP_INFO(
         logger_,
         "Starting ...please wait...");
@@ -391,6 +399,12 @@ namespace robot_hardware
       return return_type::ERROR;
     }
 
+    if (!set_default_servo_positions())
+    {
+      RCLCPP_ERROR(logger_, "Could not set default servo positions!");
+      return return_type::ERROR;
+    }
+
     RCLCPP_INFO(logger_, "Arming servos...");
     if (!arm_servos())
     {
@@ -398,31 +412,20 @@ namespace robot_hardware
       return return_type::ERROR;
     }
 
-    node_ = std::make_shared<rclcpp::Node>("robot_hardware");
+    // node_ = std::make_shared<rclcpp::Node>("robot_hardware");
 
-    RCLCPP_INFO(logger_, "Subscribe to /joint_states");
+    /*RCLCPP_INFO(logger_, "Subscribe to /joint_states");
 
     joint_states_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(
         "/joint_states", 10, std::bind(&RobotHardware::joint_states_cb, this, _1));
 
-    joint_traj_pub_ = node_->create_publisher<trajectory_msgs::msg::JointTrajectory>("/joint_trajectory", 10);
+    joint_traj_pub_ = node_->create_publisher<trajectory_msgs::msg::JointTrajectory>("/joint_trajectory", 10);*/
 
     /*for (int i = 0; i <= hw_start_sec_; i++) {
     rclcpp::sleep_for(std::chrono::seconds(1));
     RCLCPP_INFO(
       logger_,
       "%.1f seconds left...", hw_start_sec_ - i);
-  }*/
-
-    // set some default values
-    /*for (uint i = 0; i < hw_states_.size(); i++) {
-    if (std::isnan(hw_states_[i])) {
-      hw_states_[i] = 0;
-      hw_commands_[i] = 0;
-    }
-    if (std::isnan(hw_states_velocity_[i])) {
-      hw_states_velocity_[i] = 0;
-    }
   }*/
 
     status_ = hardware_interface::status::STARTED;
@@ -455,7 +458,7 @@ namespace robot_hardware
     return return_type::OK;
   }
 
-  hardware_interface::return_type RobotHardware::read()
+  bool RobotHardware::read_servo_values()
   {
     // rclcpp::spin_some(node_); // process queued work, e.g., process joint values callback
 
@@ -481,6 +484,7 @@ namespace robot_hardware
     if (!result)
     {
       RCLCPP_ERROR(logger_, "%s", log);
+      return false;
     }
 
     // XL320 and XL430 servo models do not support this reading and it is not used anyway
@@ -507,6 +511,7 @@ namespace robot_hardware
     if (!result)
     {
       RCLCPP_ERROR(logger_, "%s", log);
+      return false;
     }
 
     result = dxl_wb_.getSyncReadData(SYNC_READ_HANDLER_FOR_PRESENT_POSITION_VELOCITY_CURRENT,
@@ -519,17 +524,41 @@ namespace robot_hardware
     if (!result)
     {
       RCLCPP_ERROR(logger_, "%s", log);
+      return false;
     }
 
     int idx = 0;
     for (auto const &dxl : dynamixel_)
     {
       int joint_idx = joint_indices_[dxl.first];
-      hw_states_[joint_idx] = dxl_wb_.convertValue2Velocity(dxl.second, get_velocity[idx]);
-      hw_states_velocity_[joint_idx] = dxl_wb_.convertValue2Radian(dxl.second, get_position[idx]);
+      hw_states_[joint_idx] = dxl_wb_.convertValue2Radian(dxl.second, get_position[idx]);
+      hw_states_velocity_[joint_idx] = dxl_wb_.convertValue2Velocity(dxl.second, get_velocity[idx]);
       idx++;
+
+      // RCLCPP_INFO(logger_, "Joint %s pos: %.3f, vel: %.3f", dxl.first.c_str(), hw_states_[joint_idx], hw_states_velocity_[joint_idx]);
     }
-    return return_type::OK;
+    return true;
+  }
+
+  bool RobotHardware::set_default_servo_positions()
+  {
+    if (!read_servo_values())
+    {
+      return false;
+    }
+
+    // Update values one by one in order to not invalidate references
+    // If the hw_commands_ vector is replaced instead, the program crashes because the system has references to these `hw_commands_` values.
+    for (uint i = 0; i < hw_commands_.size(); i++)
+    {
+      hw_commands_[i] = hw_states_[i];
+    }
+    return true;
+  }
+
+  hardware_interface::return_type RobotHardware::read()
+  {
+    return read_servo_values() ? return_type::OK : return_type::ERROR;
   }
 
   hardware_interface::return_type RobotHardware::write()
@@ -549,6 +578,10 @@ namespace robot_hardware
       auto joint_name = info_.joints[i].name;
       auto servo_id = dynamixel_.at(joint_name);
       id_array[id_cnt++] = servo_id;
+
+      RCLCPP_INFO(logger_, "Move %s to pos %.3f, vel: %.3f", joint_name.c_str(), hw_commands_[i], hw_states_velocity_[i]);
+    
+
 
       dynamixel_position[i] = dxl_wb_.convertRadian2Value(servo_id, hw_commands_[i]);
 
@@ -572,13 +605,13 @@ namespace robot_hardware
       // hw_commands_[i] = std::numeric_limits<double>::quiet_NaN();
     }
 
-    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_POSITION,
-      id_array, id_cnt, dynamixel_position, 1, &log);
+    /*result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_POSITION,
+                               id_array, id_cnt, dynamixel_position, 1, &log);
     if (!result)
     {
       RCLCPP_ERROR(logger_, "%s", log);
       return return_type::ERROR;
-    }
+    }*/
 
     // Pub msg if it's not empty
     /*if (msg.joint_names.size() > 0)

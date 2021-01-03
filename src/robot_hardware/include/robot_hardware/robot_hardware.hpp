@@ -66,13 +66,9 @@ public:
   return_type write() override;
 
 private:
-  // Parameters for the RRBot simulation
-  double hw_start_sec_;
-  double hw_stop_sec_;
-  double hw_slowdown_;
-
   // Store the command for the simulated robot
   std::vector<double> hw_commands_;
+  std::vector<double> hw_commands_velocity_;
   std::vector<double> hw_states_;
   std::vector<double> hw_states_velocity_;
 
@@ -92,6 +88,9 @@ private:
   std::map<std::string, uint32_t> dynamixel_;
   std::map<std::string, const ControlItem *> control_items_;
   std::vector<std::pair<std::string, ItemValue>> dynamixel_info_;
+
+  bool set_default_servo_positions();
+  bool read_servo_values();
 
   bool configure_dynamixels();
   bool load_dynamixel_config(const std::string yaml_file);
