@@ -4,6 +4,9 @@ controller_manager:
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+    
+    forward_head_controller:
+      type: forward_command_controller/ForwardCommandController
 
     jaw_controller:
       type: forward_command_controller/ForwardCommandController
@@ -19,6 +22,15 @@ head_controller:
     - head_tilt_left_joint
     - head_tilt_vertical_joint
     allow_partial_joints_goal: true
+    interface_name: position
+
+forward_head_controller:
+  ros__parameters:
+    joints:
+    - head_pan_joint
+    - head_tilt_right_joint
+    - head_tilt_left_joint
+    - head_tilt_vertical_joint
     interface_name: position
 
 jaw_controller:
