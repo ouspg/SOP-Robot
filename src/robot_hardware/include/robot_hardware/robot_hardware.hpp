@@ -111,7 +111,6 @@ private:
 
   // std::map<std::string, uint32_t> dynamixel_;
   
-  std::map<std::string, const ControlItem *> control_items_;
   std::vector<std::pair<std::string, ItemValue>> dynamixel_info_;
 
   bool set_default_servo_positions();

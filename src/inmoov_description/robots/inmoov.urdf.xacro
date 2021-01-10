@@ -138,7 +138,7 @@
    <child link="l_hand_link"/>
   </joint>
   
-  <xacro:robot_head_pan name="RobotHeadPan" prefix="" />
+  <xacro:robot_head name="RobotHead" prefix="" />
 
 </robot>
 
