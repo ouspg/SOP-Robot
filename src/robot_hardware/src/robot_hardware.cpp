@@ -4,14 +4,6 @@
 
 using std::placeholders::_1;
 
-// SYNC_WRITE_HANDLER
-#define SYNC_WRITE_HANDLER_FOR_GOAL_POSITION 0
-#define SYNC_WRITE_HANDLER_FOR_GOAL_VELOCITY 1
-#define SYNC_WRITE_HANDLER_FOR_ACCELERATION 2
-
-// SYNC_READ_HANDLER(Only for Protocol 2.0)
-#define SYNC_READ_HANDLER_FOR_PRESENT_POSITION_VELOCITY_CURRENT 0
-
 namespace robot_hardware
 {
   RobotHardware::RobotHardware() : logger_(rclcpp::get_logger("RobotHardware"))
@@ -114,38 +106,6 @@ namespace robot_hardware
     return command_interfaces;
   }
 
-  void RobotHardware::joint_states_cb(const sensor_msgs::msg::JointState::SharedPtr msg)
-  {
-
-    for (int i = 0; i < msg->name.size(); i++)
-    {
-
-      /*RCLCPP_INFO(
-          logger_,
-          "Got %s state", msg->name[i].c_str());*/
-
-      if (joint_indices_.find(msg->name[i]) != joint_indices_.end())
-      {
-        int joint_idx = joint_indices_.at(msg->name[i]);
-        auto pos = msg->position[i];
-        auto vel = msg->velocity[i];
-
-        if (abs(pos) > M_PI)
-        {
-          RCLCPP_WARN(logger_,
-                      "Something went wrong, received garbage joint pos reading: %0.5f", pos);
-          continue;
-        }
-
-        // hw_states_velocity_[joint_idx] = vel;
-        hw_states_[joint_idx] = pos;
-
-        /*RCLCPP_INFO(
-            logger_,
-            "Joint idx %d pos %.5f, vel %.5f", joint_idx, pos, vel);*/
-      }
-    }
-  }
 
   bool RobotHardware::load_dynamixel_config(const std::string yaml_file)
   {
@@ -237,6 +197,8 @@ namespace robot_hardware
       RCLCPP_INFO(logger_,
                   "Name : %s, ID : %d, Model Number : %d", dxl.first.c_str(), dxl.second, model_number);
 
+      dynamixel_models_[dxl.first] = model_number;
+
       // Found servo, turn torque off
       dxl_wb_.torqueOff((uint8_t)dxl.second);
 
@@ -266,52 +228,67 @@ namespace robot_hardware
 
   bool RobotHardware::init_dynamixel_control_items()
   {
-    auto it = dynamixel_.begin();
+    std::map<uint16_t, DynamixelGroup> model_groups;
 
-    const ControlItem *goal_position = dxl_wb_.getItemInfo(it->second, "Goal_Position");
-    if (goal_position == NULL)
-      return false;
+    for (const auto &dxl : dynamixel_)
+    {
+      const auto model_number = dynamixel_models_[dxl.first];
 
-    const ControlItem *goal_velocity = dxl_wb_.getItemInfo(it->second, "Goal_Velocity");
-    if (goal_velocity == NULL)
-      goal_velocity = dxl_wb_.getItemInfo(it->second, "Moving_Speed");
-    if (goal_velocity == NULL)
-      return false;
-    
-    const ControlItem *profile_velocity = dxl_wb_.getItemInfo(it->second, "Profile_Velocity");
-    if (profile_velocity == NULL)
-      return false;
+      // This model was already initialized
+      if (model_groups.find(model_number) != model_groups.end())
+      {
+        continue;
+      }
 
-    const ControlItem *profile_acceleration = dxl_wb_.getItemInfo(it->second, "Profile_Acceleration");
-    if (profile_acceleration == NULL)
-      return false;
+      DynamixelGroup group;
 
-    const ControlItem *present_position = dxl_wb_.getItemInfo(it->second, "Present_Position");
-    if (present_position == NULL)
-      return false;
+      const ControlItem *goal_position = dxl_wb_.getItemInfo(dxl.second, "Goal_Position");
+      if (goal_position == NULL)
+        return false;
 
-    const ControlItem *present_velocity = dxl_wb_.getItemInfo(it->second, "Present_Velocity");
-    if (present_velocity == NULL)
-      present_velocity = dxl_wb_.getItemInfo(it->second, "Present_Speed");
-    if (present_velocity == NULL)
-      return false;
+      const ControlItem *goal_velocity = dxl_wb_.getItemInfo(dxl.second, "Goal_Velocity");
+      if (goal_velocity == NULL)
+        goal_velocity = dxl_wb_.getItemInfo(dxl.second, "Moving_Speed");
+      if (goal_velocity == NULL)
+        return false;
 
-    const ControlItem *present_current = dxl_wb_.getItemInfo(it->second, "Present_Current");
-    if (present_current == NULL)
-      present_current = dxl_wb_.getItemInfo(it->second, "Present_Load");
-    if (present_current == NULL)
-      return false;
+      const ControlItem *profile_velocity = dxl_wb_.getItemInfo(dxl.second, "Profile_Velocity");
+      if (profile_velocity != NULL)
+      {
+        group.write_control_items[ControlItemType::DesiredVel] = profile_velocity;
+      }
 
-    control_items_["Goal_Position"] = goal_position;
-    control_items_["Goal_Velocity"] = goal_velocity;
+      const ControlItem *profile_acceleration = dxl_wb_.getItemInfo(dxl.second, "Profile_Acceleration");
+      if (profile_acceleration != NULL)
+      {
+        group.write_control_items[ControlItemType::DesiredAcc] = profile_acceleration;
+      }
 
-    control_items_["Profile_Velocity"] = profile_velocity; 
-    control_items_["Profile_Acceleration"] = profile_acceleration; 
+      const ControlItem *present_position = dxl_wb_.getItemInfo(dxl.second, "Present_Position");
+      if (present_position != NULL)
+      {
+        group.write_control_items[ControlItemType::PresentPos] = present_position;
+      }
 
-    control_items_["Present_Position"] = present_position;
-    control_items_["Present_Velocity"] = present_velocity;
-    control_items_["Present_Current"] = present_current;
+      const ControlItem *present_velocity = dxl_wb_.getItemInfo(dxl.second, "Present_Velocity");
+      if (present_velocity == NULL)
+        present_velocity = dxl_wb_.getItemInfo(dxl.second, "Present_Speed");
+      if (present_velocity != NULL)
+      {
+        group.write_control_items[ControlItemType::PresentVel] = present_velocity;
+      }
 
+      const ControlItem *present_current = dxl_wb_.getItemInfo(dxl.second, "Present_Current");
+      if (present_current == NULL)
+        present_current = dxl_wb_.getItemInfo(dxl.second, "Present_Load");
+      if (present_current != NULL)
+      {
+        group.write_control_items[ControlItemType::PresentCurrent] = present_current;
+      }
+
+      model_groups[model_number] = group;
+      dynamixel_groups_.emplace_back(group);
+    }
     return true;
   }
 
@@ -320,61 +297,78 @@ namespace robot_hardware
     bool result = false;
     const char *log = NULL;
 
-    result = dxl_wb_.addSyncWriteHandler(control_items_["Goal_Position"]->address, control_items_["Goal_Position"]->data_length, &log);
-    if (result == false)
-    {
-      printf("%s", log);
-      return result;
-    }
-    else
-    {
-      printf("%s", log);
-    }
+    int write_handler_id = 0;
+    int read_handler_id = 0;
 
-    // result = dxl_wb_.addSyncWriteHandler(control_items_["Goal_Velocity"]->address, control_items_["Goal_Velocity"]->data_length, &log);
+    for (auto &group : dynamixel_groups_)
+    {
+      const auto ctrl_items = group.write_control_items;
 
-    // Max velocity value
-    result = dxl_wb_.addSyncWriteHandler(control_items_["Profile_Velocity"]->address, control_items_["Profile_Velocity"]->data_length, &log);
-    if (result == false)
-    {
-      printf("%s", log);
-      return result;
-    }
-    else
-    {
-      printf("%s", log);
-    }
+      const auto desired_pos = ctrl_items.at(ControlItemType::DesiredPos);
+      const auto desired_vel = ctrl_items.at(ControlItemType::DesiredVel);
+      const auto desired_acc = ctrl_items.at(ControlItemType::DesiredAcc);
 
+      const auto present_pos = ctrl_items.at(ControlItemType::PresentPos);
+      const auto present_vel = ctrl_items.at(ControlItemType::PresentVel);
+      const auto present_curr = ctrl_items.at(ControlItemType::PresentCurrent);
 
-    result = dxl_wb_.addSyncWriteHandler(control_items_["Profile_Acceleration"]->address, control_items_["Profile_Acceleration"]->data_length, &log);
-    if (result == false)
-    {
-      printf("%s", log);
-      return result;
-    }
-    else
-    {
-      printf("%s", log);
-    }
+      result = dxl_wb_.addSyncWriteHandler(desired_pos->address, desired_pos->data_length, &log);
+      RCLCPP_INFO(logger_, "%s", log);
 
-    if (dxl_wb_.getProtocolVersion() == 2.0f)
-    {
-      uint16_t start_address = std::min(control_items_["Present_Position"]->address, control_items_["Present_Current"]->address);
+      if (result == false)
+      {
+        return result;
+      }
+      else
+      {
+        group.write_handlers[WriteHandlerType::Pos] = write_handler_id++;
+      }
+
+      // result = dxl_wb_.addSyncWriteHandler(control_items_["Goal_Velocity"]->address, control_items_["Goal_Velocity"]->data_length, &log);
+
+      // Max velocity value
+      result = dxl_wb_.addSyncWriteHandler(desired_vel->address, desired_vel->data_length, &log);
+      RCLCPP_INFO(logger_, "%s", log);
+
+      if (result == false)
+      {
+        return result;
+      }
+      else
+      {
+        group.write_handlers[WriteHandlerType::Vel] = write_handler_id++;
+      }
+
+      result = dxl_wb_.addSyncWriteHandler(desired_acc->address, desired_acc->data_length, &log);
+      RCLCPP_INFO(logger_, "%s", log);
+
+      if (result == false)
+      {
+        return result;
+      }
+      else
+      {
+        group.write_handlers[WriteHandlerType::Acc] = write_handler_id++;
+      }
+
+      uint16_t start_address = std::min(present_pos->address, present_curr->address);
 
       /* 
-      As some models have an empty space between Present_Velocity and Present Current, read_length is modified as below.
-    */
+        As some models have an empty space between Present_Velocity and Present Current, read_length is modified as below.
+      */
       // uint16_t read_length = control_items_["Present_Position"]->data_length + control_items_["Present_Velocity"]->data_length + control_items_["Present_Current"]->data_length;
-      uint16_t read_length = control_items_["Present_Position"]->data_length + control_items_["Present_Velocity"]->data_length + control_items_["Present_Current"]->data_length + 2;
+      uint16_t read_length = present_pos->data_length + present_vel->data_length + present_curr->data_length + 2;
 
       result = dxl_wb_.addSyncReadHandler(start_address,
                                           read_length,
                                           &log);
       if (result == false)
       {
-        printf("%s", log);
+        RCLCPP_ERROR(logger_, "%s", log);
         return result;
       }
+
+      group.read_handler_id = read_handler_id++;
     }
 
     return result;
@@ -410,6 +404,12 @@ namespace robot_hardware
       return return_type::ERROR;
     }
 
+    if (dxl_wb_.getProtocolVersion() != 2.0f)
+    {
+      RCLCPP_ERROR(logger_, "This hardware interface supports only Dynamixel protocol 2.0");
+      return return_type::ERROR;
+    }
+
     if (!init_dynamixel_control_items())
     {
       return return_type::ERROR;
@@ -420,11 +420,6 @@ namespace robot_hardware
       return return_type::ERROR;
     }
 
-    if (dxl_wb_.getProtocolVersion() != 2.0f)
-    {
-      RCLCPP_ERROR(logger_, "This hardware interface supports only Dynamixel protocol 2.0");
-      return return_type::ERROR;
-    }
 
     if (!set_default_servo_positions())
     {
@@ -438,22 +433,6 @@ namespace robot_hardware
       RCLCPP_ERROR(logger_, "Could not arm servos");
       return return_type::ERROR;
     }
-
-    // node_ = std::make_shared<rclcpp::Node>("robot_hardware");
-
-    /*RCLCPP_INFO(logger_, "Subscribe to /joint_states");
-
-    joint_states_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(
-        "/joint_states", 10, std::bind(&RobotHardware::joint_states_cb, this, _1));
-
-    joint_traj_pub_ = node_->create_publisher<trajectory_msgs::msg::JointTrajectory>("/joint_trajectory", 10);*/
-
-    /*for (int i = 0; i <= hw_start_sec_; i++) {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(
-      logger_,
-      "%.1f seconds left...", hw_start_sec_ - i);
-  }*/
 
     status_ = hardware_interface::status::STARTED;
 
@@ -485,28 +464,28 @@ namespace robot_hardware
     return return_type::OK;
   }
 
-  bool RobotHardware::read_servo_values()
+  bool RobotHardware::read_servo_group_values(const DynamixelGroup &group)
   {
-    // rclcpp::spin_some(node_); // process queued work, e.g., process joint values callback
-
     bool result = false;
     const char *log = NULL;
 
-    uint8_t id_array[dynamixel_.size()];
+    const auto servos = group.servos;
+
+    uint8_t id_array[servos.size()];
     uint8_t id_cnt = 0;
 
     // int32_t get_current[dynamixel_.size()];
-    int32_t get_velocity[dynamixel_.size()];
-    int32_t get_position[dynamixel_.size()];
+    int32_t get_velocity[servos.size()];
+    int32_t get_position[servos.size()];
 
-    for (auto const &dxl : dynamixel_)
+    for (auto const &dxl : servos)
     {
       id_array[id_cnt++] = (uint8_t)dxl.second;
     }
 
-    result = dxl_wb_.syncRead(SYNC_READ_HANDLER_FOR_PRESENT_POSITION_VELOCITY_CURRENT,
+    result = dxl_wb_.syncRead(group.read_handler_id,
                               id_array,
-                              dynamixel_.size(),
+                              servos.size(),
                               &log);
     if (!result)
     {
@@ -528,7 +507,7 @@ namespace robot_hardware
       RCLCPP_ERROR(logger_, "%s", log);
     }*/
 
-    result = dxl_wb_.getSyncReadData(SYNC_READ_HANDLER_FOR_PRESENT_POSITION_VELOCITY_CURRENT,
+    result = dxl_wb_.getSyncReadData(group.read_handler_id,
                                      id_array,
                                      id_cnt,
                                      control_items_["Present_Velocity"]->address,
@@ -541,7 +520,7 @@ namespace robot_hardware
       return false;
     }
 
-    result = dxl_wb_.getSyncReadData(SYNC_READ_HANDLER_FOR_PRESENT_POSITION_VELOCITY_CURRENT,
+    result = dxl_wb_.getSyncReadData(group.read_handler_id,
                                      id_array,
                                      id_cnt,
                                      control_items_["Present_Position"]->address,
@@ -555,7 +534,7 @@ namespace robot_hardware
     }
 
     int idx = 0;
-    for (auto const &dxl : dynamixel_)
+    for (auto const &dxl : servos)
     {
       // This servo does not have joint config, skip it
       // Todo: move this check to init code
@@ -567,12 +546,26 @@ namespace robot_hardware
       int joint_idx = joint_indices_[dxl.first];
 
       hw_states_[joint_idx] = dxl_wb_.convertValue2Radian(dxl.second, get_position[idx]);
-      // hw_states_velocity_[joint_idx] = dxl_wb_.convertValue2Velocity(dxl.second, get_velocity[idx]);
+      hw_states_velocity_[joint_idx] = dxl_wb_.convertValue2Velocity(dxl.second, get_velocity[idx]);
       idx++;
 
       RCLCPP_INFO(logger_, "Joint %s pos: %.3f, vel: %.3f", dxl.first.c_str(), hw_states_[joint_idx], hw_states_velocity_[joint_idx]);
     }
     return true;
+  }
+
+  bool RobotHardware::read_servo_values()
+  {
+    bool all_success = true;
+
+    for (auto const &group : dynamixel_groups_)
+    {
+      if (!read_servo_group_values(group))
+      {
+        all_success = false;
+      }
+    }
+    return all_success;
   }
 
   bool RobotHardware::set_default_servo_positions()
@@ -596,74 +589,100 @@ namespace robot_hardware
     return read_servo_values() ? return_type::OK : return_type::ERROR;
   }
 
-  hardware_interface::return_type RobotHardware::write()
+  bool RobotHardware::write_servo_group_values(const DynamixelGroup &group)
   {
-    // auto msg = trajectory_msgs::msg::JointTrajectory();
-
     bool result = false;
     const char *log = NULL;
 
-    uint8_t id_array[dynamixel_.size()];
+    const auto servos = group.servos;
+
+    uint8_t id_array[servos.size()];
     uint8_t id_cnt = 0;
 
-    int32_t dynamixel_position[dynamixel_.size()];
-    int32_t dynamixel_max_velocity[dynamixel_.size()];
-    int32_t dynamixel_acceleration[dynamixel_.size()];
+    int32_t dynamixel_position[servos.size()];
+    int32_t dynamixel_max_velocity[servos.size()];
+    int32_t dynamixel_acceleration[servos.size()];
 
-    for (uint i = 0; i < info_.joints.size(); i++)
+    for (const auto &servo : servos)
     {
-      auto joint_name = info_.joints[i].name;
+      auto joint_name = servo.first;
+      auto servo_id = servo.second;
+      auto joint_idx = joint_indices_[joint_name];
 
-      // This joint does not have servo config, skit it
-      // Todo: move this check to init code
-      if (dynamixel_.find(joint_name) == dynamixel_.end())
-      {
-        continue;
-      }
-      auto servo_id = dynamixel_.at(joint_name);
       id_array[id_cnt] = servo_id;
 
-
-      RCLCPP_INFO(logger_, "Move %s to pos %.3f, vel: %.3f", joint_name.c_str(), hw_commands_[i], hw_states_velocity_[i]);
+      RCLCPP_INFO(logger_, "Move %s to pos %.3f, vel: %.3f", joint_name.c_str(),
+                  hw_commands_[joint_idx], hw_states_velocity_[joint_idx]);
 
       // If cmd is NaN, use current position, i.e. do not move the servo
-      if (std::isnan(hw_commands_[i])) {
-        dynamixel_position[id_cnt] = dxl_wb_.convertRadian2Value(servo_id, hw_states_[i]);
+      if (std::isnan(hw_commands_[joint_idx]))
+      {
+        dynamixel_position[id_cnt] = dxl_wb_.convertRadian2Value(servo_id, hw_states_[joint_idx]);
         dynamixel_max_velocity[id_cnt] = 0;
         dynamixel_acceleration[id_cnt] = 0;
-      } else {
-        dynamixel_position[id_cnt] = dxl_wb_.convertRadian2Value(servo_id, hw_commands_[i]);
+      }
+      else
+      {
+        dynamixel_position[id_cnt] = dxl_wb_.convertRadian2Value(servo_id, hw_commands_[joint_idx]);
         dynamixel_max_velocity[id_cnt] = 200;
         dynamixel_acceleration[id_cnt] = 50;
       }
-      
+
       id_cnt++;
     }
 
-    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_POSITION,
-                               id_array, id_cnt, dynamixel_position, 1, &log);
-    if (!result)
+    // set pos if pos write handler exists
+    if (group.write_handlers.find(WriteHandlerType::Pos) != group.write_handlers.end())
     {
-      RCLCPP_ERROR(logger_, "%s", log);
-      return return_type::ERROR;
+      result = dxl_wb_.syncWrite(group.write_handlers.at(WriteHandlerType::Pos),
+                                 id_array, id_cnt, dynamixel_position, 1, &log);
+      if (!result)
+      {
+        RCLCPP_ERROR(logger_, "%s", log);
+        return false;
+      }
     }
 
-    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_VELOCITY,
-                               id_array, id_cnt, dynamixel_max_velocity, 1, &log);
-    if (!result)
+    // set vel if vel write handler exists
+    if (group.write_handlers.find(WriteHandlerType::Vel) != group.write_handlers.end())
     {
-      RCLCPP_ERROR(logger_, "%s", log);
-      return return_type::ERROR;
+      result = dxl_wb_.syncWrite(group.write_handlers.at(WriteHandlerType::Vel),
+                                 id_array, id_cnt, dynamixel_max_velocity, 1, &log);
+      if (!result)
+      {
+        RCLCPP_ERROR(logger_, "%s", log);
+        return false;
+      }
     }
 
-    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_ACCELERATION,
-                               id_array, id_cnt, dynamixel_acceleration, 1, &log);
-    if (!result)
+    // set acc if acc write handler exists
+    if (group.write_handlers.find(WriteHandlerType::Acc) != group.write_handlers.end())
     {
-      RCLCPP_ERROR(logger_, "%s", log);
-      return return_type::ERROR;
+      result = dxl_wb_.syncWrite(group.write_handlers.at(WriteHandlerType::Acc),
+                                 id_array, id_cnt, dynamixel_acceleration, 1, &log);
+      if (!result)
+      {
+        RCLCPP_ERROR(logger_, "%s", log);
+        return false;
+      }
     }
-    return return_type::OK;
+
+    return true;
+  }
+
+  hardware_interface::return_type RobotHardware::write()
+  {
+    bool all_success = true;
+
+    for (auto const &group : dynamixel_groups_)
+    {
+      if (!write_servo_group_values(group))
+      {
+        all_success = false;
+      }
+    }
+
+    return all_success ? return_type::OK : return_type::ERROR;
   }
 } // namespace robot_hardware
 

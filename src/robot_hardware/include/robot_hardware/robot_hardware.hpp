@@ -35,6 +35,29 @@ typedef struct
   int32_t value;
 } ItemValue;
 
+enum WriteHandlerType {
+  Pos,
+  Vel,
+  Acc,
+};
+
+enum ControlItemType {
+  DesiredPos,
+  DesiredVel,
+  DesiredAcc,
+  PresentPos,
+  PresentVel,
+  PresentCurrent
+};
+
+typedef struct {
+  int read_handler_id;
+  std::unordered_map<WriteHandlerType, int> write_handlers;
+  std::unordered_map<ControlItemType, const ControlItem*> write_control_items;
+  std::map<std::string, uint32_t> servos;
+} DynamixelGroup;
+
+
 class RobotHardware : public
   hardware_interface::BaseInterface<hardware_interface::SystemInterface>
 {
@@ -79,18 +102,23 @@ private:
 
   std::unordered_map<std::string, int> joint_indices_;
 
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_sub_;
-
-  rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_traj_pub_;
-
   DynamixelWorkbench dxl_wb_;
 
-  std::map<std::string, uint32_t> dynamixel_;
+  std::vector<DynamixelGroup> dynamixel_groups_;
+
+  std::map<std::string, uint32_t> dynamixel_; // all servos
+  std::map<std::string, uint16_t> dynamixel_models_; // model numbers
+
+  // std::map<std::string, uint32_t> dynamixel_;
+  
   std::map<std::string, const ControlItem *> control_items_;
   std::vector<std::pair<std::string, ItemValue>> dynamixel_info_;
 
   bool set_default_servo_positions();
   bool read_servo_values();
+  bool read_servo_group_values(const DynamixelGroup &group);
+
+  bool write_servo_group_values(const DynamixelGroup &group);
 
   bool configure_dynamixels();
   bool load_dynamixel_config(const std::string yaml_file);
@@ -99,8 +127,6 @@ private:
 
   bool arm_servos();
   bool disarm_servos();
-
-  void joint_states_cb(const sensor_msgs::msg::JointState::SharedPtr msg);
 };
 
 }
