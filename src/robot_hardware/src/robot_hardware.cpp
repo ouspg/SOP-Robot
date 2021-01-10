@@ -7,6 +7,7 @@ using std::placeholders::_1;
 // SYNC_WRITE_HANDLER
 #define SYNC_WRITE_HANDLER_FOR_GOAL_POSITION 0
 #define SYNC_WRITE_HANDLER_FOR_GOAL_VELOCITY 1
+#define SYNC_WRITE_HANDLER_FOR_ACCELERATION 2
 
 // SYNC_READ_HANDLER(Only for Protocol 2.0)
 #define SYNC_READ_HANDLER_FOR_PRESENT_POSITION_VELOCITY_CURRENT 0
@@ -276,6 +277,14 @@ namespace robot_hardware
       goal_velocity = dxl_wb_.getItemInfo(it->second, "Moving_Speed");
     if (goal_velocity == NULL)
       return false;
+    
+    const ControlItem *profile_velocity = dxl_wb_.getItemInfo(it->second, "Profile_Velocity");
+    if (profile_velocity == NULL)
+      return false;
+
+    const ControlItem *profile_acceleration = dxl_wb_.getItemInfo(it->second, "Profile_Acceleration");
+    if (profile_acceleration == NULL)
+      return false;
 
     const ControlItem *present_position = dxl_wb_.getItemInfo(it->second, "Present_Position");
     if (present_position == NULL)
@@ -295,6 +304,9 @@ namespace robot_hardware
 
     control_items_["Goal_Position"] = goal_position;
     control_items_["Goal_Velocity"] = goal_velocity;
+
+    control_items_["Profile_Velocity"] = profile_velocity; 
+    control_items_["Profile_Acceleration"] = profile_acceleration; 
 
     control_items_["Present_Position"] = present_position;
     control_items_["Present_Velocity"] = present_velocity;
@@ -319,7 +331,22 @@ namespace robot_hardware
       printf("%s", log);
     }
 
-    result = dxl_wb_.addSyncWriteHandler(control_items_["Goal_Velocity"]->address, control_items_["Goal_Velocity"]->data_length, &log);
+    // result = dxl_wb_.addSyncWriteHandler(control_items_["Goal_Velocity"]->address, control_items_["Goal_Velocity"]->data_length, &log);
+
+    // Max velocity value
+    result = dxl_wb_.addSyncWriteHandler(control_items_["Profile_Velocity"]->address, control_items_["Profile_Velocity"]->data_length, &log);
+    if (result == false)
+    {
+      printf("%s", log);
+      return result;
+    }
+    else
+    {
+      printf("%s", log);
+    }
+
+
+    result = dxl_wb_.addSyncWriteHandler(control_items_["Profile_Acceleration"]->address, control_items_["Profile_Acceleration"]->data_length, &log);
     if (result == false)
     {
       printf("%s", log);
@@ -355,7 +382,7 @@ namespace robot_hardware
 
   return_type RobotHardware::start()
   {
-    RCLCPP_INFO(logger_, "Velocity control is not supported yet, so the trajectory is coarse")
+    RCLCPP_INFO(logger_, "Velocity control is not supported yet, so the trajectory is coarse");
 
     RCLCPP_INFO(
         logger_,
@@ -530,12 +557,20 @@ namespace robot_hardware
     int idx = 0;
     for (auto const &dxl : dynamixel_)
     {
+      // This servo does not have joint config, skip it
+      // Todo: move this check to init code
+      if (joint_indices_.find(dxl.first) == joint_indices_.end())
+      {
+        continue;
+      }
+
       int joint_idx = joint_indices_[dxl.first];
+
       hw_states_[joint_idx] = dxl_wb_.convertValue2Radian(dxl.second, get_position[idx]);
-      hw_states_velocity_[joint_idx] = dxl_wb_.convertValue2Velocity(dxl.second, get_velocity[idx]);
+      // hw_states_velocity_[joint_idx] = dxl_wb_.convertValue2Velocity(dxl.second, get_velocity[idx]);
       idx++;
 
-      // RCLCPP_INFO(logger_, "Joint %s pos: %.3f, vel: %.3f", dxl.first.c_str(), hw_states_[joint_idx], hw_states_velocity_[joint_idx]);
+      RCLCPP_INFO(logger_, "Joint %s pos: %.3f, vel: %.3f", dxl.first.c_str(), hw_states_[joint_idx], hw_states_velocity_[joint_idx]);
     }
     return true;
   }
@@ -572,54 +607,62 @@ namespace robot_hardware
     uint8_t id_cnt = 0;
 
     int32_t dynamixel_position[dynamixel_.size()];
+    int32_t dynamixel_max_velocity[dynamixel_.size()];
+    int32_t dynamixel_acceleration[dynamixel_.size()];
 
-    for (uint i = 0; i < hw_commands_.size(); i++)
+    for (uint i = 0; i < info_.joints.size(); i++)
     {
       auto joint_name = info_.joints[i].name;
-      auto servo_id = dynamixel_.at(joint_name);
-      id_array[id_cnt++] = servo_id;
 
-      RCLCPP_INFO(logger_, "Move %s to pos %.3f, vel: %.3f", joint_name.c_str(), hw_commands_[i], hw_states_velocity_[i]);
-    
-
-
-      dynamixel_position[i] = dxl_wb_.convertRadian2Value(servo_id, hw_commands_[i]);
-
-      // NaN == no work!
-      /*if (std::isnan(hw_commands_[i]))
+      // This joint does not have servo config, skit it
+      // Todo: move this check to init code
+      if (dynamixel_.find(joint_name) == dynamixel_.end())
       {
         continue;
-      }*/
+      }
+      auto servo_id = dynamixel_.at(joint_name);
+      id_array[id_cnt] = servo_id;
 
-      /*auto point = trajectory_msgs::msg::JointTrajectoryPoint();
 
-      msg.joint_names.emplace_back(info_.joints[i].name);
+      RCLCPP_INFO(logger_, "Move %s to pos %.3f, vel: %.3f", joint_name.c_str(), hw_commands_[i], hw_states_velocity_[i]);
 
-      point.positions.emplace_back(hw_commands_[i]);
-      point.velocities.emplace_back(.5f);
-      // point.effort.emplace_back(.5f);
-      point.accelerations.emplace_back(.2f);
-
-      msg.points.emplace_back(point);*/
-
-      // hw_commands_[i] = std::numeric_limits<double>::quiet_NaN();
+      // If cmd is NaN, use current position, i.e. do not move the servo
+      if (std::isnan(hw_commands_[i])) {
+        dynamixel_position[id_cnt] = dxl_wb_.convertRadian2Value(servo_id, hw_states_[i]);
+        dynamixel_max_velocity[id_cnt] = 0;
+        dynamixel_acceleration[id_cnt] = 0;
+      } else {
+        dynamixel_position[id_cnt] = dxl_wb_.convertRadian2Value(servo_id, hw_commands_[i]);
+        dynamixel_max_velocity[id_cnt] = 200;
+        dynamixel_acceleration[id_cnt] = 50;
+      }
+      
+      id_cnt++;
     }
 
-    /*result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_POSITION,
+    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_POSITION,
                                id_array, id_cnt, dynamixel_position, 1, &log);
     if (!result)
     {
       RCLCPP_ERROR(logger_, "%s", log);
       return return_type::ERROR;
-    }*/
+    }
 
-    // Pub msg if it's not empty
-    /*if (msg.joint_names.size() > 0)
+    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_GOAL_VELOCITY,
+                               id_array, id_cnt, dynamixel_max_velocity, 1, &log);
+    if (!result)
     {
-      joint_traj_pub_->publish(msg);
-    }*/
+      RCLCPP_ERROR(logger_, "%s", log);
+      return return_type::ERROR;
+    }
 
-    // rclcpp::spin_some(node_); // process queued work
+    result = dxl_wb_.syncWrite(SYNC_WRITE_HANDLER_FOR_ACCELERATION,
+                               id_array, id_cnt, dynamixel_acceleration, 1, &log);
+    if (!result)
+    {
+      RCLCPP_ERROR(logger_, "%s", log);
+      return return_type::ERROR;
+    }
     return return_type::OK;
   }
 } // namespace robot_hardware
