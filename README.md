@@ -22,7 +22,6 @@ See the diagram below and the servo joint configuration: [config/dynamixel.yaml]
 
 * src - all packages (3rd party and ours)
 * config - servo configuration
-* launch - robot launch files
 
 ## Servo Table
 
