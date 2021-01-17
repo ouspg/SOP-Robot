@@ -2,6 +2,17 @@
 
 <robot name="inmoov" xmlns:xacro="http://ros.org/wiki/xacro">
 
+<link name="head_link">
+  <visual>
+    <geometry>
+      <mesh filename="package://inmoov_meshes/meshes/head.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <xacro:frame_color/>
+  </visual>
+  <xacro:head_inertial/>
+</link>
+
 <xacro:macro name="head" params="covers">
 
   <link name="head_base_link">
@@ -13,28 +24,6 @@
       <xacro:frame_color/>
     </visual>
     <xacro:head_base_inertial/>
-  </link>
-
-  <link name="head_link">
-    <visual>
-      <geometry>
-        <mesh filename="package://inmoov_meshes/meshes/head.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <xacro:frame_color/>
-    </visual>
-    <xacro:head_inertial/>
-  </link>
-
-  <link name="jaw_link">
-    <visual>
-      <geometry>
-        <mesh filename="package://inmoov_meshes/meshes/jaw.stl" scale="0.001 0.001 0.001"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <xacro:cover_color/>
-    </visual>
-    <xacro:jaw_inertial/>
   </link>
 
   <link name="skull_link">
@@ -70,21 +59,13 @@
     <xacro:earrightv1_inertial/>
   </link>
 
-
+  <!-- See http://wiki.ros.org/urdf/XML/joint -->
   <joint name="head_pan_joint" type="revolute">
    <axis xyz="0 0 1"/>
    <limit effort="1000.0" lower="${head_pan_joint_lower}" upper="${head_pan_joint_upper}" velocity="${head_pan_joint_velocity}" />
    <origin rpy="0 0 0" xyz="0 0 0.0245"/>
    <parent link="head_base_link"/>
    <child link="head_link"/>
-  </joint>
-
-  <joint name="jaw_joint" type="revolute">
-   <axis xyz="0 1 0"/>
-   <limit effort="1000.0" lower="${jaw_joint_lower}" upper="${jaw_joint_upper}" velocity="${jaw_joint_velocity}" />
-   <origin rpy="0 0.09 0" xyz="0.0375 0.0005 0.0437"/>
-   <parent link="head_link"/>
-   <child link="jaw_link"/>
   </joint>
 
   <joint name="skull_joint" type="fixed">
@@ -104,8 +85,28 @@
     <parent link="head_link"/>
     <child link="right_ear_link"/>
   </joint>
+  
+</xacro:macro>
 
+<xacro:macro name="head_jaw" params="covers">
+  <link name="jaw_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://inmoov_meshes/meshes/jaw.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <xacro:cover_color/>
+    </visual>
+    <xacro:jaw_inertial/>
+  </link>
 
+  <joint name="head_jaw_joint" type="revolute">
+   <axis xyz="0 1 0"/>
+   <limit effort="1000.0" lower="${jaw_joint_lower}" upper="${jaw_joint_upper}" velocity="${jaw_joint_velocity}" />
+   <origin rpy="0 0.09 0" xyz="0.0375 0.0005 0.0437"/>
+   <parent link="head_link"/>
+   <child link="jaw_link"/>
+  </joint>
 
 </xacro:macro>
 

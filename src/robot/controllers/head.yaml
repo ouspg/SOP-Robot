@@ -12,7 +12,7 @@ controller_manager:
       type: forward_command_controller/ForwardCommandController
 
     jaw_controller:
-      type: forward_command_controller/ForwardCommandController
+      type: joint_trajectory_controller/JointTrajectoryController
 
     joint_state_controller:
       type: joint_state_controller/JointStateController
@@ -21,32 +21,39 @@ head_controller:
   ros__parameters:
     joints:
     - head_pan_joint
-    - head_tilt_right_joint
-    - head_tilt_left_joint
-    - head_tilt_vertical_joint
-    allow_partial_joints_goal: true
-    interface_name: position
-
-eyes_controller:
-  ros__parameters:
-    joints:
-    - eyes_shift_vertical_joint
-    - eyes_shift_horizontal_joint
-    allow_partial_joints_goal: true
-    interface_name: position
-
-forward_head_controller:
-  ros__parameters:
-    joints:
+    # - head_tilt_right_joint
+    # - head_tilt_left_joint
+    # - head_tilt_vertical_joint
+    write_op_modes:
     - head_pan_joint
-    - head_tilt_right_joint
-    - head_tilt_left_joint
-    - head_tilt_vertical_joint
+    # - head_tilt_right_joint
+    # - head_tilt_left_joint
+    # - head_tilt_vertical_joint
+    allow_partial_joints_goal: true
     interface_name: position
+
+#eyes_controller:
+#  ros__parameters:
+#    joints:
+#    - eyes_shift_vertical_joint
+#    - eyes_shift_horizontal_joint
+#    allow_partial_joints_goal: true
+#    interface_name: position
+
+#forward_head_controller:
+#  ros__parameters:
+#    joints:
+#    - head_pan_joint
+#    - head_tilt_right_joint
+#    - head_tilt_left_joint
+#    - head_tilt_vertical_joint
+#    interface_name: position
 
 jaw_controller:
   ros__parameters:
     joints:
+    - head_jaw_joint
+    write_op_modes:
     - head_jaw_joint
     interface_name: position
     

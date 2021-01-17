@@ -3,7 +3,6 @@
 ## Prerequisites
 
 * [Visual Studio Code](https://code.visualstudio.com/)
-* [Vagrant](https://www.vagrantup.com/)
 * [Git](https://git-scm.com/)
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
   * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
@@ -17,11 +16,29 @@ If you are not familiar with git, take a look at this tutorial: <https://www.tut
 Remember to `git commit` your changes and push them to remote after
 every development session.
 
-At the end of the project, create light documentation for your ROS package in english (document code, what dependencies it requires, how it should be used, how it integrates with ROS and does it require more development to be usable) in Markdown.
+At the end of the project, create light documentation for your ROS package in english (document code, what dependencies it requires, how it should be used, how it integrates with ROS and does it require more development to be usable) in markdown.
 
-## Environment setup
+## Environment setup (prebuilt image)
 
-Vagrantfile is provided for setting up the RWOS development environment. Do not store anything important in the guest. The guest is only meant for building and testing the ROS nodes.
+Download the VM image: https://a3s.fi/swift/v1/AUTH_93541f99b83448a3b7cbbeb3c8057d90/sop-kurssi/SOP-Robot.7z
+
+Import the image to VirtualBox and setup shared folders: create shared folder that maps to `/workspace`.
+
+Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup the remote development on your host machine and the instructions below to setup the remote connection to your vagrant guest machine:
+
+1. Open `Remote-SSH: Connect to Host` in VSCode
+2. Enter your guest machine IP address
+3. Select `Linux`
+4. Open the `/workspace` directory
+5. Install whatever extensions you want to use on the guest
+   1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
+   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly)
+
+## Environment setup (vagrant)
+
+Install [Vagrant](https://www.vagrantup.com/)
+
+Vagrantfile is provided for setting up the ROS development environment. Do not store anything important in the guest. The guest is only meant for building and testing the ROS nodes.
 The vagrant syncs the repository (workspace) directory to `/workspace` directory in the guest.
 
 To provision the guest (you may have to set the provider manually):
@@ -58,25 +75,14 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 
 **Note: if the guest IP address changes, you have to update the IP address in the `~/ssh./config`**
 
-**Note: Use Python 3**
-
-## Using GUI Apps
+### Using GUI Apps
 
 When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`.
-
-### X11 Forwarding
-
-If you wish to use x11 forwarding, it has to be enabled on the host. This is already enabled on the guest machine. This can be done by adding `ForwardX11Trusted yes` to the `vagrant-ros` section in `~/ssh./config`. In addition, you have to install x11 server on the host machine, such as [vcxsrv](https://sourceforge.net/projects/vcxsrv) on Windows.
-
-Confirm that `$DISPLAY` is set in the ssh session. If not, set it manually by adding `export DISPLAY=HOST_MACHINE_IP:0.0` to ~/.bashrc.
-
-**If your host is Windows you have to download the latest (v8.1+) openssh release
-from [here](https://github.com/PowerShell/Win32-OpenSSH/releases).**
 
 ## Create ROS package
 
 1. Open VSCode remote development session
-2. CD into `src/` and use `ros2 pkg create` as described [here](https://index.ros.org/doc/ros2/Tutorials/Creating-Your-First-ROS2-Package/)
+2. cd into `src/` and use `ros2 pkg create` as described [here](https://index.ros.org/doc/ros2/Tutorials/Creating-Your-First-ROS2-Package/)
    * For Python, `ros2 pkg create --build-type ament_python --node-name <my_node_name> <my_package_name>`
    * For C++, `ros2 pkg create --build-type ament_cmake --node-name <my_node_name> <my_package_name>`
 

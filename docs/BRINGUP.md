@@ -1,6 +1,26 @@
-## Bring up real robot
 
-**Note: Remember to `source setup/install.bash` first.**
+**Note: Remember to `colcon build` and `source setup/install.bash` first.**
+
+The fake robot can be visualized using rviz.
+See [RVIZ](RVIZ.md) for how to do that.
+
+## Bring-up fake (simulated) robot
+
+Run the following in a GUI environment:
+
+```console
+ros2 launch robot robot.fake.launch.py
+```
+
+This setups fake servo controllers and joint state publishers, and the following window should popup:
+
+![](../img/inmoov_rviz.png)
+
+**Note: currently, only jaw and head pan movement can be simulated**
+
+**Todo: Add support for eye joints, etc**
+
+## Bring-up real robot
 
 ```console
 ros2 launch robot robot.launch.py
@@ -35,9 +55,22 @@ To echo joint states into the console:
 ros2 topic echo /joint_states
 ```
 
+**Todo: simplify bring up process (add commands to launch file)**
+
 ## Test servo control
 
-For instance, If the joint `head_pan_joint` was configured correctly, it should move to position 1
+If the bring-up succeeded, the following actions and topics should be available:
+
+```console
+vagrant@vagrant-ros:/workspace$ ros2 action list
+/head_controller/follow_joint_trajectory
+
+vagrant@vagrant-ros:/workspace$ ros2 topic list
+/head_controller/joint_trajectory
+/joint_states
+```
+
+For instance, If the joint `head_pan_joint` was configured correctly, it should move to position `0.5`
 when publishing the following action:
 
 ```console
@@ -45,18 +78,15 @@ ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/acti
   trajectory: {
     joint_names: [head_pan_joint],
     points: [
-      { positions: [0.5], velocities: [0.1], accelerations: [0.1], time_from_start: { sec: 0, nanosec: 0 } }
+      { positions: [0.5], time_from_start: { sec: 1, nanosec: 0 } }
     ]
-  },
-  goal_tolerance: [
-    { name: head_pan_joint, position: 0.01 }
-  ]
+  }
 }"
 ```
 
-**Note: goal tolerance checks seems to fail for now**
+`time_from_start` is the duration of the movement.
 
-**Note: acceleration and velocity is fixed for servos currently, so these cannot be controlled**
+**Note: acceleration and velocity is fixed for real servos currently, so these cannot be controlled. This would require adding velocity and acceleration command interfaces to the JointTrajectoryAction controller**
 
 <!--
 ## MoveIt!

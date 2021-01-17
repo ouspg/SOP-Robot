@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<robot name="inmoov" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:include filename="$(find inmoov_description)/urdf/config.joints.urdf.xacro" />
+<xacro:include filename="$(find inmoov_description)/urdf/config.inertial.urdf.xacro" />
+<xacro:include filename="$(find inmoov_description)/urdf/materials.urdf.xacro" />
+<xacro:include filename="$(find inmoov_description)/urdf/inmoov.gazebo" />
+
+  <xacro:include filename="$(find inmoov_description)/urdf/materials.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmBase.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmTorso.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmHead.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmEye.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmFace.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmArm.urdf.xacro" />
+  <xacro:include filename="$(find inmoov_description)/urdf/asmHand.urdf.xacro" />
+
+  <!-- Import ros2_control description -->
+  <xacro:include filename="head.ros2_control.xacro" />
+
+  <xacro:head_jaw covers="yes" />
+  
+  <xacro:robot_head name="RobotHead" prefix="" />
+
+</robot>
+

@@ -3,7 +3,7 @@
 
 The robot uses ROS2 (Robot Operating System 2). Read the [ROS2 wiki!](https://index.ros.org/doc/ros2/).
 
-**Note: See [development](./docs/DEVELOPMENT.md) for how to create VirtualBox ROS2 Foxy VM using Vagrant`**
+**Note: See [development](./docs/DEVELOPMENT.md) for how to create VirtualBox ROS2 Foxy VM using Vagrant**
 
 ## The Robot
 
@@ -20,7 +20,10 @@ See the diagram below and the servo joint configuration: [config/dynamixel.yaml]
 
 ## Project structure
 
-* src - all packages (3rd party and ours)
+* src - all packages
+  * src/inmoov_description - robot files (URDF, SRDF & rviz configuration)
+  * src/robot - robot launch files & servo controller configurations
+  * src/robot_hardware - hardware interface for ros2_controller, communicates with U2D2 via dynamixel workbench
 * config - servo configuration
 
 ## Servo Table

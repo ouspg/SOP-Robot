@@ -1,0 +1,15 @@
+fake_joint_driver_node:
+  ros__parameters:
+    start_position:
+      joints:
+        - head_pan_joint
+        - head_tilt_right_joint
+        - head_tilt_left_joint
+        - head_tilt_vertical_joint
+        - head_jaw_joint
+      values:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0

@@ -8,8 +8,9 @@ sudo -u vagrant echo "source /opt/ros/foxy/setup.bash" >> /home/vagrant/.bashrc
 setxkbmap fi
 
 # Enable X11 Forwarding
-echo "X11Forwarding yes" >> /etc/ssh/sshd_config
-echo "export LIBGL_ALWAYS_INDIRECT=1" >> /home/vagrant/.bashrc
+# echo "X11Forwarding yes" >> /etc/ssh/sshd_config
+# echo "export LIBGL_ALWAYS_INDIRECT=1" >> /home/vagrant/.bashrc
+# Note: if using LIBGL_ALWAYS_INDIRECT=1, rviz2 does not run! (Failed to create an OpenGL context)
 
 mkdir /workspace/
 chown -R vagrant /workspace/
@@ -126,3 +127,17 @@ sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagra
 
 # Allow access to shared folders
 adduser vagrant vboxsf
+
+# Install moveit2 (https://moveit.ros.org/install-moveit2/source/)
+mkdir -p /moveit2_ws/src
+cd /moveit2_ws
+wget https://raw.githubusercontent.com/ros-planning/moveit2/main/moveit2.repos
+vcs import src < moveit2.repos
+
+rosdep init
+rosdep update
+rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
+
+colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+sudo -u vagrant echo "source /moveit2_ws/install/setup.bash" >> /home/vagrant/.bashrc

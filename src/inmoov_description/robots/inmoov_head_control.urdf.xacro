@@ -89,7 +89,6 @@
   </joint>
 
   <xacro:head covers="yes" />
-  <xacro:head_jaw covers="yes" />
 
   <xacro:face covers="yes" />
 
