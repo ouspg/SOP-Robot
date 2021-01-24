@@ -38,6 +38,11 @@ def generate_launch_description():
         get_package_share_directory('inmoov_description'),
         'robots',
         'inmoov_jaw_control.urdf.xacro')
+    
+    robot_eyes_description_path = os.path.join(
+        get_package_share_directory('inmoov_description'),
+        'robots',
+        'inmoov_eyes_control.urdf.xacro')
 
     robot_description_config = xacro.process_file(robot_description_path)
     robot_description = {'robot_description': robot_description_config.toxml()}
@@ -47,6 +52,9 @@ def generate_launch_description():
 
     robot_jaw_description_config = xacro.process_file(robot_jaw_description_path)
     robot_jaw_description = {'robot_description': robot_jaw_description_config.toxml()}
+
+    robot_eyes_description_config = xacro.process_file(robot_eyes_description_path)
+    robot_eyes_description = {'robot_description': robot_eyes_description_config.toxml()}
 
     robot_description_semantic_config = load_file(
         'inmoov_description', 'config/inmoov.srdf')
@@ -100,10 +108,21 @@ def generate_launch_description():
                                                   "robot"), "controllers", "start_positions.yaml"),
                                               robot_jaw_description])
 
+    eyes_fake_joint_driver_node = Node(package='fake_joint_driver',
+                                  executable='fake_joint_driver_node',
+                                  parameters=[{'controller_name': 'eyes_controller'},
+                                              controller,
+                                              os.path.join(get_package_share_directory(
+                                                  "robot"), "controllers", "start_positions.yaml"),
+                                              robot_eyes_description])
+
     return LaunchDescription([
         static_tf,
         robot_state_publisher,
+
         head_fake_joint_driver_node,
         jaw_fake_joint_driver_node,
+        eyes_fake_joint_driver_node,
+
         rviz_node
     ])

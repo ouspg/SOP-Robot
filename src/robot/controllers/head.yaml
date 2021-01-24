@@ -32,13 +32,16 @@ head_controller:
     allow_partial_joints_goal: true
     interface_name: position
 
-#eyes_controller:
-#  ros__parameters:
-#    joints:
-#    - eyes_shift_vertical_joint
-#    - eyes_shift_horizontal_joint
-#    allow_partial_joints_goal: true
-#    interface_name: position
+eyes_controller:
+  ros__parameters:
+    joints:
+    - eyes_shift_vertical_joint
+    - eyes_shift_horizontal_joint
+    write_op_modes:
+    - eyes_shift_vertical_joint
+    - eyes_shift_horizontal_joint
+    allow_partial_joints_goal: true
+    interface_name: position
 
 #forward_head_controller:
 #  ros__parameters:

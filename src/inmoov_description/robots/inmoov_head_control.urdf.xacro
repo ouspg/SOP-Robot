@@ -90,13 +90,11 @@
 
   <xacro:head covers="yes" />
 
-  <xacro:face covers="yes" />
-
-  <joint name="face_joint" type="fixed">
+  <!--<joint name="face_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.0637 0 0.079"/>
     <parent link="skull_link"/>
     <child link="face_link"/>
-  </joint>
+  </joint>-->
 
   <xacro:arm side="r" flip="1" covers="yes" />
 
