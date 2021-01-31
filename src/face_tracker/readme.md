@@ -1,7 +1,7 @@
 
 This package contains a node that publishes image with the detected faces for debugging purposes and a message that contains location and landmarks of the detected faces.
 
-![](./img/face.png)
+![](./img/example.png)
 
 ## Parameters
 
