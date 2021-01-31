@@ -16,9 +16,9 @@ This setups fake servo controllers and joint state publishers, and the following
 
 ![](../img/inmoov_rviz.png)
 
-**Note: currently, only jaw and head pan movement can be simulated**
+**Note: currently, only jaw, eyes & head pan movement can be simulated**
 
-**Todo: Add support for eye joints, etc**
+**Todo: Add support for other joints**
 
 ## Bring-up real robot
 
