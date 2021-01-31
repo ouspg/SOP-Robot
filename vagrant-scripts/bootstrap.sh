@@ -112,7 +112,8 @@ source /opt/ros/foxy/setup.bash
 # Install package dependencies
 apt install -y \
   ros-foxy-test-msgs ros-foxy-control-msgs \
-  ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-angles
+  ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-angles \
+  v4l-utils
 
 
 # Install ros2_control (https://github.com/ros-controls/ros2_control)
@@ -141,3 +142,15 @@ rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
 colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 sudo -u vagrant echo "source /moveit2_ws/install/setup.bash" >> /home/vagrant/.bashrc
+
+# Install opencv_cam (https://github.com/clydemcqueen/opencv_cam)
+mkdir -p /opencv_cam_ws/src
+cd /opencv_cam_ws/src
+git clone https://github.com/clydemcqueen/opencv_cam.git
+git clone https://github.com/ptrmu/ros2_shared.git
+colcon build
+
+sudo -u vagrant echo "source /opencv_cam_ws/install/setup.bash" >> /home/vagrant/.bashrc
+
+# Install workspace package dependencies
+rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y

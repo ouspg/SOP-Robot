@@ -3,9 +3,12 @@
 <package format="3">
   <name>face_tracker</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="vagrant@todo.todo">vagrant</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Face tracker</description>
+  <author>Arman Mansouri</author>
+  <maintainer email="jari.jaaskela@oulu.fi">Jari Jääskelä</maintainer>
+  <license>MIT</license>
+
+  <depend>python-dlib</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
