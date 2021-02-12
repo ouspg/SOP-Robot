@@ -34,3 +34,4 @@ These are included in the newest version of the vagrantfile
 ## Potential future improvements
 
 * Use dlib correlation tracker or opencv boosting tracker to track faces across frames
+* Implement face recognition
