@@ -23,6 +23,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(dynamixel_workbench_toolbox REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(pluginlib REQUIRED)
 
 ## COMPILE
 add_library(
@@ -80,7 +81,7 @@ install(
 ament_export_include_directories(
   include
 )
-ament_export_libraries(
+ament_export_libraries( 
   ${PROJECT_NAME}
 )
 ament_export_dependencies(

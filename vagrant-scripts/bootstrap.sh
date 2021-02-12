@@ -4,9 +4,6 @@ sudo -u vagrant echo "export WORKSPACE='/workspace/'" >> /home/vagrant/.bashrc
 sudo -u vagrant echo "cd /workspace" >> /home/vagrant/.bashrc
 sudo -u vagrant echo "source /opt/ros/foxy/setup.bash" >> /home/vagrant/.bashrc
 
-# Set keyboard layout
-setxkbmap fi
-
 # Enable X11 Forwarding
 # echo "X11Forwarding yes" >> /etc/ssh/sshd_config
 # echo "export LIBGL_ALWAYS_INDIRECT=1" >> /home/vagrant/.bashrc
@@ -14,6 +11,8 @@ setxkbmap fi
 
 mkdir /workspace/
 chown -R vagrant /workspace/
+
+apt update
 
 # setup GNOME desktop
 apt-get install -y ubuntu-desktop virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
@@ -32,7 +31,7 @@ apt-get install -y ubuntu-desktop virtualbox-guest-dkms virtualbox-guest-utils v
 # sudo -u vagrant rosdep update
 
 # Install ROS2
-apt update && apt install curl gnupg2 lsb-release software-properties-common
+apt install curl gnupg2 lsb-release software-properties-common
 
 curl -s 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc' | apt-key add -
 sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
@@ -124,6 +123,8 @@ wget https://raw.githubusercontent.com/ros-controls/ros2_control/master/ros2_con
 vcs import src < ros2_control.repos
 
 colcon build
+
+source /ros2_control_ws/install/setup.bash
 sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagrant/.bashrc
 
 # Allow access to shared folders
@@ -141,6 +142,10 @@ rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
 
 colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
 
+# Note: Moveit2 hardware_interface conflicts with ros2_controller hardware_interface package, so remove it after build for now
+rm -rf /moveit2_ws/install/hardware_interface/
+
+source /moveit2_ws/install/setup.bash
 sudo -u vagrant echo "source /moveit2_ws/install/setup.bash" >> /home/vagrant/.bashrc
 
 # Install opencv_cam (https://github.com/clydemcqueen/opencv_cam)
@@ -148,9 +153,14 @@ mkdir -p /opencv_cam_ws/src
 cd /opencv_cam_ws/src
 git clone https://github.com/clydemcqueen/opencv_cam.git
 git clone https://github.com/ptrmu/ros2_shared.git
-colcon build
+cd ..
 
+rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+
+colcon build
+source /opencv_cam_ws/install/setup.bash
 sudo -u vagrant echo "source /opencv_cam_ws/install/setup.bash" >> /home/vagrant/.bashrc
 
 # Install workspace package dependencies
-rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+cd /workspace
+#rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y

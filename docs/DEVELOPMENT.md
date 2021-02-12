@@ -30,7 +30,9 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 2. Enter your guest machine IP address
 3. Select `Linux`
 4. Open the `/workspace` directory
-5. Install whatever extensions you want to use on the guest
+5. Run `git submodule update --init --recursive`
+6. Run `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y`
+6. Install whatever extensions you want to use on the guest
    1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
    2. For C++ development, install C++ extension (confirm that `includePath` is set correctly)
 
@@ -73,7 +75,7 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
    1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
    2. For C++ development, install C++ extension (confirm that `includePath` is set correctly)
 
-**Note: if the guest IP address changes, you have to update the IP address in the `~/ssh./config`**
+**Note: you may have to do recursive git clone (`git submodule update --init --recursive`) and run: `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y` after `vagrant up`, if the shared folder was not mounted correctly during `vagrant up`**
 
 ### Using GUI Apps
 
