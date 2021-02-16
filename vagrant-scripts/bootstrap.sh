@@ -143,7 +143,7 @@ rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
 colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 # Note: Moveit2 hardware_interface conflicts with ros2_controller hardware_interface package, so remove it after build for now
-rm -rf /moveit2_ws/install/hardware_interface/
+# rm -rf /moveit2_ws/install/hardware_interface/
 
 source /moveit2_ws/install/setup.bash
 sudo -u vagrant echo "source /moveit2_ws/install/setup.bash" >> /home/vagrant/.bashrc

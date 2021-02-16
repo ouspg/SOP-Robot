@@ -43,10 +43,13 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+# Use hardcoded hardware_interface path because otherwise conflicts with the moveit2 hardware_interface
+
 target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
+  /ros2_control_ws/install/hardware_interface/include/
 )
 
 ament_target_dependencies(
