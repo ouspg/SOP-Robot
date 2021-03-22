@@ -157,9 +157,13 @@ cd ..
 
 rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
 
+
+
 colcon build
 source /opencv_cam_ws/install/setup.bash
 sudo -u vagrant echo "source /opencv_cam_ws/install/setup.bash" >> /home/vagrant/.bashrc
+
+python3 -m pip installl opencv-python dlib
 
 # Install workspace package dependencies
 cd /workspace
