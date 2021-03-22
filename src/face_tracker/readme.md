@@ -27,6 +27,7 @@ To view the camera feed, run: `ros2 run rqt_image_view rqt_image_view` and selec
 
 * `Video4Linux2`
 * `dlib`
+* `opencv-python`
 * [opencv_cam](https://github.com/clydemcqueen/opencv_cam)
 
 These are included in the newest version of the vagrantfile
