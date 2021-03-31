@@ -22,6 +22,8 @@ This setups fake servo controllers and joint state publishers, and the following
 
 ## Bring-up real robot
 
+**Note moveit2 conflicts with ros2_controller, remove moveit2 workspace source commands from the .bashrc to fix this for now**
+
 ```console
 ros2 launch robot robot.launch.py
 ```
