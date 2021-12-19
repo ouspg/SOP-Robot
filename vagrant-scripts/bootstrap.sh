@@ -119,9 +119,9 @@ apt install -y \
 
 mkdir -p /ros2_control_ws/src
 cd /ros2_control_ws
-wget https://raw.githubusercontent.com/ros-controls/ros2_control/master/ros2_control/ros2_control.repos
-vcs import src < ros2_control.repos
 
+# Making custom repo file to pull foxy versions
+vcs import src < /workspace/vagrant-scripts/ros2_control_ws.repos.yml
 colcon build
 
 source /ros2_control_ws/install/setup.bash
@@ -130,34 +130,17 @@ sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagra
 # Allow access to shared folders
 adduser vagrant vboxsf
 
-# Install moveit2 (https://moveit.ros.org/install-moveit2/source/)
-#mkdir -p /moveit2_ws/src
-#cd /moveit2_ws
-#wget https://raw.githubusercontent.com/ros-planning/moveit2/main/moveit2.repos
-#vcs import src < moveit2.repos
-
-#rosdep init
-#rosdep update
-#rosdep install -r --from-paths src --ignore-src --rosdistro foxy -y
-
-#colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE_BUILD_TYPE=Release
-
-# Note: Moveit2 hardware_interface conflicts with ros2_controller hardware_interface package, so remove it after build for now
-# rm -rf /moveit2_ws/install/hardware_interface/
-
-#source /moveit2_ws/install/setup.bash
-#sudo -u vagrant echo "source /moveit2_ws/install/setup.bash" >> /home/vagrant/.bashrc
-
 # Install opencv_cam (https://github.com/clydemcqueen/opencv_cam)
+# Seems like requires foxy and no newly changed stuff
 mkdir -p /opencv_cam_ws/src
 cd /opencv_cam_ws/src
 git clone https://github.com/clydemcqueen/opencv_cam.git
 git clone https://github.com/ptrmu/ros2_shared.git
 cd ..
 
+rosdep init
+rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
-
-
 
 colcon build
 source /opencv_cam_ws/install/setup.bash

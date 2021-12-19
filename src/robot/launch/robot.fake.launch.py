@@ -91,38 +91,50 @@ def generate_launch_description():
                      output='log',
                      arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'world', 'base_link'])
 
-    # Fake joint driver (also launches controller_manager)
-    head_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'head_controller'},
-                                              controller,
-                                              os.path.join(get_package_share_directory(
-                                                  "robot"), "controllers", "start_positions.yaml"),
-                                              robot_head_description])
-    
-    jaw_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'jaw_controller'},
-                                              controller,
-                                              os.path.join(get_package_share_directory(
-                                                  "robot"), "controllers", "start_positions.yaml"),
-                                              robot_jaw_description])
+    control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_description, controller],
+        output={
+            "stdout": "screen",
+            "stderr": "screen",
+        },
+    )
 
-    eyes_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'eyes_controller'},
-                                              controller,
-                                              os.path.join(get_package_share_directory(
-                                                  "robot"), "controllers", "start_positions.yaml"),
-                                              robot_eyes_description])
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["joint_state_broadcaster"],
+        output={
+            "stdout": "screen",
+            "stderr": "screen",
+        },
+    )
 
+    joint_state_publisher_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["joint_state_publisher"],
+        output={
+            "stdout": "screen",
+            "stderr": "screen",
+        },
+    )
+
+    head_fake_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["head_controller"],
+    )
+
+# Trying to remove fake joint package WIP, based on example at https://github.com/ros-controls/ros2_control_demos/tree/foxy
+# Controller and stuff may work but stil some problem that robot does not show up
+# This error 
     return LaunchDescription([
         static_tf,
+        control_node,
         robot_state_publisher,
-
-        head_fake_joint_driver_node,
-        jaw_fake_joint_driver_node,
-        eyes_fake_joint_driver_node,
-
-        rviz_node
+        joint_state_broadcaster_spawner,
+        rviz_node,
+        head_fake_controller_spawner,
     ])
