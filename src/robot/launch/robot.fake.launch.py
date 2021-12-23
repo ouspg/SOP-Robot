@@ -4,6 +4,7 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument
 
 import xacro
 
@@ -20,6 +21,16 @@ def load_file(package_name, file_path):
 
 
 def generate_launch_description():
+
+    declared_arguments = []
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_fake_hardware",
+            default_value="false",
+            description="Start robot with fake hardware mirroring command to its states.",
+        )
+    )
+
 
     # Get URDF via xacro
     robot_description_path = os.path.join(
@@ -129,12 +140,13 @@ def generate_launch_description():
 
 # Trying to remove fake joint package WIP, based on example at https://github.com/ros-controls/ros2_control_demos/tree/foxy
 # Controller and stuff may work but stil some problem that robot does not show up
-# This error 
-    return LaunchDescription([
-        static_tf,
+# This error static_tf,
+    return LaunchDescription(declared_arguments + [
+        
         control_node,
         robot_state_publisher,
-        joint_state_broadcaster_spawner,
+        
         rviz_node,
+        joint_state_broadcaster_spawner,
         head_fake_controller_spawner,
     ])
