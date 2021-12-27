@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    #update_rate: 20  # Hz
+    update_rate: 1  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -25,14 +25,14 @@ head_controller:
   ros__parameters:
     joints:
     - head_pan_joint
-    # - head_tilt_right_joint
-    # - head_tilt_left_joint
-    # - head_tilt_vertical_joint
+    - head_tilt_right_joint
+    - head_tilt_left_joint
+    - head_tilt_vertical_joint
     write_op_modes:
     - head_pan_joint
-    # - head_tilt_right_joint
-    # - head_tilt_left_joint
-    # - head_tilt_vertical_joint
+    - head_tilt_right_joint
+    - head_tilt_left_joint
+    - head_tilt_vertical_joint
     allow_partial_joints_goal: true
     interface_name: position
 
@@ -41,6 +41,9 @@ head_controller:
       - position
     state_interfaces:
       - position
+
+    state_publish_rate: 1.0 # Defaults to 50
+    action_monitor_rate: 1.0 # Defaults to 20
 
 eyes_controller:
   ros__parameters:
@@ -52,6 +55,9 @@ eyes_controller:
     - eyes_shift_horizontal_joint
     allow_partial_joints_goal: true
     interface_name: position
+
+    state_publish_rate: 1.0 # Defaults to 50
+    action_monitor_rate: 1.0 # Defaults to 20
 
 #forward_head_controller:
 #  ros__parameters:
@@ -69,4 +75,7 @@ jaw_controller:
     write_op_modes:
     - head_jaw_joint
     interface_name: position
+
+    state_publish_rate: 1.0 # Defaults to 50
+    action_monitor_rate: 1.0 # Defaults to 20
     

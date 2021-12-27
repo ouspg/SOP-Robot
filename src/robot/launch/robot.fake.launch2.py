@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
-
+from launch.actions import RegisterEventHandler
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.event_handlers import OnProcessExit
 
 
 def generate_launch_description():
@@ -143,10 +143,39 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration("start_rviz")),
     )
 
+    # Not currently used/needed
+    delayed_rviz_node = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=spawn_jsb_controller,
+            on_exit=[rviz_node],
+        )
+    )
+
+    head_fake_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["head_controller", "-c", "/controller_manager"],
+    )
+
+    eyes_fake_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["eyes_controller", "-c", "/controller_manager"],
+    )
+
+    jaw_fake_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["jaw_controller", "-c", "/controller_manager"],
+    )
+
     nodes = [
         controller_manager_node,
         node_robot_state_publisher,
         spawn_jsb_controller,
         rviz_node,
+        head_fake_controller_spawner,
+        eyes_fake_controller_spawner,
+        jaw_fake_controller_spawner
     ]
     return LaunchDescription(declared_arguments + nodes)
