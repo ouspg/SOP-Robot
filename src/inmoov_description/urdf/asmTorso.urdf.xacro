@@ -92,9 +92,7 @@
     <xacro:chest_inertial/>
   </link>
 
-  <!--Fixing links until getting head to show
-  <joint name="waist_pan_joint" type="revolute">-->
-  <joint name="waist_pan_joint" type="fixed">
+  <joint name="waist_pan_joint" type="revolute">
    <axis xyz="0 0 1"/>
    <limit effort="1000.0" lower="${waist_pan_joint_lower}" upper="${waist_pan_joint_upper}" velocity="${waist_pan_joint_velocity}" />
    <origin rpy="0 0 0" xyz="0 0 1.152"/>
@@ -109,9 +107,7 @@
     <child link="disk_link"/>
   </joint>
 
-  <!--Fixing links until getting head to show
-  <joint name="waist_roll_joint" type="revolute">-->
-  <joint name="waist_roll_joint" type="fixed">
+  <joint name="waist_roll_joint" type="revolute">
    <axis xyz="1 0 0"/>
    <limit effort="1000.0" lower="${waist_roll_joint_lower}" upper="${waist_roll_joint_upper}" velocity="${waist_roll_joint_velocity}" />
    <origin rpy="0 0 0" xyz="0 0 0.11"/>

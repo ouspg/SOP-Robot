@@ -89,9 +89,8 @@
   </joint>
 
   <xacro:torso covers="yes" />
-<!-- Test what happens when fixing also this joint to create joint chain
-  <joint name="head_roll_joint" type="revolute">-->
-  <joint name="head_roll_joint" type="fixed">
+
+  <joint name="head_roll_joint" type="revolute">
    <axis xyz="1 0 0"/>
    <limit effort="1000.0" lower="${head_roll_joint_lower}" upper="${head_roll_joint_upper}" velocity="${head_roll_joint_velocity}" />
    <origin rpy="0 0 3.1415" xyz="-0.0315  -0.001 0.4551"/>
@@ -100,9 +99,7 @@
   </joint>
 
 
-  <!-- Test what happens when fixing joint
-    <joint name="head_tilt_joint" type="revolute">-->
-  <joint name="head_tilt_joint" type="fixed">
+  <joint name="head_tilt_joint" type="revolute">
    <axis xyz="0 1 0"/>
    <limit effort="1000.0" lower="${head_tilt_joint_lower}" upper="${head_tilt_joint_upper}" velocity="${head_tilt_joint_velocity}" />
    <origin rpy="0 0 3.1415" xyz="0 0 0"/>
