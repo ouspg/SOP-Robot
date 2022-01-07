@@ -1,12 +1,9 @@
 
 **Note: Remember to `colcon build` and `source setup/install.bash` first.**
 
-The fake robot can be visualized using rviz.
-See [RVIZ](RVIZ.md) for how to do that.
-
 ## Bring-up fake (simulated) robot
 
-Run the following in a GUI environment:
+The fake robot can be visualized using rviz. Run the following in a GUI environment:
 
 ```console
 ros2 launch robot robot.fake.launch.py
@@ -72,15 +69,15 @@ vagrant@vagrant-ros:/workspace$ ros2 topic list
 /joint_states
 ```
 
-For instance, If the joint `head_pan_joint` was configured correctly, it should move to position `0.5`
-when publishing the following action:
+For instance, if the joint `head_pan_joint` was configured correctly, it should move to position `0.5`
+when publishing the following action (you are required to send positions for all joints):
 
 ```console
 ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
   trajectory: {
-    joint_names: [head_pan_joint],
+    joint_names: [head_pan_joint, head_tilt_right_joint, head_tilt_left_joint, head_tilt_vertical_joint],
     points: [
-      { positions: [0.5], time_from_start: { sec: 1, nanosec: 0 } }
+      { positions: [0.5, 0.0, 0.0, 0.1], time_from_start: { sec: 1, nanosec: 0 } }
     ]
   }
 }"

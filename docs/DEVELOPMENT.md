@@ -18,25 +18,7 @@ every development session.
 
 At the end of the project, create light documentation for your ROS package in english (document code, what dependencies it requires, how it should be used, how it integrates with ROS and does it require more development to be usable) in markdown.
 
-## Environment setup (prebuilt image)
-
-Download the VM image: https://a3s.fi/swift/v1/AUTH_93541f99b83448a3b7cbbeb3c8057d90/sop-kurssi/SOP-Robot.7z
-
-Import the image to VirtualBox and setup shared folders: create shared folder that maps to `/workspace`.
-
-Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup the remote development on your host machine and the instructions below to setup the remote connection to your vagrant guest machine:
-
-1. Open `Remote-SSH: Connect to Host` in VSCode
-2. Enter your guest machine IP address
-3. Select `Linux`
-4. Open the `/workspace` directory
-5. Run `git submodule update --init --recursive`
-6. Run `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y`
-6. Install whatever extensions you want to use on the guest
-   1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
-   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly)
-
-## Environment setup (vagrant)
+## Environment setup with vagrant
 
 Install [Vagrant](https://www.vagrantup.com/)
 
@@ -55,7 +37,7 @@ Now test that the provision succeeded, so `vagrant ssh` into the guest and run `
 
 ```console
 PS C:\projects\SOP-Robot> vagrant ssh
-vagrant@ubuntu2004:/workspace$ ls
+vagrant@vagrant-ros:/workspace$ ls
 2  config  docs  img  launch  Makefile  README.md  scripts  sop-robot.code-workspace  src  vagrant  Vagrantfile  vagrant-scripts
 ```
 
