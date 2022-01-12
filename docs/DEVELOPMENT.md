@@ -9,6 +9,8 @@
 
 **Note: if you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
 
+**Note: after creatgin the machine, you will have to enable the USB controller in VM settings manually**
+
 If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
 
 [Fork](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo) this repository and do your development there.
@@ -61,7 +63,9 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 
 ### Using GUI Apps
 
-When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`.
+When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. 
+
+**Note: if your VM GUI freezes on resize, try changing the virtual machine graphics controller in the VirtualBox settings to VMSVGA**
 
 ## Create ROS package
 
