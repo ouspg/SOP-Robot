@@ -1,5 +1,5 @@
 
-**Note: Remember to `colcon build` and `source setup/install.bash` first.**
+**Note: Remember to `colcon build` and `source install/setup.bash` first.**
 
 ## Bring-up fake (simulated) robot
 
