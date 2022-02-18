@@ -62,6 +62,7 @@ class FaceTracker(Node):
         )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 10)
         self.face_publisher = self.create_publisher(Faces, face_topic, 10)
+        self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 10)
 
     def on_frame_received(self, img: Image):
         try:
@@ -106,6 +107,13 @@ class FaceTracker(Node):
                     msg_face.landmarks.append(Point2(x=landmarks.part(n).x, y=landmarks.part(n).y))
 
                 msg_faces.append(msg_face)
+
+            if len(msg_faces) > 0:
+                # Calculate midpoint of one face
+                midpoint = Point2(x=round((msg_faces[0].top_left.x + msg_faces[0].bottom_right.x) / 2),
+                                  y=round((msg_faces[0].top_left.y + msg_faces[0].bottom_right.y) / 2))
+                # Publish face midpoint location
+                self.face_location_publisher.publish(midpoint)
 
             # Publish image that has rectangles around the detected faces
             self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
