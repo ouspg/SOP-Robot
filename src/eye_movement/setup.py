@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'eye_movement = eye_movement.eye_movement:main'
+            'eye_movement_node = eye_movement.eye_movement_node:main'
         ],
     },
 )
