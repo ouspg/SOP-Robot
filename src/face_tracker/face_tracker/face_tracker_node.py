@@ -64,6 +64,11 @@ class FaceTracker(Node):
         self.face_publisher = self.create_publisher(Faces, face_topic, 10)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 10)
 
+        timer_period = 0.5    # Face publish interval in seconds
+        self.face_location = None  # Variable for face location
+        # Call publish_face_location every timer_period seconds
+        self.timer = self.create_timer(timer_period, self.publish_face_location)
+
     def on_frame_received(self, img: Image):
         try:
             # Convert ros img to opencv compatible format
@@ -110,10 +115,8 @@ class FaceTracker(Node):
 
             if len(msg_faces) > 0:
                 # Calculate midpoint of one face
-                midpoint = Point2(x=round((msg_faces[0].top_left.x + msg_faces[0].bottom_right.x) / 2),
-                                  y=round((msg_faces[0].top_left.y + msg_faces[0].bottom_right.y) / 2))
-                # Publish face midpoint location
-                self.face_location_publisher.publish(midpoint)
+                self.face_location = Point2(x=round((msg_faces[0].top_left.x + msg_faces[0].bottom_right.x) / 2),
+                                           y=round((msg_faces[0].top_left.y + msg_faces[0].bottom_right.y) / 2))
 
             # Publish image that has rectangles around the detected faces
             self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
@@ -123,6 +126,13 @@ class FaceTracker(Node):
         except Exception as e:
             self.get_logger().error(e)
 
+    def publish_face_location(self):
+        # Check that there is a location to publish
+        if self.face_location:
+            # Publish face location
+            self.face_location_publisher.publish(self.face_location)
+            # Set location back to None to prevent publishing same location multiple times
+            self.face_location = None
 
 def main(args=None):
     # Initialize
