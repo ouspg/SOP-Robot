@@ -13,7 +13,7 @@ class EyeMoverClient(Node):
     def __init__(self):
         super().__init__('eye_mover_client')
         self._action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
-        self.subscription = self.create_subscription(Point2, 'face_location_topic', self.listener_callback, 10)
+        self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 10)
 
     def listener_callback(self, msg):
         self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
