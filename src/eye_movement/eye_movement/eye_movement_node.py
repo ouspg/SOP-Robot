@@ -20,32 +20,44 @@ class EyeMoverClient(Node):
     def listener_callback(self, msg):
         self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         #moving the eyes based on the face location
+        #thresh holds for vertical +- 0.15, horizontal +- 0.5
         if (msg.x < 200) and (msg.y < 130):
-            self.eye_location_x += 0.05
-            self.eye_location_y -= 0.05
+            if (self.eye_location_x <= 0.45):
+                self.eye_location_x += 0.05
+            if (self.eye_location_y >= -0.10):
+                self.eye_location_y -= 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x > 200 and msg.x < 400) and (msg.y < 130):
-            self.eye_location_y -= 0.05
+            if (self.eye_location_y >= -0.10):
+                self.eye_location_y -= 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x > 400) and (msg.y < 130):
-            self.eye_location_x -= 0.05
+            if (self.eye_location_x >= -0.45):
+                self.eye_location_x -= 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x < 200) and (msg.y > 130 and msg.y < 260):
-            self.eye_location_x += 0.05
+            if (self.eye_location_x <= 0.45):
+                self.eye_location_x += 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x > 400) and (msg.y > 130 and msg.y < 260):
-            self.eye_location_x -= 0.05
+            if (self.eye_location_x >= -0.45):
+                self.eye_location_x -= 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x < 200) and (msg.y > 260):
-            self.eye_location_x += 0.05
-            self.eye_location_y += 0.05
+            if (self.eye_location_x <= 0.45):
+                self.eye_location_x += 0.05
+            if (self.eye_location_y <= 0.10):
+                self.eye_location_y += 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x > 200 and msg.x < 400) and (msg.y > 260):
-            self.eye_location_y += 0.05
+            if (self.eye_location_y <= 0.10):
+                self.eye_location_y += 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
         elif (msg.x > 400) and (msg.y > 260):
-            self.eye_location_x -= 0.05
-            self.eye_location_y += 0.05
+            if (self.eye_location_x >= -0.45):
+                self.eye_location_x -= 0.05
+            if (self.eye_location_y <= 0.10):
+                self.eye_location_y += 0.05
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
     def send_goal(self, vertical, horizontal):
         goal_msg = FollowJointTrajectory.Goal()
@@ -65,7 +77,7 @@ def main():
 
     action_client = EyeMoverClient(0.0, 0.0)
     
-    action_client.send_goal(action_client.eye_location_x, action_client.eye_location_y)
+    action_client.send_goal(EyeMoverClient.eye_location_y, EyeMoverClient.eye_location_x)
 
     rclpy.spin(action_client)
 
