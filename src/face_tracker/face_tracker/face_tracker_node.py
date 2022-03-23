@@ -2,6 +2,8 @@ import rclpy
 import cv2
 import dlib
 import os
+import numpy as np
+import dlib
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -69,62 +71,96 @@ class FaceTracker(Node):
         # Call publish_face_location every timer_period seconds
         self.timer = self.create_timer(timer_period, self.publish_face_location)
 
+        self.first_face_detected = False
+
+        self.trackers = []
+
     def on_frame_received(self, img: Image):
         try:
             # Convert ros img to opencv compatible format
             cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
             cv2_gray_img = bridge.imgmsg_to_cv2(img, "mono8")
 
-            # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
-            # Todo: use dlib correlation_tracker to track the same face across frames?
-            faces = self.face_detector(cv2_gray_img)
 
-            msg_faces = []
+            if not self.first_face_detected:
+                # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
+                # Todo: use dlib correlation_tracker to track the same face across frames?
+                faces = self.face_detector(cv2_gray_img)
 
-            for face in faces:
-                (x1, y1, x2, y2) = (
-                    face.left(),
-                    face.top(),
-                    face.right(),
-                    face.bottom(),
-                )
+                msg_faces = []
 
+                for face in faces:
+                    (x1, y1, x2, y2) = (
+                        face.left(),
+                        face.top(),
+                        face.right(),
+                        face.bottom(),
+                        )
+
+                    green = (0, 255, 0)
+
+
+                    # Draw rectangle around the face
+                    cv2.rectangle(cv2_bgr_img, (x1, y1), (x2, y2), green, 1)
+
+                    #initialize tracker
+                    tracker = dlib.correlation_tracker()
+                    #start track on face detected on first frame
+                    rect = dlib.rectangle(x1, y1, x2, y2)
+                    tracker.start_track(cv2_gray_img, rect)
+                    self.trackers.append(tracker)
+                    msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
+
+
+
+                    msg_faces.append(msg_face)
+
+                if len(msg_faces) > 0:
+                        # Calculate midpoint of one face
+                        self.face_location = Point2(x=round((msg_faces[0].top_left.x + msg_faces[0].bottom_right.x) / 2),
+                        y=round((msg_faces[0].top_left.y + msg_faces[0].bottom_right.y) / 2))
+                        self.first_face_detected = True
+
+                # Publish image that has rectangles around the detected faces
+                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
+                self.face_publisher.publish(Faces(faces=msg_faces))
+
+            #if first face is detected
+            else:
                 green = (0, 255, 0)
-                red = (0, 0, 255)
+                for tracker in self.trackers:
+                    tracker.update(cv2_bgr_img)
+                    pos = tracker.get_position()
 
-                # Draw rectangle around the face
-                cv2.rectangle(cv2_bgr_img, (x1, y1), (x2, y2), green, 1)
+                    #unpack the positions
 
+                    x1 = int(pos.left())
+                    y1 = int(pos.top())
+                    x2 = int(pos.right())
+                    y2 = int(pos.bottom())
 
-                msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
+                    msg_faces = []
 
-                # Draw face landmarks on the image as circles
-                # Based on https://towardsdatascience.com/detecting-face-features-with-python-30385aee4a8e
-                landmarks = self.predictor(image=cv2_gray_img, box=face)
-                for n in range(0, 68):
-                    center = (landmarks.part(n).x, landmarks.part(n).y)
+                    
 
-                    # Draw filled circle
-                    cv2.circle(
-                        cv2_bgr_img, center=center, radius=1, thickness=-1, color=red
-                    )
+                    msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
+                    msg_faces.append(msg_face)
+                    #draw bounding box
+                    cv2.rectangle(cv2_bgr_img, (x1, y1), (x2, y2), green, 1)
 
-                    msg_face.landmarks.append(Point2(x=landmarks.part(n).x, y=landmarks.part(n).y))
-
-                msg_faces.append(msg_face)
-
-            if len(msg_faces) > 0:
-                # Calculate midpoint of one face
-                self.face_location = Point2(x=round((msg_faces[0].top_left.x + msg_faces[0].bottom_right.x) / 2),
-                                           y=round((msg_faces[0].top_left.y + msg_faces[0].bottom_right.y) / 2))
-
-            # Publish image that has rectangles around the detected faces
-            self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
-            self.face_publisher.publish(Faces(faces=msg_faces))
+                if len(msg_faces) > 0:
+                        # Calculate midpoint of one face
+                        self.face_location = Point2(x=round((msg_faces[0].top_left.x + msg_faces[0].bottom_right.x) / 2),
+                        y=round((msg_faces[0].top_left.y + msg_faces[0].bottom_right.y) / 2))
+                
+                # Publish image that has rectangles around the detected faces
+                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
+                self.face_publisher.publish(Faces(faces=msg_faces))
         except CvBridgeError as e:
             self.get_logger().warn("Could not convert ros img to opencv image: ", e)
         except Exception as e:
             self.get_logger().error(e)
+
 
     def publish_face_location(self):
         # Check that there is a location to publish
