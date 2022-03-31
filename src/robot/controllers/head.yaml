@@ -1,7 +1,7 @@
 controller_manager:
   ros__parameters:
     # Can be bigger, should not break anything
-    update_rate: 1  # Hz
+    update_rate: 10  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -112,8 +112,8 @@ eyes_controller:
     state_interfaces:
       - position
 
-    state_publish_rate: 1.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
+    state_publish_rate: 10.0 # Defaults to 50
+    action_monitor_rate: 10.0 # Defaults to 20
 
 jaw_controller:
   ros__parameters:

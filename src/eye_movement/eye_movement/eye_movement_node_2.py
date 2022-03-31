@@ -10,36 +10,15 @@ from face_tracker_msgs.msg import Point2
 
 class EyeMoverClient(Node):
 
-    def __init__(self):
+    def __init__(self, eye_location_x = 0.0, eye_location_y = 0.0):
         super().__init__('eye_mover_client')
         self._action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
-        self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 10)
-        # Eyes initialized to middle point of image view
-        self.eye_location_x = 0
-        self.eye_location_y = 0
-        self.last_x = 325
-        self.last_y = 250
-        # self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.demo_listener_callback, 10)
+        # self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 10)
+        self.eye_location_x = eye_location_x
+        self.eye_location_y = eye_location_y
+        self.eye_location = 5
+        self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.demo_listener_callback, 10)
 
-    def listener_callback(self, msg):
-        self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
-        # Calculate face movement
-        x_diff = self.last_x - msg.x
-        y_diff = self.last_y - msg.y
-        self.last_x = msg.x
-        self.last_y = msg.y
-        # Transform face movement to eye movement
-        # Vertical eye movement
-        v_coeff = -0.001
-        self.eye_location_y += y_diff * v_coeff
-        # Horizontal eye movement
-        h_coeff = -0.001538
-        self.eye_location_x += x_diff * h_coeff
-        # Move eyes
-        self.send_goal(self.eye_location_y, self.eye_location_x)
-        self.get_logger().info('eye location x: %f, eye location y: %f' % (self.eye_location_x, self.eye_location_y))
-
-    '''
     def listener_callback(self, msg):
         self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         #moving the eyes based on the face location
@@ -84,95 +63,151 @@ class EyeMoverClient(Node):
             EyeMoverClient.send_goal(self, self.eye_location_x, self.eye_location_y)
 
     def demo_listener_callback(self, msg):
+        self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         #eye location is split in 9 positions:
         #1,2,3
         #4,5,6
         #7,8,9
+        # Face in rectangle 1
         if (msg.x < 200) and (msg.y < 130):
             if self.eye_location in [2, 4, 5]:
-                EyeMoverClient.send_goal(self, -0.25, 0.5)
+                self.send_goal(-0.25, 0.5)
                 self.eye_location = 1
             elif self.eye_location in [3, 6]:
-                EyeMoverClient.send_goal(self, -0.25, 0)
+                self.send_goal(-0.25, 0)
                 self.eye_location = 2
             elif self.eye_location in [7, 8]:
-                EyeMoverClient.send_goal(self, 0, 0.5)
+                self.send_goal(0, 0.5)
                 self.eye_location = 4
             elif self.eye_location == 9:
-                EyeMoverClient.send_goal(self, 0, 0)
+                self.send_goal(0, 0)
                 self.eye_location = 5
+        # Face in rectangle 2
         elif (msg.x > 200 and msg.x < 400) and (msg.y < 130):
-            if self.eye_location in [1, 3, 4, 5, 6]:
-                EyeMoverClient.send_goal(self, -0.25, 0)
+            if self.eye_location == 4:
+                self.send_goal(-0.25, 0.5)
+                self.eye_location = 1
+            elif self.eye_location == 5:
+                self.send_goal(-0.25, 0)
                 self.eye_location = 2
-            elif self.eye_location in [7, 8, 9]:
-                EyeMoverClient.send_goal(self, 0, 0)
+            elif self.eye_location == 6:
+                self.send_goal(-0.25, -0.5)
+                self.eye_location = 3
+            elif self.eye_location == 7:
+                self.send_goal(0, 0.5)
+                self.eye_location = 4
+            elif self.eye_location == 8:
+                self.send_goal(0, 0)
                 self.eye_location = 5
+            elif self.eye_location == 9:
+                self.send_goal(0, -0.5)
+                self.eye_location = 6
+        # Face in rectangle 3
         elif (msg.x > 400) and (msg.y < 130):
             if self.eye_location in [2, 5, 6]:
-                EyeMoverClient.send_goal(self, -0.25, -0.5)
+                self.send_goal(-0.25, -0.5)
                 self.eye_location = 3
             elif self.eye_location in [1, 4]:
-                EyeMoverClient.send_goal(self, -0.25, 0)
+                self.send_goal(-0.25, 0)
                 self.eye_location = 2
             elif self.eye_location in [8, 9]:
-                EyeMoverClient.send_goal(self, 0, -0.5)
+                self.send_goal(0, -0.5)
                 self.eye_location = 6
             elif self.eye_location == 7:
-                EyeMoverClient.send_goal(self, 0, 0)
+                self.send_goal(0, 0)
                 self.eye_location = 5
+        # Face in rectangle 4
         elif (msg.x < 200) and (msg.y > 130 and msg.y < 260):
-            if self.eye_location in [1, 2, 5, 7, 8]:
-                EyeMoverClient.send_goal(self, 0, 0.5)
+            if self.eye_location == 2:
+                self.send_goal(-0.25, 0.5)
+                self.eye_location = 1
+            elif self.eye_location == 3:
+                self.send_goal(-0.25, 0)
+                self.eye_location = 2
+            elif self.eye_location == 5:
+                self.send_goal(0, 0.5)
                 self.eye_location = 4
-            elif self.eye_location in [3, 6, 9]:
-                EyeMoverClient.send_goal(self, 0, 0)
+            elif self.eye_location == 6:
+                self.send_goal(0, 0)
                 self.eye_location = 5
+            elif self.eye_location == 8:
+                self.send_goal(0.25, 0.5)
+                self.eye_location = 7
+            elif self.eye_location == 9:
+                self.send_goal(0.25, 0)
+                self.eye_location = 8
+        # Face in rectangle 6
         elif (msg.x > 400) and (msg.y > 130 and msg.y < 260):
-            if self.eye_location in [2, 3, 5, 8, 9]:
-                EyeMoverClient.send_goal(self, 0, -0.5)
-                self.eye_location = 6
-            elif self.eye_location in [1, 4, 7]:
-                EyeMoverClient.send_goal(self, 0, 0)
+            if self.eye_location == 1:
+                self.send_goal(-0.25, 0)
+                self.eye_location = 2
+            elif self.eye_location == 2:
+                self.send_goal(-0.25, -0.5)
+                self.eye_location = 3
+            elif self.eye_location == 4:
+                self.send_goal(0, 0)
                 self.eye_location = 5
+            elif self.eye_location == 5:
+                self.send_goal(0, -0.5)
+                self.eye_location = 6
+            elif self.eye_location == 7:
+                self.send_goal(0.25, 0)
+                self.eye_location = 8
+            elif self.eye_location == 8:
+                self.send_goal(0.25, -0.5)
+                self.eye_location = 9
+        # Face in rectangle 7
         elif (msg.x < 200) and (msg.y > 260):
             if self.eye_location in [4, 5, 8]:
-                EyeMoverClient.send_goal(self, 0.25, 0.5)
+                self.send_goal(0.25, 0.5)
                 self.eye_location = 7
             elif self.eye_location in [1, 2]:
-                EyeMoverClient.send_goal(self, 0, 0.5)
+                self.send_goal(0, 0.5)
                 self.eye_location = 4
             elif self.eye_location in [6, 9]:
-                EyeMoverClient.send_goal(self, 0, 0.25)
+                self.send_goal(0, 0.25)
                 self.eye_location = 8
             elif self.eye_location == 3:
-                EyeMoverClient.send_goal(self, 0, 0)
+                self.send_goal(0, 0)
                 self.eye_location = 5
+        # Face in rectangle 8
         elif (msg.x > 200 and msg.x < 400) and (msg.y > 260):
-            if self.eye_location in [4, 5, 6, 7, 9]:
-                EyeMoverClient.send_goal(self, 0.25, 0)
-                self.eye_location = 8
-            elif self.eye_location in [1, 2, 3]:
-                EyeMoverClient.send_goal(self, 0, 0)
+            if self.eye_location == 1:
+                self.send_goal(0, 0.5)
+                self.eye_location = 4
+            elif self.eye_location == 2:
+                self.send_goal(0, 0)
                 self.eye_location = 5
+            elif self.eye_location == 3:
+                self.send_goal(0, -0.5)
+                self.eye_location = 6
+            elif self.eye_location == 4:
+                self.send_goal(0.25, 0.5)
+                self.eye_location = 7
+            elif self.eye_location == 5:
+                self.send_goal(0, 0.25)
+                self.eye_location = 8
+            elif self.eye_location == 6:
+                self.send_goal(0.25, -0.5)
+                self.eye_location = 9
+        # Face in rectangle 9
         elif (msg.x > 400) and (msg.y > 260):
             if self.eye_location in [5, 6, 8]:
-                EyeMoverClient.send_goal(self, 0.25, -0.5)
+                self.send_goal(0.25, -0.5)
                 self.eye_location = 9
             elif self.eye_location in [2, 3]:
-                EyeMoverClient.send_goal(self, 0, -0.5)
+                self.send_goal(0, -0.5)
                 self.eye_location = 6
             elif self.eye_location in [4, 7]:
-                EyeMoverClient.send_goal(self, 0.25, 0)
+                self.send_goal(0.25, 0)
                 self.eye_location = 8
             elif self.eye_location == 1:
-                EyeMoverClient.send_goal(self, 0, 0)
+                self.send_goal(0, 0)
                 self.eye_location = 5
-        '''
 
     def send_goal(self, vertical, horizontal):
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=0, nanosec=200000000))
+        trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=1, nanosec=0))
         goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_vertical_joint', 'eyes_shift_horizontal_joint'],
                                               points=[trajectory_points])
 
@@ -186,7 +221,7 @@ def main():
 
     rclpy.init()
 
-    action_client = EyeMoverClient()
+    action_client = EyeMoverClient(0.0, 0.0)
 
     #action_client.send_goal(EyeMoverClient.eye_location_y, EyeMoverClient.eye_location_x)
     action_client.send_goal(0, 0)
