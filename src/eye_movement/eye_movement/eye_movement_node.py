@@ -33,7 +33,7 @@ class EyeMoverClient(Node):
         v_coeff = -0.001
         self.eye_location_y += y_diff * v_coeff
         # Horizontal eye movement
-        h_coeff = -0.001538
+        h_coeff = 0.001538
         self.eye_location_x += x_diff * h_coeff
         # Move eyes
         self.send_goal(self.eye_location_y, self.eye_location_x)
@@ -188,7 +188,6 @@ def main():
 
     action_client = EyeMoverClient()
 
-    #action_client.send_goal(EyeMoverClient.eye_location_y, EyeMoverClient.eye_location_x)
     action_client.send_goal(0, 0)
     rclpy.spin(action_client)
 
