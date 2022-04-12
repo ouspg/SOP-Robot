@@ -8,6 +8,11 @@
   <maintainer email="jari.jaaskela@oulu.fi">Jari Jääskelä</maintainer>
   <license>MIT</license>
 
+  <depend>python3-keras</depend>
+  <depend>python-argparse</depend>
+  <depend>python3-sklearn</depend>
+  <depend>python-numpy</depend>
+  <depend>python3-progressbar</depend>
   <depend>python-dlib</depend>
 
   <test_depend>ament_copyright</test_depend>

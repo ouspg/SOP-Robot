@@ -27,6 +27,7 @@ def generate_launch_description():
                 "image_topic": "/image_raw",
                 "face_image_topic": "image_face",
                 "face_topic": "faces",
+                "lip_movement_detector": "1_32_False_True_0.25_lip_motion_net_model.h5",
             }
         ],
     )
