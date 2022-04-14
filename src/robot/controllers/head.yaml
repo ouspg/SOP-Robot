@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    #update_rate: 20  # Hz
+    update_rate: 20  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -15,8 +15,8 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
 
     # Joint state controller deprecated (I think so...)
-    #joint_state_controller:
-    #  type: joint_state_controller/JointStateController
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -25,14 +25,14 @@ head_controller:
   ros__parameters:
     joints:
     - head_pan_joint
-    # - head_tilt_right_joint
-    # - head_tilt_left_joint
-    # - head_tilt_vertical_joint
+    - head_tilt_right_joint
+    - head_tilt_left_joint
+    - head_tilt_vertical_joint
     write_op_modes:
     - head_pan_joint
-    # - head_tilt_right_joint
-    # - head_tilt_left_joint
-    # - head_tilt_vertical_joint
+    - head_tilt_right_joint
+    - head_tilt_left_joint
+    - head_tilt_vertical_joint
     allow_partial_joints_goal: true
     interface_name: position
 

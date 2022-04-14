@@ -10,9 +10,9 @@ def generate_launch_description():
     camera_node = Node(
         package="opencv_cam",
         executable="opencv_cam_main",
-        arguments=[
+        parameters=[
             {
-                "index": 0,
+		"index": 0,
             }
         ],
     )
