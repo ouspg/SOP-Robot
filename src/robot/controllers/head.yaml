@@ -1,7 +1,6 @@
 controller_manager:
   ros__parameters:
-    # Can be bigger, should not break anything
-    update_rate: 10  # Hz
+    update_rate: 20  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -15,61 +14,12 @@ controller_manager:
     jaw_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    # Joint state controller deprecated (I think so...)
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-
-# Set joint state broadcaster to push zero joint states to all other than movable joints
-joint_state_broadcaster:
-  ros__parameters:
-    extra_joints:
-    - head_roll_joint
-    - head_tilt_joint
-    - waist_pan_joint
-    - waist_roll_joint
-    - r_shoulder_lift_joint
-    - r_upper_arm_roll_joint
-    - r_elbow_flex_joint
-    - r_shoulder_out_joint
-    - r_thumb1_joint
-    - r_thumb_joint
-    - r_thumb3_joint
-    - r_index1_joint
-    - r_index_joint
-    - r_index3_joint
-    - r_middle1_joint
-    - r_middle_joint
-    - r_middle3_joint
-    - r_ring1_joint
-    - r_ring_joint
-    - r_ring3_joint
-    - r_ring4_joint
-    - r_pinky1_joint
-    - r_pinky_joint
-    - r_pinky3_joint
-    - r_pinky4_joint
-    - r_wrist_roll_joint
-    - l_shoulder_lift_joint
-    - l_upper_arm_roll_joint
-    - l_elbow_flex_joint
-    - l_shoulder_out_joint
-    - l_thumb1_joint
-    - l_thumb_joint
-    - l_thumb3_joint
-    - l_index1_joint
-    - l_index_joint
-    - l_index3_joint
-    - l_middle1_joint
-    - l_middle_joint
-    - l_middle3_joint
-    - l_ring1_joint
-    - l_ring_joint
-    - l_ring3_joint
-    - l_ring4_joint
-    - l_pinky1_joint
-    - l_pinky_joint
-    - l_pinky3_joint
-    - l_pinky4_joint
-    - l_wrist_roll_joint
 
 head_controller:
   ros__parameters:
@@ -86,15 +36,11 @@ head_controller:
     allow_partial_joints_goal: true
     interface_name: position
 
-    # Seems like this settings is required by jointtrajectory controller type
+    # Complains if these not added, not sure why
     command_interfaces:
       - position
     state_interfaces:
       - position
-
-    # Now only 1hz rate, can be changed to bigger
-    state_publish_rate: 1.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
 
 eyes_controller:
   ros__parameters:
@@ -106,14 +52,23 @@ eyes_controller:
     - eyes_shift_horizontal_joint
     allow_partial_joints_goal: true
     interface_name: position
-
+    
     command_interfaces:
       - position
     state_interfaces:
       - position
+      
+    state_publish_rate: 20.0 # Defaults to 50
+    action_monitor_rate: 20.0 # Defaults to 20
 
-    state_publish_rate: 10.0 # Defaults to 50
-    action_monitor_rate: 10.0 # Defaults to 20
+#forward_head_controller:
+#  ros__parameters:
+#    joints:
+#    - head_pan_joint
+#    - head_tilt_right_joint
+#    - head_tilt_left_joint
+#    - head_tilt_vertical_joint
+#    interface_name: position
 
 jaw_controller:
   ros__parameters:
@@ -122,12 +77,4 @@ jaw_controller:
     write_op_modes:
     - head_jaw_joint
     interface_name: position
-
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-
-    state_publish_rate: 1.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
     

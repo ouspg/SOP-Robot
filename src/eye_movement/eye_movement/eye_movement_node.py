@@ -15,10 +15,10 @@ class EyeMoverClient(Node):
         self._action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
         self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 10)
         # Eyes initialized to middle point of image view
-        self.eye_location_x = 0
-        self.eye_location_y = 0
-        self.last_x = 325
-        self.last_y = 250
+        self.eye_location_x = -1.0
+        self.eye_location_y = -0.25
+        self.last_x = 640
+        self.last_y = 360
         # self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.demo_listener_callback, 10)
 
     def listener_callback(self, msg):
@@ -30,10 +30,10 @@ class EyeMoverClient(Node):
         self.last_y = msg.y
         # Transform face movement to eye movement
         # Vertical eye movement
-        v_coeff = -0.001
+        v_coeff = -0.00125
         self.eye_location_y += y_diff * v_coeff
         # Horizontal eye movement
-        h_coeff = 0.001538
+        h_coeff = 0.001563
         self.eye_location_x += x_diff * h_coeff
         # Move eyes
         self.send_goal(self.eye_location_y, self.eye_location_x)
@@ -172,7 +172,7 @@ class EyeMoverClient(Node):
 
     def send_goal(self, vertical, horizontal):
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=0, nanosec=200000000))
+        trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=0, nanosec=0))
         goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_vertical_joint', 'eyes_shift_horizontal_joint'],
                                               points=[trajectory_points])
 
