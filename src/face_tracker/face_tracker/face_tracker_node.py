@@ -14,14 +14,14 @@ from face_tracker_msgs.msg import Faces, Face, Point2
 
 from cv_bridge import CvBridge, CvBridgeError
 
-#from .lip_movement_net import LipMovementDetector
+from .lip_movement_net import LipMovementDetector
 
 bridge = CvBridge()
 
 class FaceTracker(Node):
     def __init__(self, lip_movement_detection=True):
         super().__init__("face_tracker")
-        #self.lip_movement_detection = lip_movement_detection
+        self.lip_movement_detection = lip_movement_detection
 
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
@@ -56,13 +56,13 @@ class FaceTracker(Node):
                 predictor,
             )
         )
-        """ if self.lip_movement_detection:
+        if self.lip_movement_detection:
             lip_movement_detector = (
                 self.declare_parameter("lip_movement_detector", "1_32_False_True_0.25_lip_motion_net_model.h5")
                 .get_parameter_value()
                 .string_value
             )
-            Initialize lip movement detector
+           # Initialize lip movement detector
             self.get_logger().info('Initializing lip movement detector...')
             self.lip_movement_detector = LipMovementDetector(
                 os.path.join(
@@ -74,7 +74,7 @@ class FaceTracker(Node):
             )
             self.get_logger().info('Lip movement detector initialized.')
         else:
-            self.get_logger().info('Lip movement detection disabled.') """
+            self.get_logger().info('Lip movement detection disabled.')
 
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
@@ -117,10 +117,10 @@ class FaceTracker(Node):
                 faces = self.face_detector(cv2_gray_img)
 
                 # Initialize new input sequences for lip movement detector if the number of detected faces change
-                """ if self.lip_movement_detection:
+                if self.lip_movement_detection:
                     if len(faces) != len(self.speaking_states):
                         self.speaking_states = []
-                        self.lip_movement_detector.initialize_input_sequence(len(faces)) """
+                        self.lip_movement_detector.initialize_input_sequence(len(faces))
 
                 for i, face in enumerate(faces):
                     (x1, y1, x2, y2) = (
@@ -142,7 +142,7 @@ class FaceTracker(Node):
                     tracker.start_track(cv2_gray_img, rect)
                     self.trackers.append(tracker)
 
-                    """ if self.lip_movement_detection:
+                    if self.lip_movement_detection:
                         # Determine if the face is speaking or silent
                         state = self.lip_movement_detector.test_video_frame(cv2_gray_img, rect, i)
                         try:
@@ -150,7 +150,7 @@ class FaceTracker(Node):
                         except IndexError:
                             self.speaking_states.append(state)
                         # Write the speaking/silent state below the face's bounding box
-                        cv2.putText(cv2_bgr_img, state, (x1 + 2, y2 + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA) """
+                        cv2.putText(cv2_bgr_img, state, (x1 + 2, y2 + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
 
                     msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
                     msg_faces.append(msg_face)
@@ -168,15 +168,14 @@ class FaceTracker(Node):
                     y2 = int(pos.bottom())
 
                     rect = dlib.rectangle(x1, y1, x2, y2)
-                    """
-                        if self.lip_movement_detection:
+
+                    if self.lip_movement_detection:
                         # Determine if the face is speaking or silent
                         state = self.lip_movement_detector.test_video_frame(cv2_gray_img, rect, i)
                         self.speaking_states[i] = state
                         # Write the speaking/silent state below the face's bounding box
                         cv2.putText(cv2_bgr_img, state, (x1 + 2, y2 + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
 
-                    """
                     msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
                     msg_faces.append(msg_face)
                     #draw bounding box
@@ -184,9 +183,8 @@ class FaceTracker(Node):
 
             if len(msg_faces) > 0:
                 face_sizes = []
-                if 0 == 1:
-                    pass
-                    """ if self.lip_movement_detection:
+
+                if self.lip_movement_detection:
                     # Get indices of speaking faces
                     speaking_idx = [i for i, state in enumerate(self.speaking_states) if state == 'speaking']
 
@@ -200,7 +198,7 @@ class FaceTracker(Node):
                     else:
                         for face in msg_faces:
                             face_sizes.append(np.sqrt((face.top_left.x - face.bottom_right.x)**2 +
-                                                      (face.top_left.y - face.bottom_right.y)**2)) """
+                                                      (face.top_left.y - face.bottom_right.y)**2))
                 else:
                     for face in msg_faces:
                         face_sizes.append(np.sqrt((face.top_left.x - face.bottom_right.x)**2 +
@@ -215,7 +213,7 @@ class FaceTracker(Node):
 
                     face_distance2_original = self.face_distance2
                     self.face_distance2.sort(reverse=True)
-                    """ try:
+                    try:
                         for i in range(len(face_distance2_original)):
                             self.get_logger().info('s: ')
                             self.get_logger().info(str(self.face_distance2[i]))
@@ -224,7 +222,7 @@ class FaceTracker(Node):
                     except ValueError:
                         pass
                     except TypeError:
-                        pass """
+                        pass
                     if not self.face_distance1:
                         self.face_distance1 = self.face_distance2
                     else:
@@ -251,7 +249,6 @@ class FaceTracker(Node):
                             else:
                                 self.face_distance1 = self.face_distance2
                                 self.face_distance2 = []
-
 
                         except IndexError:
                             pass
