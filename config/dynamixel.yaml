@@ -23,3 +23,24 @@ eyes_shift_vertical_joint:
 
 head_jaw_joint:
   ID: 12
+
+r_shoulder_lift_joint:
+  ID: 13
+
+r_shoulder_out_joint:
+  ID: 14
+
+r_thumb_joint:
+  ID: 31
+
+r_index1_joint:
+  ID: 34
+
+r_middle1_joint:
+  ID: 37
+
+r_ring_joint:
+  ID: 40
+
+r_pinky_joint:
+  ID: 44
