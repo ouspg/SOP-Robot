@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'example'
+package_name = 'arm_pack'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'example_node = example.example_node:main'
+            'arm_node = arm_pack.arm_node:main'
         ],
     },
 )

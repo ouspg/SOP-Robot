@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(robot)
+project(arm_pack)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -13,6 +13,12 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/test.action"
+)
+
 ## INSTALL
 install(
   DIRECTORY controllers launch/
@@ -22,12 +28,6 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 endif()
-
-find_package(rosidl_default_generators REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "action/Test.action"
-)
 
 ## EXPORTS
 ament_package()
