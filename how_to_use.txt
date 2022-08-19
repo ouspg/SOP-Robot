@@ -1,0 +1,18 @@
+ros2 action send_goal /r_hand_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
+  trajectory: {
+    joint_names: [r_thumb_joint, r_index1_joint, r_middle1_joint, r_ring_joint, r_pinky_joint],
+    points: [
+      { positions: [0.0, 0.0, 0.0, 0.0, 0.0], time_from_start: { sec: 1, nanosec: 0 } }
+    ]
+  }
+}"
+
+Possible joints to use.
+- r_thumb_joint
+- r_index1_joint
+- r_middle1_joint
+- r_ring_joint
+- r_pinky_joint
+
+Positions are floats ranging between 0.0 to 2.0. 
+2.0 might be too much and break the actual robot.
