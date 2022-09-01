@@ -1,7 +1,7 @@
 controller_manager:
   ros__parameters:
     # Can be bigger, should not break anything
-    update_rate: 1  # Hz
+    update_rate: 10  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -100,8 +100,8 @@ r_hand_controller:
       - position
 
     # Now only 1hz rate, can be changed to bigger
-    state_publish_rate: 1.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
+    state_publish_rate: 20.0 # Defaults to 50
+    action_monitor_rate: 20.0 # Defaults to 20
 
 head_controller:
   ros__parameters:
@@ -181,5 +181,5 @@ r_shoulder_controller:
       - position
 
     # Now only 1hz rate, can be changed to bigger
-    state_publish_rate: 1.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
+    state_publish_rate: 20 # Defaults to 50
+    action_monitor_rate: 20 # Defaults to 20

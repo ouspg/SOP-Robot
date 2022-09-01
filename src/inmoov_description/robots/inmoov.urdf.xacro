@@ -23,8 +23,8 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:rrbot>-->
   
-  <xacro:arg name="fake_sensor_commands" default="true" />
-  <xacro:arg name="use_fake_hardware" default="true" />
+  <xacro:arg name="fake_sensor_commands" default="false" />
+  <xacro:arg name="use_fake_hardware" default="false" />
   <!--
     
   -->
