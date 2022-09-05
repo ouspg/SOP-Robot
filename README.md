@@ -43,12 +43,14 @@ Baud rate: 57600, Voltage: 7.5
 | 12       | XL320 | head_jaw_joint              | Open/close jaw        |
 | 31       | XL320 | r_thumb_joint               | Open/close thumb      |
 | 34       | XL320 | r_index1_joint              | Open/close index      |
-| 37       | XL320 | r_middle1_join1             | Open/close middle     |
+| 37       | XL320 | r_middle1_joint             | Open/close middle     |
 | 40       | XL320 | r_ring_joint                | Open/close ring       |
 | 44       | XL320 | r_pinky_joint               | Open/close pinky      |
-| 47       | XL320 | unnamed wrist joint         | Move wrist            |
+| 47       | XL320 | unnamed joint               | Rotate wrist          |
 
 **Note: head tilt range of motion is poor**
+
+**Note: wrist joint seems to overload very easily**
 
 **Note: servo angle limits are not configured**
 
