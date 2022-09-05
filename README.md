@@ -41,7 +41,7 @@ Baud rate: 57600, Voltage: 7.5
 | 10       | XL320 | eyes_shift_horizontal_joint | Eyes shift left/right |
 | 11       | XL320 | eyes_shift_vertical_joint   | Eyes shift up/down    |
 | 12       | XL320 | head_jaw_joint              | Open/close jaw        |
-| 31       | XL320 | r_thumb_joint               | Open/close thunmb     |
+| 31       | XL320 | r_thumb_joint               | Open/close thumb      |
 | 34       | XL320 | r_index1_joint              | Open/close index      |
 | 37       | XL320 | r_middle1_join1             | Open/close middle     |
 | 40       | XL320 | r_ring_joint                | Open/close ring       |
