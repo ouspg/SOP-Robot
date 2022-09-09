@@ -5,7 +5,6 @@ import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
-
 from trajectory_msgs.msg import JointTrajectoryPoint
 from control_msgs.action import FollowJointTrajectory
 
@@ -52,8 +51,12 @@ class HandActionClient(Node):
         i = 0
         fingers = ["thumb", "index", "middle", "ring","pinky"]
         while len(command) < 5:
-            command.append(float(input(f"Angle for {fingers[i]} finger: ")))
-            i += 1
+            angle = float(input(f"Angle for {fingers[i]} finger: "))
+            if isinstance(angle, float):
+                command.append(angle)
+                i += 1
+            else:
+                print("Angle must be float. Safe values are -0.5-2.0.")
         self.logger.info(f"Sending positions {command}")
         self.send_goal(command)
 
