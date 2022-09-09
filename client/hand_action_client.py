@@ -76,7 +76,7 @@ class HandActionClient(Node):
         self.send_action(random.choice(["open", "fist", "scissors"]))
 
     def send_action(self, action):
-        self.get_logger().info(f"Action: {action}")
+        self.logger.info(f"Action: {action}")
         self.send_goal(self.positions_dict[action])
 
     def send_goal(self, action):
@@ -90,23 +90,26 @@ class HandActionClient(Node):
         point.time_from_start = dur
         goal_msg.trajectory.points.append(point)
 
-        self.get_logger().info(f"Sending request")
+        self.logger.info(f"Sending request")
         self._action_client.wait_for_server()
         self._send_goal_future = self._action_client.send_goal_async(goal_msg)
         self._send_goal_future.add_done_callback(self.goal_response_callback)
 
     def goal_response_callback(self, future):
         goal_handle = future.result()
+        self.logger.info(goal_handle)
         if not goal_handle.accepted:
-            self.get_logger().info("Action rejected.")
+            self.logger.info("Action rejected.")
             return
-        self.get_logger().info("Action accepted.")
-        self._get_result_future = goal_handle.get_result_async()
+        self.logger.info("Action accepted.")
+        self._get_result_future = goal_handle.get_result()
+        self.logger.info(self._get_result_future)
         self._get_result_future.add_done_callback(self.get_result_callback)
 
     def get_result_callback(self, future):
         result = future.result().result
-        self.get_logger().info("Action complete.")
+        self.logger.info(result)
+        self.logger.info("Action complete.")
         rclpy.shutdown()
 
 
