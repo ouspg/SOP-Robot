@@ -260,8 +260,11 @@ class FaceTracker(Node):
                 self.frame += 1
                 self.face_size_frame += 1
                 # Set frame to zero for new detection every nth frame
-                n = 50
+                n = 25
                 self.frame = self.frame % n
+
+                if self.frame == 0:
+                    self.face_location = self.get_glance_location()
 
                 #set frame to zero for new face size detection every n_face_size frame
                 n_face_size = 5
@@ -284,6 +287,26 @@ class FaceTracker(Node):
             self.face_location_publisher.publish(self.face_location)
             # Set location back to None to prevent publishing same location multiple times
             self.face_location = None
+
+    def get_glance_location(self):
+        """
+        Returns a random location coordinates where the robot glances with a small probability.
+        If the small probability for glance doesn't happen, returns the face location coordinates.
+        """
+        # Define the glance percentage, maybe 5?
+
+        # Do the random number generation to determine if glance happens or not
+        # Maybe get an integer between 0 and 100 and check if it's smaller than or equal to the glance percentage
+
+        if :
+            # If doing the glance, get random x and y coordinates from the range of allowed eye movement coordinates
+            # using random.uniform function
+
+            # Return the random coordinates as Point2 type
+
+        else:
+            # If not doing the glance return the face location coordinates
+
 
 
 def main(args=None):
