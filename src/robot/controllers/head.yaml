@@ -1,7 +1,7 @@
 controller_manager:
   ros__parameters:
     # Can be bigger, should not break anything
-    update_rate: 1  # Hz
+    update_rate: 10  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -13,6 +13,12 @@ controller_manager:
       type: forward_command_controller/ForwardCommandController
 
     jaw_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    
+    r_shoulder_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    r_hand_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
     joint_state_broadcaster:
@@ -26,25 +32,25 @@ joint_state_broadcaster:
     - head_tilt_joint
     - waist_pan_joint
     - waist_roll_joint
-    - r_shoulder_lift_joint
+    #- r_shoulder_lift_joint
     - r_upper_arm_roll_joint
     - r_elbow_flex_joint
-    - r_shoulder_out_joint
+    #- r_shoulder_out_joint
     - r_thumb1_joint
-    - r_thumb_joint
+    #- r_thumb_joint
     - r_thumb3_joint
-    - r_index1_joint
+    #- r_index1_joint
     - r_index_joint
     - r_index3_joint
-    - r_middle1_joint
+    #- r_middle1_joint
     - r_middle_joint
     - r_middle3_joint
     - r_ring1_joint
-    - r_ring_joint
+    #- r_ring_joint
     - r_ring3_joint
     - r_ring4_joint
     - r_pinky1_joint
-    - r_pinky_joint
+    #- r_pinky_joint
     - r_pinky3_joint
     - r_pinky4_joint
     - r_wrist_roll_joint
@@ -70,6 +76,32 @@ joint_state_broadcaster:
     - l_pinky3_joint
     - l_pinky4_joint
     - l_wrist_roll_joint
+
+r_hand_controller:
+  ros__parameters:
+    joints:
+    - r_thumb_joint
+    - r_index1_joint
+    - r_middle1_joint
+    - r_ring_joint
+    - r_pinky_joint
+    write_op_modes:
+    - r_thumb_joint
+    - r_index_joint
+    - r_middle_joint
+    - r_ring_joint
+    - r_pinky_joint
+    allow_partial_joints_goal: true
+    interface_name: position
+
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+
+    # Now only 1hz rate, can be changed to bigger
+    state_publish_rate: 20.0 # Defaults to 50
+    action_monitor_rate: 20.0 # Defaults to 20
 
 head_controller:
   ros__parameters:
@@ -131,3 +163,23 @@ jaw_controller:
     state_publish_rate: 1.0 # Defaults to 50
     action_monitor_rate: 1.0 # Defaults to 20
     
+
+r_shoulder_controller:
+  ros__parameters:
+    joints:
+    - r_shoulder_lift_joint
+    - r_shoulder_out_joint
+    write_op_modes:
+    - r_shoulder_lift_joint
+    - r_shoulder_out
+    allow_partial_joints_goal: true
+    interface_name: position
+
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+
+    # Now only 1hz rate, can be changed to bigger
+    state_publish_rate: 20 # Defaults to 50
+    action_monitor_rate: 20 # Defaults to 20
