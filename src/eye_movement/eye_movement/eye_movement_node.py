@@ -1,4 +1,5 @@
 import time
+import random
 
 import rclpy
 from rclpy.action import ActionClient
@@ -23,33 +24,23 @@ class EyeMoverClient(Node):
 
     def listener_callback(self, msg):
         self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
-        sleep_flag = False
-        # Define the glance percentage, maybe 5?
-
-        # Do the random number generation to determine if glance happens or not
-        # Maybe get an integer between 0 and 100 and check if it's smaller than or equal to the glance percentage
+        is_glancing = False
+        glance_percentage = 5
+        randomvalue = random.randint(1, 100)
 
         # Check if doing the glance or not
-        if :
-            eye_location_x, eye_location_y = self.get_glance_location()
-            sleep_flag = True
+        if randomvalue <= glance_percentage:
+            eye_location_x, eye_location_y = get_random_location()
+            is_glancing = True
             self.get_logger().info('glance')
         else:
-            # Calculate face movement
-            y_diff = self.middle_y - msg.y
-            x_diff = self.middle_x - msg.x
-            # Transform face movement to eye movement
-            # Vertical eye movement
-            v_coeff = -0.001125
-            eye_location_y = y_diff * v_coeff - 0.25
-            # Horizontal eye movement
-            h_coeff = -0.001563
-            eye_location_x = x_diff * h_coeff - 1.0
+            eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(msg.x, msg.y)
+
         # Move eyes
-        self.send_goal(eye_location_y, eye_location_x, sleep_flag)
+        self.send_goal(eye_location_y, eye_location_x, is_glancing)
         self.get_logger().info('eye location x: %f, eye location y: %f' % (eye_location_x, eye_location_y))
 
-    def send_goal(self, vertical, horizontal, sleep_flag):
+    def send_goal(self, vertical, horizontal, glance):
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=0, nanosec=0))
         goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_vertical_joint', 'eyes_shift_horizontal_joint'],
@@ -59,14 +50,36 @@ class EyeMoverClient(Node):
 
         self._action_client.send_goal_async(goal_msg)
 
-        if sleep_flag:
+        if glance:
             time.sleep(1)
 
-    def get_glance_location(self):
+    def transform_face_location_to_eye_location(self, face_location_x, face_location_y):
         """
-        Returns a random location coordinates.
+        Calculates new x and y location for the eyes corresponding to the face location coordinates given
+        as arguments.
         """
-        # Return random x and y coordinates from the range of allowed eye movement coordinates using random.uniform function
+        # Calculate face movement
+        x_diff = self.middle_x - face_location_x
+        y_diff = self.middle_y - face_location_y
+
+        # Transform face movement to eye movement
+        # Horizontal eye movement
+        h_coeff = -0.001563
+        eye_location_x = x_diff * h_coeff - 1.0
+        # Vertical eye movement
+        v_coeff = -0.001125
+        eye_location_y = y_diff * v_coeff - 0.25
+
+        return eye_location_x, eye_location_y
+
+
+def get_random_location():
+    """
+    Returns a random location coordinates.
+    """
+    random_x = random.uniform(-2, 0)
+    random_y = random.uniform(-0.7, -0.2)
+    return random_x, random_y
 
 
 def main():
