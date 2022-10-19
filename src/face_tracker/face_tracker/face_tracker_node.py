@@ -289,7 +289,7 @@ class FaceTracker(Node):
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTracker(False)     # True enables lip movement detection, False disables it
+    tracker = FaceTracker(True)     # True enables lip movement detection, False disables it
 
     # Do work
     rclpy.spin(tracker)

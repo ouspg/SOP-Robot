@@ -25,8 +25,8 @@ class EyeMoverClient(Node):
     def listener_callback(self, msg):
         self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         is_glancing = False
-        glance_percentage = 5
-        randomvalue = random.randint(1, 100)
+        glance_percentage = 0.5
+        randomvalue = random.randint(0, 99)
 
         # Check if doing the glance or not
         if randomvalue <= glance_percentage:
@@ -51,7 +51,7 @@ class EyeMoverClient(Node):
         self._action_client.send_goal_async(goal_msg)
 
         if glance:
-            time.sleep(1)
+            time.sleep(0.5)
 
     def transform_face_location_to_eye_location(self, face_location_x, face_location_y):
         """
@@ -89,7 +89,7 @@ def main():
 
     action_client = EyeMoverClient()
 
-    action_client.send_goal(-0.25, -1.0)
+    action_client.send_goal(-0.25, -1.0, False)
 
     rclpy.spin(action_client)
 
