@@ -17,14 +17,14 @@
   <xacro:include filename="$(find inmoov_description)/urdf/asmHand.urdf.xacro" />
 
 <!-- Import ros2_control description -->
-  <xacro:include filename="head.ros2_control.xacro" />
+  <xacro:include filename="head.ros2_control_old.xacro" />
 
   <!--<xacro:rrbot parent="world" prefix="$(arg prefix)">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:rrbot>-->
   
-  <xacro:arg name="fake_sensor_commands" default="false" />
-  <xacro:arg name="use_fake_hardware" default="false" />
+  <xacro:arg name="fake_sensor_commands" default="true" />
+  <xacro:arg name="use_fake_hardware" default="true" />
   <!--
     
   -->
