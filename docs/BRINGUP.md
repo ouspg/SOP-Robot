@@ -32,6 +32,11 @@ Then open up another cli and do the following.
 ros2 control load_start_controller joint_state_broadcaster
 ros2 control load_start_controller [YOUR CONTROLLER NAME HERE]
 ```
+New way to start the services controllers without deprecated warning
+```console
+ros2 control load_controller --set-state start joint_state_broadcaster
+ros2 control load_controller --set-state start r_hand_controller
+```
 
 Check if controllers were loaded and confirm that all controllers are in `active` state:
 
