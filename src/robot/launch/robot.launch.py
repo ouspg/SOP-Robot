@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -24,10 +25,53 @@ from launch_ros.substitutions import FindPackageShare
 
 import xacro
 
+dynamixel_config_file = "NOT_SET"
+
+DYNAMIXEL_CONFIG_FILE_PREFIX = "config/"
+DYNAMIXEL_CONFIG_FILEPATH_HEAD = DYNAMIXEL_CONFIG_FILE_PREFIX + "dynamixel_head.yaml"
+DYNAMIXEL_CONFIG_FILEPATH_ARM = DYNAMIXEL_CONFIG_FILE_PREFIX + "dynamixel_arm.yaml"
+ALL_AVAILABLE_DYNAMIXEL_CONFIG_FILES = [DYNAMIXEL_CONFIG_FILEPATH_HEAD, DYNAMIXEL_CONFIG_FILEPATH_ARM]
+
+DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH = DYNAMIXEL_CONFIG_FILE_PREFIX + "_temp_dynamixel_for_launch.yaml" # Dynamic file created during launch if both arm and head are enabled
+
+
+
+# TODO "robot parts" is not very descriptive -> improve terminology.
+def create_dynamixel_config_file():
+    included_files = []
+    for arg in sys.argv:
+        if arg.startswith("robot_parts:="):
+            parts = arg.split(":=")[1]
+            if len(parts) <= 0:
+                # Use all if parts not correctly specified
+                included_files = ALL_AVAILABLE_DYNAMIXEL_CONFIG_FILES
+                print("Warning, robot parts not correctly specified! Using all available parts.")
+            else:
+                if "head" in parts:
+                    print("Note: Configuring servos only for robot head!")
+                    included_files.append(DYNAMIXEL_CONFIG_FILEPATH_HEAD)
+                elif "arm" in parts:
+                    print("Note: Configuring servos only for robot arm!")
+                    included_files.append(DYNAMIXEL_CONFIG_FILEPATH_ARM)
+
+    if len(included_files) == 0:
+        # Use all if argument was not given
+        print("Note: Configuring servos for all robot parts!")
+        included_files = ALL_AVAILABLE_DYNAMIXEL_CONFIG_FILES
+
+    with open(DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH, 'w') as outfile:
+        for filename in included_files:
+            with open(filename) as infile:
+                outfile.write(infile.read())
+
+    return DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH
+
 
 
 
 def generate_launch_description():
+
+    dynamixel_config_file = create_dynamixel_config_file()
 
     # Get URDF via xacro
 
@@ -39,14 +83,14 @@ def generate_launch_description():
     # robot_description = {'robot_description': robot_description_config.toxml()}
 
     
-    declared_arguments = []
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "dynamixel_config_file",
-            default_value="NOT_SET",
-            description="Dynamixel config file for launch. Can be constructed launch-time to include only the needed servos",
-        )
-    )
+    # declared_arguments = []
+    # declared_arguments.append(
+    #     DeclareLaunchArgument(
+    #         "dynamixel_config_file",
+    #         default_value="NOT_SET",
+    #         description="Dynamixel config file for launch. Can be constructed launch-time to include only the needed servos",
+    #     )
+    # )
 
     robot_description_content = Command(
       [
@@ -60,7 +104,8 @@ def generate_launch_description():
               ]
           ),
           " dynamixel_config_file:=",
-          LaunchConfiguration("dynamixel_config_file"),
+          dynamixel_config_file,
+          #LaunchConfiguration("dynamixel_config_file"),
       ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -103,4 +148,5 @@ def generate_launch_description():
     ]
 
     
-    return LaunchDescription(declared_arguments + nodes)
+    #return LaunchDescription(declared_arguments + nodes)
+    return LaunchDescription(nodes)
