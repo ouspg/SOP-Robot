@@ -245,7 +245,6 @@ class FaceTracker(Node):
                                 # Publish image that has rectangles around the detected faces
                                 self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
                                 self.face_publisher.publish(Faces(faces=msg_faces))
-                                time.sleep(5)
                             else:
                                 self.face_distance1 = self.face_distance2
                                 self.face_distance2 = []

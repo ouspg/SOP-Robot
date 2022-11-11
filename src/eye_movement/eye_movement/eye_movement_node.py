@@ -25,7 +25,7 @@ class EyeMoverClient(Node):
     def listener_callback(self, msg):
         self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         is_glancing = False
-        glance_percentage = 0.5
+        glance_percentage = 0.75
         randomvalue = random.randint(0, 99)
 
         # Check if doing the glance or not
