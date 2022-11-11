@@ -30,6 +30,7 @@
   -->
   <xacro:arg name="prefix" default="" />
   <xacro:arg name="slowdown" default="2.0" />
+  <xacro:arg name="dynamixel_config_file" default="NOT_SET_2" />
 
 
 
@@ -161,7 +162,8 @@
   <xacro:robot_head name="RobotHead" prefix=""
     use_fake_hardware="$(arg use_fake_hardware)"
     fake_sensor_commands="$(arg fake_sensor_commands)"
-    slowdown="$(arg slowdown)"/>
+    slowdown="$(arg slowdown)"
+    dynamixel_config_file="$(arg dynamixel_config_file)"/>
 
 </robot>
 

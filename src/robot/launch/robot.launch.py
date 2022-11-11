@@ -17,20 +17,55 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 import xacro
+
+
 
 
 def generate_launch_description():
 
     # Get URDF via xacro
-    robot_description_path = os.path.join(
-        get_package_share_directory('inmoov_description'),
-        'robots',
-        'inmoov.urdf.xacro')
-    robot_description_config = xacro.process_file(robot_description_path)
-    robot_description = {'robot_description': robot_description_config.toxml()}
+
+    # robot_description_path = os.path.join(
+    #     get_package_share_directory('inmoov_description'),
+    #     'robots',
+    #     'inmoov.urdf.xacro')
+    # robot_description_config = xacro.process_file(robot_description_path)
+    # robot_description = {'robot_description': robot_description_config.toxml()}
+
+    
+    declared_arguments = []
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "dynamixel_config_file",
+            default_value="NOT_SET",
+            description="Dynamixel config file for launch. Can be constructed launch-time to include only the needed servos",
+        )
+    )
+
+    robot_description_content = Command(
+      [
+          PathJoinSubstitution([FindExecutable(name="xacro")]),
+          " ",
+          PathJoinSubstitution(
+              [
+                  FindPackageShare("inmoov_description"),
+                  "robots",
+                  "inmoov.urdf.xacro",
+              ]
+          ),
+          " dynamixel_config_file:=",
+          LaunchConfiguration("dynamixel_config_file"),
+      ]
+    )
+    robot_description = {"robot_description": robot_description_content}
+
+
 
     controller = os.path.join(
         get_package_share_directory('robot'),
@@ -38,7 +73,23 @@ def generate_launch_description():
         'head.yaml'
         )
 
-    return LaunchDescription([
+
+    # Could this mechanism be used to delete temporary "launch-time" files after launch?
+    # rviz_node = Node(
+    #   package="rviz2",
+    #   executable="rviz2",
+    #   name="rviz2",
+    #   arguments=["-d", rviz_config_file],
+    #   condition=IfCondition(LaunchConfiguration("start_rviz")),
+    # ) 
+    # delayed_rviz_node = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=spawn_jsb_controller,
+    #         on_exit=[rviz_node],
+    #     )
+    # )
+
+    nodes = [
       Node(
         package='controller_manager',
         executable='ros2_control_node',
@@ -49,4 +100,7 @@ def generate_launch_description():
           },
         )
 
-    ])
+    ]
+
+    
+    return LaunchDescription(declared_arguments + nodes)
