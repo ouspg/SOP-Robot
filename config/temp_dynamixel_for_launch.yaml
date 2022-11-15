@@ -1,0 +1,26 @@
+# NOTE! This is a temporary file generated during the launch. It is generated based on the enabled robot parts
+# so that only the needed Dynamixel servos are configured and therefore no errors are thrown for missing servo IDs.
+
+# You can find control table of Dynamixel on emanual (http://emanual.robotis.com/#control-table)
+# Control table item has to be set Camel_Case and not included whitespace
+# You are supposed to set at least Dynamixel ID
+
+# This file contains the servo IDs for the robot's right arm and hand
+
+#r_shoulder_lift_joint:
+#  ID: 13
+
+r_thumb_joint:
+  ID: 31
+
+r_index1_joint:
+  ID: 34
+
+r_middle1_joint:
+  ID: 37
+
+r_ring_joint:
+  ID: 40
+
+r_pinky_joint:
+  ID: 44

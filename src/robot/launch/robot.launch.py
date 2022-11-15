@@ -21,6 +21,8 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+#from launch.actions import RegisterEventHandler, ExecuteProcess
+#from launch.event_handlers import OnProcessExit
 from launch_ros.substitutions import FindPackageShare
 
 import xacro
@@ -32,12 +34,85 @@ DYNAMIXEL_CONFIG_FILEPATH_HEAD = DYNAMIXEL_CONFIG_FILE_PREFIX + "dynamixel_head.
 DYNAMIXEL_CONFIG_FILEPATH_ARM = DYNAMIXEL_CONFIG_FILE_PREFIX + "dynamixel_arm.yaml"
 ALL_AVAILABLE_DYNAMIXEL_CONFIG_FILES = [DYNAMIXEL_CONFIG_FILEPATH_HEAD, DYNAMIXEL_CONFIG_FILEPATH_ARM]
 
-DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH = DYNAMIXEL_CONFIG_FILE_PREFIX + "_temp_dynamixel_for_launch.yaml" # Dynamic file created during launch if both arm and head are enabled
+DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH = DYNAMIXEL_CONFIG_FILE_PREFIX + "temp_dynamixel_for_launch.yaml" # Dynamic file created during launch if both arm and head are enabled
 
 
 
-# TODO "robot parts" is not very descriptive -> improve terminology.
-def create_dynamixel_config_file():
+
+def generate_launch_description():
+
+    dynamixel_config_file = generate_dynamixel_config_file()
+
+    robot_description_content = Command(
+      [
+          # Get URDF via xacro
+          PathJoinSubstitution([FindExecutable(name="xacro")]),
+          " ",
+          PathJoinSubstitution(
+              [
+                  FindPackageShare("inmoov_description"),
+                  "robots",
+                  "inmoov.urdf.xacro",
+              ]
+          ),
+          " dynamixel_config_file:=",
+          dynamixel_config_file,
+          " use_fake_hardware:=false", # No fake hardware, this is real.
+          " fake_sensor_commands:=false", # No fake sensors, only real ones.
+      ]
+    )
+    robot_description = {"robot_description": robot_description_content}
+
+
+    controller = os.path.join(
+        get_package_share_directory('robot'),
+        'controllers',
+        'head.yaml'
+        )
+
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description, controller],
+        output={
+          'stdout': 'screen',
+          'stderr': 'screen',
+          },
+    )
+
+
+    # Idea here was to delete the generated dynamixel.yaml file after
+    # it is no longer needed. Does not work yet.
+
+    # temp_file_delete_process = RegisterEventHandler(
+    #     OnProcessExit(
+    #         target_action=ros2_control_node,
+    #         on_exit=[
+    #             ExecuteProcess(
+    #                 cmd=["rm " + DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH],
+    #                 log_cmd=True
+    #             )                
+    #         ]
+    #     )
+    # )
+
+    nodes = [
+        ros2_control_node,
+        #temp_file_delete_process
+    ]
+
+    return LaunchDescription(nodes)
+
+
+
+# Generates a "launch-time" configuration file for Dynamixel servos.
+# The idea is to enable using only arm or only head without the need to touch the code. 
+# Launch only arm (and hand):
+#   ros2 launch robot robot.launch.py robot_parts:=arm
+# Launch only head:
+#   ros2 launch robot robot.launch.py robot_parts:=head
+# If no parameter or invalid parameter is given, includes all available parts (currently arm+hand and head).
+def generate_dynamixel_config_file():
     included_files = []
     for arg in sys.argv:
         if arg.startswith("robot_parts:="):
@@ -60,93 +135,10 @@ def create_dynamixel_config_file():
         included_files = ALL_AVAILABLE_DYNAMIXEL_CONFIG_FILES
 
     with open(DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH, 'w') as outfile:
+        outfile.write("# NOTE! This is a temporary file generated during the launch. It is generated based on the enabled robot parts\n" + 
+        "# so that only the needed Dynamixel servos are configured and therefore no errors are thrown for missing servo IDs.\n\n")
         for filename in included_files:
             with open(filename) as infile:
                 outfile.write(infile.read())
 
     return DYNAMIXEL_CONFIG_FILEPATH_FOR_LAUNCH
-
-
-
-
-def generate_launch_description():
-
-    dynamixel_config_file = create_dynamixel_config_file()
-
-    # Get URDF via xacro
-
-    # robot_description_path = os.path.join(
-    #     get_package_share_directory('inmoov_description'),
-    #     'robots',
-    #     'inmoov.urdf.xacro')
-    # robot_description_config = xacro.process_file(robot_description_path)
-    # robot_description = {'robot_description': robot_description_config.toxml()}
-
-    
-    # declared_arguments = []
-    # declared_arguments.append(
-    #     DeclareLaunchArgument(
-    #         "dynamixel_config_file",
-    #         default_value="NOT_SET",
-    #         description="Dynamixel config file for launch. Can be constructed launch-time to include only the needed servos",
-    #     )
-    # )
-
-    robot_description_content = Command(
-      [
-          PathJoinSubstitution([FindExecutable(name="xacro")]),
-          " ",
-          PathJoinSubstitution(
-              [
-                  FindPackageShare("inmoov_description"),
-                  "robots",
-                  "inmoov.urdf.xacro",
-              ]
-          ),
-          " dynamixel_config_file:=",
-          dynamixel_config_file,
-          #LaunchConfiguration("dynamixel_config_file"),
-      ]
-    )
-    robot_description = {"robot_description": robot_description_content}
-
-
-
-    controller = os.path.join(
-        get_package_share_directory('robot'),
-        'controllers',
-        'head.yaml'
-        )
-
-
-    # Could this mechanism be used to delete temporary "launch-time" files after launch?
-    # rviz_node = Node(
-    #   package="rviz2",
-    #   executable="rviz2",
-    #   name="rviz2",
-    #   arguments=["-d", rviz_config_file],
-    #   condition=IfCondition(LaunchConfiguration("start_rviz")),
-    # ) 
-    # delayed_rviz_node = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=spawn_jsb_controller,
-    #         on_exit=[rviz_node],
-    #     )
-    # )
-
-    nodes = [
-      Node(
-        package='controller_manager',
-        executable='ros2_control_node',
-        parameters=[robot_description, controller],
-        output={
-          'stdout': 'screen',
-          'stderr': 'screen',
-          },
-        )
-
-    ]
-
-    
-    #return LaunchDescription(declared_arguments + nodes)
-    return LaunchDescription(nodes)
