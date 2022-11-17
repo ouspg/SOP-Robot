@@ -10,6 +10,7 @@ This guide adds couple of important notes.
 
 - You have some kind of webcam to use with face detection
 - You are able to build and launch the robot with fake hardware
+- You have installed ´python3-keras´ (At least on my environment it was not installed. Opencv_cam was unable to start.)
 
 ## Setup the Virtualbox
 
