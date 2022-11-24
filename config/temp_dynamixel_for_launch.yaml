@@ -5,6 +5,33 @@
 # Control table item has to be set Camel_Case and not included whitespace
 # You are supposed to set at least Dynamixel ID
 
+# This file contains the servo IDs for the robot's head
+
+head_tilt_right_joint:
+ ID: 1
+
+head_tilt_vertical_joint:
+ ID: 2
+
+head_tilt_left_joint:
+ ID: 3
+
+head_pan_joint:
+ ID: 4
+ Drive_Mode: 0 # Velocity-based Profile, default actually
+
+eyes_shift_horizontal_joint:
+  ID: 10
+
+eyes_shift_vertical_joint:
+  ID: 11
+
+head_jaw_joint:
+ ID: 12
+# You can find control table of Dynamixel on emanual (http://emanual.robotis.com/#control-table)
+# Control table item has to be set Camel_Case and not included whitespace
+# You are supposed to set at least Dynamixel ID
+
 # This file contains the servo IDs for the robot's right arm and hand
 
 #r_shoulder_lift_joint:

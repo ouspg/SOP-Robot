@@ -1,13 +1,21 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="robot_head" params="name prefix dynamixel_config_file">
+  <xacro:macro name="robot_head" params="name prefix use_fake_hardware:=^|true fake_sensor_commands:=^|false slowdown:=2.0 dynamixel_config_file">
 
     <ros2_control name="${name}" type="system">
       <hardware>
+        <xacro:if value="${use_fake_hardware}">
+          <plugin>fake_components/GenericSystem</plugin>
+          <param name="fake_sensor_commands">${fake_sensor_commands}</param>
+          <param name="state_following_offset">0.0</param>
+        </xacro:if>
+        <xacro:unless value="${use_fake_hardware}">
         <plugin>robot_hardware/RobotHardware</plugin>
         <!--<param name="dynamixel_info">config/dynamixel.yaml</param>-->
         <param name="dynamixel_info">${dynamixel_config_file}</param>
+        </xacro:unless>
+
       </hardware>
       <joint name="head_jaw_joint">
         <command_interface name="position">
@@ -65,6 +73,7 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
+      
       <joint name="r_shoulder_lift_joint">
         <command_interface name="position">
           <param name="min">-1</param>
@@ -122,6 +131,7 @@
         <state_interface name="velocity"/>
       </joint>
     </ros2_control>
+    
 
   </xacro:macro>
 

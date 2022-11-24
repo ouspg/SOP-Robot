@@ -17,7 +17,7 @@
   <xacro:include filename="$(find inmoov_description)/urdf/asmHand.urdf.xacro" />
 
 <!-- Import ros2_control description -->
-  <xacro:include filename="head.ros2_control_old.xacro" />
+  <xacro:include filename="head.ros2_control.xacro" />
 
   <!--<xacro:rrbot parent="world" prefix="$(arg prefix)">
     <origin xyz="0 0 0" rpy="0 0 0" />
