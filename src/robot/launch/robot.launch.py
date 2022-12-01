@@ -65,7 +65,7 @@ def generate_launch_description():
     controller = os.path.join(
         get_package_share_directory('robot'),
         'controllers',
-        'head.yaml'
+        'robot.yaml'
         )
 
     ros2_control_node = Node(

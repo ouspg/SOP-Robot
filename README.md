@@ -8,7 +8,7 @@ The robot uses ROS2 (Robot Operating System 2). Read the [ROS2 wiki!](https://in
 ## The Robot
 
 The robot uses dynamixel servos. Servos are controlled via the `robot_hardware` ROS node, which implements the hardware interface for [ros2_control](https://github.com/ros-controls/ros2_control). `robot` package contains the servo controller configurations
-for the robot. See [head.yaml](src/robot/controllers/head.yaml), for example. The head supports `joint_trajectory_controller`. When using this controller, joints can be controlled by sending action messages to the trajectroy controller. See [bring up](./docs/BRINGUP.md) for an example.
+for the robot. See [robot.yaml](src/robot/controllers/robot.yaml), for example. The head supports `joint_trajectory_controller`. When using this controller, joints can be controlled by sending action messages to the trajectroy controller. See [bring up](./docs/BRINGUP.md) for an example.
 
 Joint -> Servo mappings are defined in [config/dynamixel.yaml](./config/dynamixel.yaml).
 
