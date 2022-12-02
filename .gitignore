@@ -2,7 +2,7 @@
 ~*
 *~
 .o
-.pyc
+*.pyc
 
 .vscode/*
 !.vscode/c_cpp_properties.json
