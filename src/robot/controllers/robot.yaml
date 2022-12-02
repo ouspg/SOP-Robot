@@ -1,7 +1,6 @@
 controller_manager:
   ros__parameters:
-    # Can be bigger, should not break anything
-    update_rate: 10  # Hz
+    update_rate: 20  # Hz
 
     head_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -99,7 +98,6 @@ r_hand_controller:
     state_interfaces:
       - position
 
-    # Now only 1hz rate, can be changed to bigger
     state_publish_rate: 20.0 # Defaults to 50
     action_monitor_rate: 20.0 # Defaults to 20
 
@@ -118,13 +116,11 @@ head_controller:
     allow_partial_joints_goal: true
     interface_name: position
 
-    # Seems like this settings is required by jointtrajectory controller type
     command_interfaces:
       - position
     state_interfaces:
       - position
 
-    # Now only 1hz rate, can be changed to bigger
     state_publish_rate: 1.0 # Defaults to 50
     action_monitor_rate: 1.0 # Defaults to 20
 
@@ -138,14 +134,23 @@ eyes_controller:
     - eyes_shift_horizontal_joint
     allow_partial_joints_goal: true
     interface_name: position
-
+    
     command_interfaces:
       - position
     state_interfaces:
       - position
+      
+    state_publish_rate: 20.0 # Defaults to 50
+    action_monitor_rate: 20.0 # Defaults to 20
 
-    state_publish_rate: 1.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
+#forward_head_controller:
+#  ros__parameters:
+#    joints:
+#    - head_pan_joint
+#    - head_tilt_right_joint
+#    - head_tilt_left_joint
+#    - head_tilt_vertical_joint
+#    interface_name: position
 
 jaw_controller:
   ros__parameters:
@@ -180,6 +185,5 @@ r_shoulder_controller:
     state_interfaces:
       - position
 
-    # Now only 1hz rate, can be changed to bigger
-    state_publish_rate: 20 # Defaults to 50
-    action_monitor_rate: 20 # Defaults to 20
+    state_publish_rate: 20.0 # Defaults to 50
+    action_monitor_rate: 20.0 # Defaults to 20

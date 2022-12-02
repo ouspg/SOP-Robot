@@ -1,19 +1,11 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>face_tracker</name>
+  <name>eye_movement</name>
   <version>0.0.0</version>
-  <description>Face tracker</description>
-  <author>Arman Mansouri</author>
-  <maintainer email="jari.jaaskela@oulu.fi">Jari Jääskelä</maintainer>
-  <license>MIT</license>
-
-  <depend>python3-keras</depend>
-  <depend>python-argparse</depend>
-  <depend>python3-sklearn</depend>
-  <depend>python-numpy</depend>
-  <depend>python3-progressbar</depend>
-  <depend>python-dlib</depend>
+  <description>TODO: Package description</description>
+  <maintainer email="vagrant@todo.todo">vagrant</maintainer>
+  <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -97,7 +97,7 @@ def generate_launch_description():
         [
             FindPackageShare("robot"),
             "controllers",
-            "head.yaml",
+            "robot.yaml",
         ]
     )
 

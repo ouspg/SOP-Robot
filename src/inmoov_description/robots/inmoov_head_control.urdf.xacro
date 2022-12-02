@@ -17,7 +17,7 @@
   <xacro:include filename="$(find inmoov_description)/urdf/asmHand.urdf.xacro" />
 
 <!-- Import ros2_control description -->
-  <xacro:include filename="head.ros2_control.xacro" />
+  <xacro:include filename="robot.ros2_control.xacro" />
 
   <link name="world"/>
 
@@ -136,7 +136,7 @@
    <child link="l_hand_link"/>
   </joint>
   
-  <xacro:robot_head name="RobotHead" prefix="" />
+  <xacro:robot name="Robot" prefix="" />
 
 </robot>
 
