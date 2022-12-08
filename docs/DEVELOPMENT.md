@@ -7,9 +7,9 @@
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
   * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
 
-**Note: if you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
+**Note: If you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
 
-**Note: after creatgin the machine, you will have to enable the USB controller in VM settings manually**
+**Note: after creating the machine, you will have to enable the USB controller in VM settings manually**
 
 If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
 
@@ -33,7 +33,9 @@ To provision the guest (you may have to set the provider manually):
 vagrant up --provider=virtualbox
 ```
 
-Provisioning the machine for the first time can take up to 1 hour. In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
+Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [bootstrap.sh](vagrant-scripts/bootstrap.sh). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
+
+**Note: If you have Hyper-V activated on Windows Host and decide to use Virtualbox as a hypervisor, Virtualbox will run very slowly. More information on [virtualbox forum](https://forums.virtualbox.org/viewtopic.php?t=99390) and [here](https://www.sysprobs.com/fixed-virtualbox-vms-too-slow-on-windows-host).**
 
 Now test that the provision succeeded, so `vagrant ssh` into the guest and run `ls`, you should be see the following output:
 
@@ -57,13 +59,15 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 6. Open the `/workspace` directory
 7. Install whatever extensions you want to use on the guest
    1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
-   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly)
+   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly). [This](https://code.visualstudio.com/docs/languages/cpp) and [this](https://code.visualstudio.com/docs/cpp/config-linux) tutorials may help.
 
-**Note: you may have to do recursive git clone (`git submodule update --init --recursive`) and run: `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y` after `vagrant up`, if the shared folder was not mounted correctly during `vagrant up`**
+**Note: you may have to do recursive git clone (`git submodule update --init --recursive`) and run: `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y` after `vagrant up`, if the shared folder was not mounted correctly during `vagrant up`.**
+
+Additionally, if you lose the files of git submodules (`dynamixel-workbench` and `dynamixel-workbench-msgs`) you can get them back with `git submodule update --init --recursive`.
 
 ### Using GUI Apps
 
-When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. 
+When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. With virtualbox you can also just start the VM from virtualbox GUI.
 
 **Note: if your VM GUI freezes on resize, try changing the virtual machine graphics controller in the VirtualBox settings to VMSVGA**
 
