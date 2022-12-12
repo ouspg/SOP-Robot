@@ -135,8 +135,11 @@ adduser vagrant vboxsf
 mkdir -p /opencv_cam_ws/src
 cd /opencv_cam_ws/src
 git clone https://github.com/clydemcqueen/opencv_cam.git
+# Checkout specific commit of ros2_shared
 git clone https://github.com/ptrmu/ros2_shared.git
-cd ..
+cd ros2_shared
+git checkout 02433ef4f873876c3dd3ab2925987cf04d224660
+cd ../..
 
 rosdep init
 rosdep update
