@@ -54,6 +54,7 @@ apt install -y \
   python3-rosdep \
   python3-setuptools \
   python3-vcstool \
+  python3-keras \
   wget
 # install some pip packages needed for testing
 python3 -m pip install -U \
