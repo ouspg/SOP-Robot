@@ -33,7 +33,7 @@ To provision the guest (you may have to set the provider manually):
 vagrant up --provider=virtualbox
 ```
 
-Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [bootstrap.sh](vagrant-scripts/bootstrap.sh). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
+Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [bootstrap.sh](../vagrant-scripts/bootstrap.sh). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
 
 Now test that the provision succeeded, so `vagrant ssh` into the guest and run `ls`, you should be see the following output:
 
