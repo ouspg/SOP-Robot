@@ -218,7 +218,7 @@ You just need to try the `colcon build` build again. We have tried to make sure 
 
 Our suggestion is to test how environment works when folders are not synced from host OS. In other words move the whole development environment to guest OSes virtual disk. 
 
-#### 2. Builds just stops to random error
+#### 2. Building just stops to random error
 
 Please, run the `colcon build` again couple times, it might help. If you want to do some cleaning following commands have been sometimes helpful.
 
@@ -227,6 +227,11 @@ colcon build --cmake-clean-cache
 ```
 
 After you have run that try again `colcon build`.
+
+#### 3. Build fails to dependency issue
+
+If you face package dependency failures during `colcon build` please run `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y`. It might request you to run `rosdep update` first. Run it first and then run the `rosdep install ...`. Then try to run `colcon build` again and it should be able to figure out those dependencies now.
+
 
 <!-- References -->
 
