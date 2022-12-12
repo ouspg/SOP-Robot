@@ -2,7 +2,7 @@
 
 Open the terminal in VM and build the robot code with `colcon build`. This will take a while especially on first run.
 
-If the `source install/setup.bash` is not set up in ~.bashrc you need to run it once in every new terminal before launching the robot. You should not need to run this, because this should be set up during provisioning.
+Next you need to source the built environment with `source install/setup.bash`. In short, you need to run this every time you have fresh build for your robot. This is set up in ~.bashrc, so you don't need to run it in every new terminal before launching the robot or other node.
 
 Now continue instructions in [Bring-up fake (simulated) robot][] or [Bring-up real HW robot][].
 
