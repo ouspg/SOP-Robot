@@ -154,3 +154,9 @@ python3 -m pip install opencv-python dlib
 # Install workspace package dependencies
 cd /workspace
 #rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+
+# Enable sourcing of built ros2 environment to bash configuration
+echo "source install/setup.bash" >> /home/vagrant/.bashrc
+
+# Enable colcon autocomplete
+echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> /home/vagrant/.bashrc
