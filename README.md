@@ -54,7 +54,7 @@ Baud rate: 57600, Voltage: 7.5
 
 **Note: wrist joint seems to overload very easily**
 
-> Reason for this detected during inspection of the mechanical assembly. The hand is installed wrong way to wrist.
+- Reason for this detected during inspection of the mechanical assembly. The hand is installed wrong way to the wrist.
 
 **Note: servo angle limits are not configured**
 
