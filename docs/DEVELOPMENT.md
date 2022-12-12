@@ -52,7 +52,7 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 2. Use `vagrant ssh-config >> ~/.ssh/config` to export the ssh-config
    * **Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner**
 3. Open `Remote-SSH: Connect to Host` in VSCode
-4. Select `ros-vagrant`
+4. Select `vagrant-ros`
 5. Select `Linux`
 6. Open the `/workspace` directory
 7. Install whatever extensions you want to use on the guest
