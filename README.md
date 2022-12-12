@@ -39,7 +39,7 @@ Baud rate: 57600, Voltage: 7.5
 | 2        | XL430 | head_tilt_vertical_joint    | Head tilt up/down     |
 | 3        | XL430 | head_tilt_left_joint        | Head tilt left-side   |
 | 4        | XL430 | head_pan_joint              | Head turn left/right  |
-| 10       | XL320 | eyes_shift_horizontal_joint | Eyes shift left/right |
+| 9        | XL320 | eyes_shift_horizontal_joint | Eyes shift left/right |
 | 11       | XL320 | eyes_shift_vertical_joint   | Eyes shift up/down    |
 | 12       | XL320 | head_jaw_joint              | Open/close jaw        |
 | 31       | XL320 | r_thumb_joint               | Open/close thumb      |
