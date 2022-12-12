@@ -67,7 +67,9 @@ You can launch the real robot using a launch file:
 ros2 launch robot robot.launch.py
 ```
 
-This should launch the robot listening server and prints a lot of output. If not, check the [Dynamixel servo troubleshooting][] part below. `robot.launch.py` file creates temporary file from [dynamixel_arm.yaml][] and [dynamixel_head.yaml][] to `config/` folder to allow launching the arm and head separately.
+This should launch the robot listening server and prints a lot of output. If not, check the [Troubleshooting][] part below. `robot.launch.py` file creates temporary file from [dynamixel_arm.yaml][] and [dynamixel_head.yaml][] to `config/` folder to allow launching the arm and head separately.
+
+[Troubleshooting](#troubleshooting)
 
 To launch only the **arm** hardware
 
@@ -80,8 +82,6 @@ To launch only the **head** hardware
 ```console
 ros2 launch robot robot.launch.py robot_parts:=head
 ```
-
-[Dynamixel servo troubleshooting]:#dynamixel-servo-troubleshooting
 
 ### 1.5 Starting the controllers
 
