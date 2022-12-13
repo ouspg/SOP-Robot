@@ -154,7 +154,8 @@ python3 -m pip install opencv-python dlib
 
 # Install workspace package dependencies
 cd /workspace
-#rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+rosdep update
+rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
 
 # Enable sourcing of built ros2 environment to bash configuration
 echo "source install/setup.bash" >> /home/vagrant/.bashrc
