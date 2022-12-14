@@ -168,6 +168,10 @@ ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/acti
 }"
 ```
 
+**Note: When driving the head_tilt_left/right joints, you must move the both servos simulatenously the same amount to the correct directions!**
+
+**Note: The head_tilt_vertical_joint is easily overloaded due to the weight of the head and stickiness of the drive screw, and the servo will stop responding. Requires mechanical improvement.**
+
 If you want to move only one joint at a time, it possible by omitting the other joints:
 
 ```console
