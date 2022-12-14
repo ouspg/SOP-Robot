@@ -181,6 +181,19 @@ ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/acti
 }"
 ```
 
+The jaw can be controlled with jaw_controller. Value for closed jaw is 0.0 and for open 0.55.
+
+```console
+ros2 action send_goal /jaw_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
+  trajectory: {
+    joint_names: [head_jaw_joint],
+    points: [
+      { positions: [0.55], time_from_start: { sec: 1, nanosec: 0 } }
+    ]
+  }
+}"
+```
+
 `time_from_start` is the duration of the movement.
 
 **Note: acceleration and velocity is fixed for real servos currently, so these cannot be controlled. This would require adding velocity and acceleration command interfaces to the JointTrajectoryAction controller**
