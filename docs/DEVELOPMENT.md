@@ -50,7 +50,7 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 
 1. Use `vagrant up` to bring up the guest machine
 2. Use `vagrant ssh-config >> ~/.ssh/config` to export the ssh-config
-   * **Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner**
+   * **IMPORTANT! Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner. Convert the encoding if necessary.**
 3. Open `Remote-SSH: Connect to Host` in VSCode
 4. Select `vagrant-ros`
 5. Select `Linux`
@@ -68,6 +68,8 @@ Additionally, if you lose the files of git submodules (`dynamixel-workbench` and
 When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. With virtualbox you can also just start the VM from virtualbox GUI.
 
 After the VM is created, remember to add USB device filters for the USB devices you are using with the robot in the VM settings (e.g., webcam, servo controller). Oracle VM VirtualBox Manager -> Select the created VM -> Settings -> USB -> Check the 'Enable USB Controller' box and choose USB 3.0 Controller -> Add filters for devices using the '+' button. Devices might not always automatically connect to VM even the filters are configured. You can connect them manually from the menu bar. Devices -> USB -> and you will get the list of usb devices. Just select one of them and Virtualbox attaches it to the VM. Tick appears next to the device when it is attached.
+
+**Note: The Ubuntu in VM defaults to US keyboard layout. You can change the layout from Ubuntu's options.**
 
 **Note: if your VM GUI freezes on resize, try changing the virtual machine graphics controller in the VirtualBox settings to VMSVGA**
 

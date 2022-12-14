@@ -2,7 +2,7 @@
 
 Open the terminal in VM and build the robot code with `colcon build`. This will take a while especially on first run.
 
-Next you need to source the built environment with `source install/setup.bash`. In short, you need to run this every time you have fresh build for your robot. This is set up in ~.bashrc, so you don't need to run it in every new terminal before launching the robot or other node.
+Next you need to source the built environment with `source install/setup.bash`. In short, you need to run this every time you have fresh build for your robot. This is set up in ~/.bashrc, so you don't need to run it in every new terminal before launching the robot or other node.
 
 Now continue instructions in [Bring-up fake (simulated) robot][] or [Bring-up real HW robot][].
 
@@ -15,7 +15,7 @@ If you just want to test that robot starts, send hand written commands or use th
 
 [Webcam setup in Virtualbox]:#webcam-setup-in-virtualbox
 
-You can launch the fake robot in rviz using launch file. Run the following command in a GUI environment:
+You can launch the fake robot in rviz using the launch file. Run the following command in a GUI environment:
 
 ```console
 ros2 launch robot robot.fake.launch.py
@@ -69,7 +69,7 @@ ros2 launch robot robot.launch.py
 
 This should launch the robot listening server and prints a lot of output. If not, check the [Troubleshooting][] part below. `robot.launch.py` file creates temporary file from [dynamixel_arm.yaml][] and [dynamixel_head.yaml][] to `config/` folder to allow launching the arm and head separately.
 
-[Troubleshooting](#troubleshooting)
+[Troubleshooting]:#troubleshooting
 
 To launch only the **arm** hardware
 
@@ -85,7 +85,7 @@ ros2 launch robot robot.launch.py robot_parts:=head
 
 ### 1.5 Starting the controllers
 
-In general you can start the controllers:
+In general you can start the controllers with:
 
 ```console
 ros2 control load_controller --set-state start <controller_name>
@@ -106,14 +106,14 @@ ros2 control list_controllers
 
 Now you are ready to use the hand with the [hand action client][].
 
-### 3. Starting the controllers for eyes
+### 3. Starting the controller for eyes
 
 If you completed the step 2. you can run this command in same cli. Otherwise open new cli.
 
 Start the controller for eyes:
 
 ```console
-ros2 control load_start_controller eyes_controller
+ros2 control load_controller --set-state start eyes_controller
 ```
 
 ### 4. Launching the face tracker
@@ -140,11 +140,11 @@ Finally, start the eye movement node in a new terminal window
 ros2 run eye_movement eye_movement_node
 ```
 
-**Todo: simplify bring up process (add commands to launch file)**
+**Todo: simplify bring up process (add the starting of the controllers to the launch file)**
 
 ## Sending action goals manually
 
-If you want to send action goals to head you need to start the `head_controller` Then following actions and topics should be available:
+The robot head joints doesn't have similar easy to use action client as the arm has. If you want to send action goals to the head you need to start the `head_controller` Then following actions and topics should be available:
 
 ```console
 vagrant@vagrant-ros:/workspace$ ros2 action list
@@ -155,7 +155,7 @@ vagrant@vagrant-ros:/workspace$ ros2 topic list
 /joint_states
 ```
 
-For example, if the joint `head_pan_joint` was configured correctly, it should move to position `0.5` when publishing the following action:
+For example, if the joint `head_pan_joint` was configured correctly, it should move to position `0.5` when publishing the following action (other joints will also move to 0 positions if not already):
 
 ```console
 ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
@@ -168,13 +168,26 @@ ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/acti
 }"
 ```
 
+If you want to move only one joint at a time, it possible by omitting the other joints:
+
+```console
+ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
+  trajectory: {
+    joint_names: [head_pan_joint],
+    points: [
+      { positions: [1.0], time_from_start: { sec: 2, nanosec: 0 } }
+    ]
+  }
+}"
+```
+
 `time_from_start` is the duration of the movement.
 
 **Note: acceleration and velocity is fixed for real servos currently, so these cannot be controlled. This would require adding velocity and acceleration command interfaces to the JointTrajectoryAction controller**
 
 ## Webcam setup in Virtualbox
 
-If you have a integrated webcam in you laptop you can use it. You need to pass the webcam hardware to Ubuntu guest from menu "Devices->Webcam->..." and choose your hardware. If you are using the usb connected external webcam configure it inside the USB settings. Or just pass it to guest with "Devices->USB->..." and choose your webcam.
+If you have a integrated webcam in you laptop you can use it. You need to pass the webcam hardware to Ubuntu guest from menu "Devices->Webcam->..." and choose your hardware. If you are using the usb connected external webcam (e.g. the camera integrated to the robot eye) configure it inside the USB settings. Or just pass it to guest with "Devices->USB->..." and choose your webcam.
 
 **If you have issues connecting the camera to guest make sure that you have the matching version of guest additions installed in the guest os.**
 

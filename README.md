@@ -8,7 +8,7 @@ Read also [controller](https://control.ros.org/master/index.html) documentation 
 
 ## The Robot
 
-The robot uses dynamixel servos. Servos are controlled via the `robot_hardware` ROS node, which implements the hardware interface for [ros2_control](https://github.com/ros-controls/ros2_control). `robot` package contains the servo controller configurations for the robot. See [robot.yaml](src/robot/controllers/robot.yaml), for example. The head supports `joint_trajectory_controller`. When using this controller, joints can be controlled by sending action messages to the trajectroy controller. See [bring up](./docs/BRINGUP.md) for an example of action message.
+The robot uses dynamixel servos. Servos are controlled via the `robot_hardware` ROS node, which implements the hardware interface for [ros2_control](https://github.com/ros-controls/ros2_control). `robot` package contains the servo controller configurations for the robot. See [robot.yaml](src/robot/controllers/robot.yaml), for example. The head supports `joint_trajectory_controller`. When using this controller, joints can be controlled by sending action messages to the trajectory controller. See [bring up](./docs/BRINGUP.md) for an example of action message.
 
 Joint -> Servo mappings are defined in two files. Configuration file connects servo ID with certain joint. [dynamixel_arm.yaml](config/dynamixel_arm.yaml) is for servos of robot arm and [dynamixel_head.yaml](config/dynamixel_head.yaml) for servos of head.
 
