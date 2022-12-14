@@ -53,6 +53,8 @@ Success! You are done. Eyes should "follow" your face. This implementation has a
 
 Anyway, you are able to test the face tracking and eye movements like this.
 
+**Note: currently, only jaw, eyes, right hand & head pan movement can be simulated**
+
 ## Bring-up real HW robot
 
 ### (0. Test servo communication)
