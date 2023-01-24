@@ -2,24 +2,26 @@
 # Control table item has to be set Camel_Case and not included whitespace
 # You are supposed to set at least Dynamixel ID
 
+# This file contains the servo IDs for the robot's head
+
 head_tilt_right_joint:
-  ID: 1
+ ID: 1
 
 head_tilt_vertical_joint:
-  ID: 2
+ ID: 2
 
 head_tilt_left_joint:
-  ID: 3
+ ID: 3
 
 head_pan_joint:
-  ID: 4
-  Drive_Mode: 0 # Velocity-based Profile, default actually
+ ID: 4
+ Drive_Mode: 0 # Velocity-based Profile, default actually
 
 eyes_shift_horizontal_joint:
-  ID: 10
+  ID: 9 #Change from 10 to 9 because of physical servo change
 
 eyes_shift_vertical_joint:
   ID: 11
 
 head_jaw_joint:
-  ID: 12
+ ID: 12

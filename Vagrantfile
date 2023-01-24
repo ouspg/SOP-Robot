@@ -6,6 +6,7 @@ Vagrant.configure("2") do |config|
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "generic/ubuntu2004"
   config.vm.hostname = "vagrant-ros"
+  config.vm.define "vagrant-ros"
 
   config.vm.provider "virtualbox" do |vb|
     # Don't boot with headless mode
@@ -13,7 +14,7 @@ Vagrant.configure("2") do |config|
 
     vb.customize ["modifyvm", :id, "--memory", "4096"]
     vb.customize ["modifyvm", :id, "--cpus", "4"]
-  #  vb.customize ["modifyvm", :id, "--graphicscontroller", "vboxvga"]
+    vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
   #  vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
   #  vb.customize ["modifyvm", :id, "--ioapic", "on"]
   #  vb.customize ["modifyvm", :id, "--vram", "128"]

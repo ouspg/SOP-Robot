@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'example'
+package_name = 'eye_movement'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'example_node = example.example_node:main'
+            'eye_movement_node = eye_movement.eye_movement_node:main'
         ],
     },
 )

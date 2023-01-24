@@ -2,7 +2,7 @@
 ~*
 *~
 .o
-.pyc
+*.pyc
 
 .vscode/*
 !.vscode/c_cpp_properties.json
@@ -14,3 +14,5 @@ log
 install
 
 .vagrant
+
+temp_dynamixel_for_launch.yaml

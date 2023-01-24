@@ -7,9 +7,9 @@
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
   * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
 
-**Note: if you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
+**Note: If you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
 
-**Note: after creatgin the machine, you will have to enable the USB controller in VM settings manually**
+**Note: after creating the machine, you will have to enable the USB controller in VM settings manually**
 
 If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
 
@@ -33,7 +33,7 @@ To provision the guest (you may have to set the provider manually):
 vagrant up --provider=virtualbox
 ```
 
-Provisioning the machine for the first time can take up to 1 hour. In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
+Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [bootstrap.sh](../vagrant-scripts/bootstrap.sh). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
 
 Now test that the provision succeeded, so `vagrant ssh` into the guest and run `ls`, you should be see the following output:
 
@@ -50,22 +50,30 @@ Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup t
 
 1. Use `vagrant up` to bring up the guest machine
 2. Use `vagrant ssh-config >> ~/.ssh/config` to export the ssh-config
-   * **Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner**
+   * **IMPORTANT! Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner. Convert the encoding if necessary.**
 3. Open `Remote-SSH: Connect to Host` in VSCode
-4. Select `ros-vagrant`
+4. Select `vagrant-ros`
 5. Select `Linux`
 6. Open the `/workspace` directory
 7. Install whatever extensions you want to use on the guest
    1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
-   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly)
+   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly). [This](https://code.visualstudio.com/docs/languages/cpp) and [this](https://code.visualstudio.com/docs/cpp/config-linux) tutorials may help.
 
-**Note: you may have to do recursive git clone (`git submodule update --init --recursive`) and run: `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y` after `vagrant up`, if the shared folder was not mounted correctly during `vagrant up`**
+**Note: you may have to do recursive git clone (`git submodule update --init --recursive`) and run: `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y` after `vagrant up`, if the shared folder was not mounted correctly during `vagrant up`.**
 
-### Using GUI Apps
+Additionally, if you lose the files of git submodules (`dynamixel-workbench` and `dynamixel-workbench-msgs`) you can get them back with `git submodule update --init --recursive`.
 
-When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. 
+## About Virtualbox setup
+
+When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. With virtualbox you can also just start the VM from virtualbox GUI.
+
+After the VM is created, remember to add USB device filters for the USB devices you are using with the robot in the VM settings (e.g., webcam, servo controller). Oracle VM VirtualBox Manager -> Select the created VM -> Settings -> USB -> Check the 'Enable USB Controller' box and choose USB 3.0 Controller -> Add filters for devices using the '+' button. Devices might not always automatically connect to VM even the filters are configured. You can connect them manually from the menu bar. Devices -> USB -> and you will get the list of usb devices. Just select one of them and Virtualbox attaches it to the VM. Tick appears next to the device when it is attached.
+
+**Note: The Ubuntu in VM defaults to US keyboard layout. You can change the layout from Ubuntu's options.**
 
 **Note: if your VM GUI freezes on resize, try changing the virtual machine graphics controller in the VirtualBox settings to VMSVGA**
+
+**Note: If you have Hyper-V activated on Windows Host and decide to use Virtualbox as a hypervisor, Virtualbox will run very slowly. More information on [virtualbox forum](https://forums.virtualbox.org/viewtopic.php?t=99390) and [here](https://www.sysprobs.com/fixed-virtualbox-vms-too-slow-on-windows-host).**
 
 ## Create ROS package
 
