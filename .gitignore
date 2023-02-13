@@ -12,6 +12,8 @@ build
 devel
 log
 install
+src/examples
+src/ros_tutorials
 
 .vagrant
 

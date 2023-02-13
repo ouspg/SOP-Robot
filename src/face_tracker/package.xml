@@ -9,6 +9,7 @@
   <license>MIT</license>
 
   <depend>python3-keras</depend>
+  <!--<depend>tensorflow</depend>-->
   <depend>python-argparse</depend>
   <depend>python3-sklearn</depend>
   <depend>python-numpy</depend>

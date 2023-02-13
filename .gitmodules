@@ -6,3 +6,6 @@
 	path = src/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
 	branch = ros2
+[submodule "src/speech_python/pixel_ring"]
+	path = src/speech_python/pixel_ring
+	url = https://github.com/respeaker/pixel_ring.git
