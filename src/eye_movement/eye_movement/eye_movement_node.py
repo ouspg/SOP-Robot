@@ -23,10 +23,10 @@ class EyeMoverClient(Node):
         self.get_logger().info('Eye mover client initialized.')
 
     def listener_callback(self, msg):
-        self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
+        #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         is_glancing = False
-        glance_percentage = 0.75
-        randomvalue = random.randint(0, 99)
+        glance_percentage = 0.01
+        randomvalue = random.uniform(0, 1)
 
         # Check if doing the glance or not
         if randomvalue <= glance_percentage:
@@ -77,7 +77,7 @@ def get_random_location():
     """
     Returns a random location coordinates.
     """
-    random_x = random.uniform(-2, 0)
+    random_x = random.uniform(-2, 0.5)
     random_y = random.uniform(-0.7, -0.2)
     return random_x, random_y
 
@@ -89,7 +89,7 @@ def main():
 
     action_client = EyeMoverClient()
 
-    action_client.send_goal(-0.25, -1.0, False)
+    action_client.send_goal(-0.5, -0.75, False)
 
     rclpy.spin(action_client)
 
