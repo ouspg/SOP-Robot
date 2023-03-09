@@ -89,7 +89,7 @@ def main():
 
     action_client = EyeMoverClient()
 
-    action_client.send_goal(-0.5, -0.75, False)
+    action_client.send_goal(-0.5, -0.6, False)
 
     rclpy.spin(action_client)
 
