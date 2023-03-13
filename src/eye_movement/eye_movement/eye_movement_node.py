@@ -16,17 +16,17 @@ class EyeMoverClient(Node):
     def __init__(self):
         super().__init__('eye_mover_client')
         self._action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
-        self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 10)
+        self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 1)
         # Middle point of image view
         self.middle_x = 640
         self.middle_y = 400
         self.get_logger().info('Eye mover client initialized.')
 
     def listener_callback(self, msg):
-        self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
+        #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
         is_glancing = False
-        glance_percentage = 0.75
-        randomvalue = random.randint(0, 99)
+        glance_percentage = 0.01
+        randomvalue = random.uniform(0, 1)
 
         # Check if doing the glance or not
         if randomvalue <= glance_percentage:
@@ -38,6 +38,12 @@ class EyeMoverClient(Node):
 
         # Move eyes
         self.send_goal(eye_location_y, eye_location_x, is_glancing)
+
+        if not is_glancing and abs(self.middle_x - msg.x) < 100:
+            time.sleep(0.25)
+            self.center_eyes(Duration(sec=0, nanosec=500000000))
+            time.sleep(0.5)
+
         self.get_logger().info('eye location x: %f, eye location y: %f' % (eye_location_x, eye_location_y))
 
     def send_goal(self, vertical, horizontal, glance):
@@ -71,13 +77,25 @@ class EyeMoverClient(Node):
         eye_location_y = y_diff * v_coeff - 0.25
 
         return eye_location_x, eye_location_y
+    
+    def center_eyes(self, duration=Duration(sec=0, nanosec=0)):
+        goal_msg = FollowJointTrajectory.Goal()
+        trajectory_points = JointTrajectoryPoint(positions=[-0.5, -0.6], time_from_start=duration)
+        goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_vertical_joint', 'eyes_shift_horizontal_joint'],
+                                              points=[trajectory_points])
+
+        self._send_goal_future = self._action_client.wait_for_server()
+
+        self._action_client.send_goal_async(goal_msg)
+
+
 
 
 def get_random_location():
     """
     Returns a random location coordinates.
     """
-    random_x = random.uniform(-2, 0)
+    random_x = random.uniform(-2, 0.5)
     random_y = random.uniform(-0.7, -0.2)
     return random_x, random_y
 
@@ -89,7 +107,7 @@ def main():
 
     action_client = EyeMoverClient()
 
-    action_client.send_goal(-0.25, -1.0, False)
+    action_client.center_eyes()
 
     rclpy.spin(action_client)
 
