@@ -61,7 +61,19 @@ Anyway, you are able to test the face tracking and eye movements like this.
 
 We suggest using [Dynamixel Wizard 2.0][] to test the connection and functionality of the servos before trying to run the robot. This is optional but can save some time debugging if the servos or communication with them doesn't work.
 
-### 1. Launching the robot
+### 1a. Launching the robot (Shell script)
+
+You can use the Start_real_robot script file to quickly bring up the whole robot head. The script by default launches the face tracker and the ros2 nodes for the jaw, eye and head movement.
+
+To execute the script (in a terminal opened in /workspace):
+
+```console
+./start_real_robot
+```
+
+This opens multiple terminal tabs in quick succession without checking if the programs actually launch correctly, so you might want to check the output of each one. Usually problems are caused by the first tab (robot.launch.py) not being able to arm or find a servo.
+
+### 1b. Launching the robot (Manual)
 
 You can launch the real robot using a launch file:
 
