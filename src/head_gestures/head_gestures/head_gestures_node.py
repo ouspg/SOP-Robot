@@ -1,4 +1,5 @@
 import time
+import math
 import random
 
 import rclpy
@@ -26,7 +27,7 @@ ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/acti
 
 """
     Good middle values for real head joints. Might not work for simulated robot:
-    head_pan_joint:             0.65
+    head_pan_joint:             0.57
     head_tilt_vertical_joint:  -0.55
     head_tilt_left_joint:      -0.5
     head_tilt_right_joint:      0.5
@@ -38,22 +39,32 @@ class HeadMoverNode(Node):
         super().__init__('head_mover_client')
         self._action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
         self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 1)
-        self.send_goal(0.65, -0.55, 0.5)
-        time.sleep(1)
         # Middle point of image view
         self.middle_x = 640
         self.middle_y = 400
-        self.current_pan = 0.65
+        self.current_pan = 0.57
         self.current_vertical_tilt = -0.55
+        self.moving = False
+        self.pan_diff = 0
+        #self.timer = self.create_timer(0.25, self.turn_to_face)
+        self.send_goal(self.current_pan, self.current_vertical_tilt, 0.5)
+        time.sleep(1)
         
         self.get_logger().info('Head mover client initialized.')
 
     def listener_callback(self, msg):
-        pan, vertical_tilt = self.transform_face_location_to_head_values(msg.x, msg.y)
-        self.current_pan = max(min(1.75, self.current_pan + pan), -0.25) # limit pan to reasonable values
-        self.get_logger().info("Turning head by " + str(pan))
-        self.send_pan_and_vertical_tilt_goal(self.current_pan, -0.55)
-        time.sleep(0.1)
+        if not self.moving:
+            self.pan_diff, _ = self.transform_face_location_to_head_values(msg.x, msg.y)
+
+            if self.pan_diff != 0: 
+                self.moving = True
+                time.sleep(0.3)
+                self.current_pan = max(min(1.75, self.current_pan + self.pan_diff), -0.25) # limit pan to reasonable values
+                self.get_logger().info("Turning head by " + str(self.pan_diff))
+                self.send_pan_and_vertical_tilt_goal(self.current_pan, -0.55)
+                time.sleep(0.5)
+                self.pan_diff = 0
+                self.moving = False
 
     def send_horizontal_tilt_goal(self, horizontalTilt):
         goal_msg = FollowJointTrajectory.Goal()
@@ -67,7 +78,7 @@ class HeadMoverNode(Node):
         
     def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt):
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=Duration(sec=0, nanosec=0))
+        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=Duration(sec=0, nanosec=400000000))
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
                                               points=[trajectory_points])
 
@@ -91,14 +102,14 @@ class HeadMoverNode(Node):
         y_diff = self.middle_y - face_location_y
 
         # If the face is close enough to the center, leave the small movements for the eyes.
-        if abs(x_diff) < 100:
+        if abs(x_diff) < 200:
             x_diff = 0
-        if abs(y_diff) < 100:
+        if abs(y_diff) < 200:
             y_diff = 0
 
         # Transform face movement to head joint values
         # Head pan
-        h_coeff = -0.0006
+        h_coeff = -0.0008
         pan = x_diff * h_coeff
         # TODO: Vertical tilt
         v_coeff = 0
