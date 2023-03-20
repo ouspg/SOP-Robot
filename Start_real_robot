@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Start main robot script
+gnome-terminal --tab -- bash -c "ros2 launch robot robot.launch.py; exec bash"
+sleep 1
+# Start the controllers
+gnome-terminal --tab -- bash -c "ros2 control load_controller --set-state start eyes_controller; ros2 control load_controller --set-state start head_controller; ros2 control load_controller --set-state start jaw_controller; exec bash"
+sleep 5
+# Launch face tracker
+gnome-terminal --tab -- bash -c "ros2 launch face_tracker face_tracker.test.launch.py; exec bash"
+# Launch other ros2 nodes
+gnome-terminal --tab -- bash -c "ros2 run jaw_movement jaw_movement_node; exec bash"
+gnome-terminal --tab -- bash -c "ros2 run head_gestures head_gestures_node; exec bash"
+gnome-terminal --tab -- bash -c "ros2 run eye_movement eye_movement_node; exec bash"
