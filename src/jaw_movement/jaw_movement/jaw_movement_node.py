@@ -54,22 +54,22 @@ class JawMoverNode(Node):
         velar = ['k','g']
         if char in vowels:
             if char in close:
-                return 0.2
-            elif char in closeMid:
                 return 0.25
-            else:
+            elif char in closeMid:
                 return 0.35
+            else:
+                return 0.5
         else:
             if char in bilabial:
-                return 0.05 #Should be 0.0, not sure if hardware can handle
+                return 0.0 #Should be 0.0, not sure if hardware can handle
             elif char in labiodental:
-                return 0.05
+                return 0.0
             elif char in alveolar:
-                return 0.1
-            elif char in velar:
-                return 0.2
-            else:
                 return 0.15
+            elif char in velar:
+                return 0.3
+            else:
+                return 0.2
 
 def main():
     print('Hello from jaw_movement.')
