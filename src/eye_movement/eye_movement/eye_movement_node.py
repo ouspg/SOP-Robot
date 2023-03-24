@@ -25,7 +25,7 @@ class EyeMoverClient(Node):
 
     def listener_callback(self, msg):
         #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
-        glance_percentage = 0.01
+        glance_percentage = 0.0025
         randomvalue = random.uniform(0, 1)
 
         if not self.is_glancing:
@@ -43,12 +43,12 @@ class EyeMoverClient(Node):
         if not self.is_glancing and abs(self.middle_x - msg.x) > 200:
             # Center the eyes in pace with the turning head to keep the camera in the direction of the face
             # No need to constantly center if the eyes are only slightly off center
-            time.sleep(0.4)
+            time.sleep(0.5)
             self.center_eyes(Duration(sec=0, nanosec=500000000))
             time.sleep(0.5)
         elif self.is_glancing:
             # Center the eyes back to the face after glancing
-            time.sleep(0.5)
+            time.sleep(0.2)
             self.center_eyes(Duration(sec=0, nanosec=0))
             time.sleep(0.2)
             self.is_glancing = False
@@ -75,17 +75,17 @@ class EyeMoverClient(Node):
 
         # Transform face movement to eye movement
         # Horizontal eye movement
-        h_coeff = -0.00234
+        h_coeff = -0.001666
         eye_location_x = x_diff * h_coeff - 0.5
         # Vertical eye movement
-        v_coeff = -0.001125
-        eye_location_y = y_diff * v_coeff - 0.25
+        v_coeff = 0.003125
+        eye_location_y = y_diff * v_coeff - 0.75
 
         return eye_location_x, eye_location_y
     
     def center_eyes(self, duration=Duration(sec=0, nanosec=0)):
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[-0.5, -0.6], time_from_start=duration)
+        trajectory_points = JointTrajectoryPoint(positions=[-0.7, -0.75], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_vertical_joint', 'eyes_shift_horizontal_joint'],
                                               points=[trajectory_points])
 
@@ -101,8 +101,8 @@ def get_random_location():
     """
     Returns a random location coordinates.
     """
-    random_x = random.uniform(-2, 0.5)
-    random_y = random.uniform(-0.7, -0.2)
+    random_x = random.uniform(-1.5, 0.5)
+    random_y = random.uniform(-1.5, -0)
     return random_x, random_y
 
 
