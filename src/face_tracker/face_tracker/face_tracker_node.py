@@ -81,10 +81,10 @@ class FaceTracker(Node):
             Image,
             image_topic,
             self.on_frame_received,
-            10,
+            2,
         )
-        self.face_img_publisher = self.create_publisher(Image, face_image_topic, 10)
-        self.face_publisher = self.create_publisher(Faces, face_topic, 10)
+        self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
+        self.face_publisher = self.create_publisher(Faces, face_topic, 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
         #timer_period = 0.5    # Face publish interval in seconds
@@ -259,7 +259,7 @@ class FaceTracker(Node):
                 self.frame += 1
                 self.face_size_frame += 1
                 # Set frame to zero for new detection every nth frame
-                n = 25
+                n = 1
                 self.frame = self.frame % n
 
                 #set frame to zero for new face size detection every n_face_size frame
