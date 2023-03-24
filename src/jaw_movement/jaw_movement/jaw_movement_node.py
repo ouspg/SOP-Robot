@@ -16,7 +16,7 @@ class JawMoverNode(Node):
         super().__init__('jaw_mover_client')
         self._action_client = ActionClient(self, FollowJointTrajectory, '/jaw_controller/follow_joint_trajectory')
         
-        timer_period = 0.2
+        timer_period = 0.15
         
         self.timer = self.create_timer(timer_period, self.timer_callback)
         
@@ -34,7 +34,7 @@ class JawMoverNode(Node):
 
         char = self.input[self.i].lower()
         jawPos = self.synch_jaw_to_speech(char)
-        trajectory_points = JointTrajectoryPoint(positions=[jawPos], time_from_start=Duration(sec=0, nanosec=150000000))
+        trajectory_points = JointTrajectoryPoint(positions=[jawPos], time_from_start=Duration(sec=0, nanosec=0))
         goal_msg.trajectory = JointTrajectory(joint_names=['head_jaw_joint'], points=[trajectory_points])
         self._send_goal_future = self._action_client.wait_for_server()
         self.get_logger().info("Jaw: " + str(jawPos) + "Letter: " + char)
