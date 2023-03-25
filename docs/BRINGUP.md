@@ -148,10 +148,10 @@ ros2 run rqt_image_view rqt_image_view /face_tracker/image_face
 
 This opens the view to see the camera feed and what face detection recognizes.
 
-Finally, start the eye movement node in a new terminal window
+Finally, start the face tracking movement node in a new terminal window
 
 ```console
-ros2 run eye_movement eye_movement_node
+ros2 run face_tracker_movement face_tracker_movement_node
 ```
 
 **Todo: simplify bring up process (add the starting of the controllers to the launch file)**
