@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'eye_movement'
+package_name = 'face_tracker_movement'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'eye_movement_node = eye_movement.eye_movement_node:main'
+            'face_tracker_movement_node = face_tracker_movement.face_tracker_movement_node:main'
         ],
     },
 )
