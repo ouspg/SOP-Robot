@@ -7,20 +7,20 @@
   <maintainer email="jruntti20@student.oulu.fi">vagrant</maintainer>
   <license>Apache License 2.0</license>
 
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>rclcpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>python-pyaudio</exec_depend>
-  <exec_depend>python-speechrecognition-pip</exec_depend>
+  <depend>rclpy</depend>
+  <depend>rclcpp</depend>
+  <depend>msg_interface</depend>
+  <depend>python-pyaudio</depend>
+  <depend>python-speechrecognition-pip</depend>
   <!--<exec_depend>speech_recognition_msgs</exec_depend>-->
   <!--<exec_depend>audio_common_msgs</exec_depend>-->
-  <exec_depend>tf2</exec_depend>
-  <exec_depend>portaudio19-dev</exec_depend>
-  <exec_depend>angles</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>python3-pocketsphinx-pip</exec_depend>
+  <depend>tf2</depend>
+  <depend>portaudio19-dev</depend>
+  <depend>angles</depend>
+  <depend>geometry_msgs</depend>
+  <depend>python3-pocketsphinx-pip</depend>
   <!--<exec_depend>python3-webrtcvad-pip</exec_depend>-->
-  <exec_depend>python3-requests</exec_depend>
+  <depend>python3-requests</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

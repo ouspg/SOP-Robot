@@ -10,7 +10,7 @@ import pocketsphinx
 import speech_recognition as sr
 from threading import Thread, Event
 
-from custom_msg.msg import speech_recognition
+from msg_interface.msg import SpeechRecognitionCandidates
 
 import pyaudio
 
@@ -43,7 +43,7 @@ class Rec(Thread):
                 except sr.RequestError as e:
                     print("Could not request results from Google Speech Recognition service; {0}".format(e))        
 
-def main():
+def speech_rec():
     logging.basicConfig(level=logging.DEBUG)
     quit_event = Event()
     thread = Rec("Harjoitus")
@@ -58,4 +58,4 @@ def main():
     thread.join()
 
 if __name__ == '__main__':
-    main()                
+    speech_rec()                

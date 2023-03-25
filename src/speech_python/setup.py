@@ -20,9 +20,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'talker = speech_python.publisher_member_function:main',
-            'listener = speech_python.subscriber_member_function:main'
-            'recognizer = speech_python.speech_rec:main'
+            #'talker = speech_python.publisher_member_function:main',
+            #'listener = speech_python.subscriber_member_function:main'
+            #'recognizer = speech_python.speech_rec:main'
+            'speech_rec = speech_python.main:main'
         ],
     },
 )

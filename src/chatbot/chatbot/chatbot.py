@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from chatterbot import ChatBot
 import logging
 from chatterbot.trainers import ChatterBotCorpusTrainer

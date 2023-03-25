@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(speech_recogni)
+project(cpp_srvcli)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -17,17 +17,8 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
-
-add_executable(Hello_world src/Hello_world.cpp)
-target_include_directories(Hello_world PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-install(TARGETS Hello_world
-  DESTINATION lib/${PROJECT_NAME})
+find_package(rclcpp REQUIRED)
+find_package(msg_interface REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -39,5 +30,16 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+add_executable(server src/add_two_ints_server.cpp)
+ament_target_dependencies(server rclcpp msg_interface)
+
+add_executable(client src/add_two_ints_client.cpp)
+ament_target_dependencies(client rclcpp msg_interface)
+
+install(TARGETS
+  server
+  client
+  DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
