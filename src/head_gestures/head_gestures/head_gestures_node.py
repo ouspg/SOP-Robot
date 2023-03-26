@@ -27,7 +27,7 @@ ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/acti
 """
 
 """
-    Head joint starting values that don't break the whole thing
+    Head joint starting values that don't break the whole thing. Not exactly looking straight ahead.
     head_pan_joint:             0.5
     head_tilt_right_joint:      0.5
     head_tilt_left_joint:      -0.5
