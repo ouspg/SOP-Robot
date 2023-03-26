@@ -43,10 +43,10 @@ ros2 run rqt_image_view rqt_image_view /face_tracker/image_face
 
 This opens the view to see the camera feed and what face detection recognizes.
 
-To get the eyes moving. (Don't be scared about eyes flipping awkwardly to the side. More about this at the end...)
+To get the eyes and head moving. (Don't be scared about eyes flipping awkwardly to the side. More about this at the end...)
 
 ```console
-ros2 run eye_movement eye_movement_node
+ros2 run face_tracker_movement face_tracker_movement_node
 ```
 
 Success! You are done. Eyes should "follow" your face. This implementation has a flaw that it is made for the real hardware, so the eye_movement node controls the eyes like it would have the real hardware. In other words, the eyes have different "zero" position in simulation compared to real hardware.
@@ -77,14 +77,14 @@ ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
 
 We suggest using [Dynamixel Wizard 2.0][] to test the connection and functionality of the servos before trying to run the robot. This is optional but can save some time debugging if the servos or communication with them doesn't work.
 
-### 1a. Launching the robot (Shell script)
+### 1a. Launching the robot head (Shell script)
 
-You can use the Start_real_robot script file to quickly bring up the whole robot head. The script by default launches the face tracker and the ros2 nodes for the jaw, eye and head movement.
+You can use the start_robot_head script file to quickly bring up the whole robot head. The script by default launches the face tracker and the ros2 nodes for the jaw, eye and head movement.
 
 To execute the script (in a terminal opened in /workspace):
 
 ```console
-./start_real_robot
+./start_robot_head
 ```
 
 This opens multiple terminal tabs in quick succession without checking if the programs actually launch correctly, so you might want to check the output of each one. Usually problems are caused by the first tab (robot.launch.py) not being able to arm or find a servo.
@@ -113,7 +113,7 @@ To launch only the **head** hardware
 ros2 launch robot robot.launch.py robot_parts:=head
 ```
 
-### 1.5 Starting the controllers
+### 1.5 Starting the controllers (Not necessary)
 
 In general you can start the controllers with:
 
@@ -121,34 +121,11 @@ In general you can start the controllers with:
 ros2 control load_controller --set-state start <controller_name>
 ```
 
-### 2. Starting the controllers for hand
-Open up another cli and start the controllers
+By default all controllers are started automatically by robot.launch.py. Remember to add new controllers you want to launch there. To add a controller you only need to add the controller name into the controllers_to_start-array in robot.launch.py (and rebuild).
 
-```console
-ros2 control load_controller --set-state start r_hand_controller
-```
+### 2. Launching the face tracker
 
-Check if controllers were loaded and confirm that all controllers are in `active` state:
-
-```console
-ros2 control list_controllers
-```
-
-Now you are ready to use the hand with the [hand action client][].
-
-### 3. Starting the controller for eyes
-
-If you completed the step 2. you can run this command in same cli. Otherwise open new cli.
-
-Start the controller for eyes:
-
-```console
-ros2 control load_controller --set-state start eyes_controller
-```
-
-### 4. Launching the face tracker
-
-After the required controllers are active, you can start the face tracker and eye movement nodes (face tracker can also be started before starting the controllers, eye movement node requires the controllers).
+After the required controllers are active, you can start the face tracker and eye movement nodes.
 
 Start the face tracker
 
