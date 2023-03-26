@@ -258,7 +258,8 @@ class FaceTracker(Node):
                                             y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
                 self.frame += 1
                 self.face_size_frame += 1
-                # Set frame to zero for new detection every nth frame
+                # Set frame to zero for new detection every nth frame.
+                # Large values lead to drifting of the detected faces
                 n = 1
                 self.frame = self.frame % n
 
