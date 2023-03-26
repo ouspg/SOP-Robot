@@ -1,3 +1,4 @@
+import sys
 import time
 import random
 
@@ -14,7 +15,7 @@ from face_tracker_msgs.msg import Point2
 
 class FaceTrackerMovementNode(Node):
 
-    def __init__(self):
+    def __init__(self, functionality):
         super().__init__('face_tracker_movement_client')
         self.eye_action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
         self.subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 1)
@@ -30,6 +31,15 @@ class FaceTrackerMovementNode(Node):
         self.eyes_state = [-0.7, -0.75]
         self.pan_diff = 0
         self.v_diff = 0
+        self.head_enabled = True
+        self.eyes_enabled = True
+
+        if functionality.lower() == "head":
+            self.get_logger().info('Eye movement is disabled.')
+            self.eyes_enabled = False
+        elif functionality.lower() == "eyes":
+            self.get_logger().info('Head movement is disabled.')
+            self.head_enabled = False
 
         self.center_eyes()
         self.send_head_goal(self.head_state[0], self.head_state[3], self.head_state[1])
@@ -44,36 +54,39 @@ class FaceTrackerMovementNode(Node):
         self.eyes_state = msg.actual.positions
 
     def listener_callback(self, msg):
-        #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
-        glance_percentage = 0.005
-        randomvalue = random.uniform(0, 1)
 
-        # Check if doing the glance or not
-        if randomvalue <= glance_percentage:
-            eye_location_x, eye_location_y = self.get_random_eye_location()
-            self.is_glancing = True
-            self.get_logger().info('glance')
-        else:
-            eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(msg.x, msg.y)
+        if self.eyes_enabled:
+            #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
+            glance_percentage = 0.005
+            randomvalue = random.uniform(0, 1)
 
-        # Move eyes
-        self.send_eye_goal(eye_location_y, eye_location_x)
+            # Check if doing the glance or not
+            if randomvalue <= glance_percentage:
+                eye_location_x, eye_location_y = self.get_random_eye_location()
+                self.is_glancing = True
+                self.get_logger().info('glance')
+            else:
+                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(msg.x, msg.y)
 
-        if self.is_glancing:
-            # Center the eyes back to the face after glancing
-            time.sleep(0.3)
-            self.center_eyes()
-            time.sleep(0.3)
-            self.is_glancing = False
-            return
+            # Move eyes
+            self.send_eye_goal(eye_location_y, eye_location_x)
+
+            if self.is_glancing:
+                # Center the eyes back to the face after glancing
+                time.sleep(0.3)
+                self.center_eyes()
+                time.sleep(0.3)
+                self.is_glancing = False
+                return
         
-        self.pan_diff, self.v_diff = self.transform_face_location_to_head_values(msg.x, msg.y)
-        if self.pan_diff != 0 or self.v_diff != 0: 
-            goal_pan = max(min(1.75, self.head_state[0] + self.pan_diff), -0.25) # limit head values to reasonable values
-            goal_vertical_tilt = max(min(-0.2, self.head_state[3] + self.v_diff), -1.0)
-            self.get_logger().info("Turning head by x: " + str(self.pan_diff) + " y: " + str(self.v_diff))
-            self.send_pan_and_vertical_tilt_goal(goal_pan, goal_vertical_tilt)
-            time.sleep(0.5)
+        if self.head_enabled:
+            self.pan_diff, self.v_diff = self.transform_face_location_to_head_values(msg.x, msg.y)
+            if self.pan_diff != 0 or self.v_diff != 0: 
+                goal_pan = max(min(1.75, self.head_state[0] + self.pan_diff), -0.25) # limit head values to reasonable values
+                goal_vertical_tilt = max(min(-0.2, self.head_state[3] + self.v_diff), -0.7)
+                self.get_logger().info("Turning head to x: " + str(goal_pan) + " y: " + str(goal_vertical_tilt))
+                self.send_pan_and_vertical_tilt_goal(goal_pan, goal_vertical_tilt)
+                time.sleep(0.5)
 
     def send_eye_goal(self, vertical, horizontal):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
@@ -133,7 +146,7 @@ class FaceTrackerMovementNode(Node):
 
         # Transform face movement to head joint values
         # Head pan
-        h_coeff = -0.0006
+        h_coeff = -0.00078
         pan = x_diff * h_coeff
         # Vertical tilt
         v_coeff = -0.002
@@ -183,7 +196,12 @@ def main():
 
     rclpy.init()
 
-    action_client = FaceTrackerMovementNode()
+    arg = "full"
+
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+
+    action_client = FaceTrackerMovementNode(arg)
 
     rclpy.spin(action_client)
 
