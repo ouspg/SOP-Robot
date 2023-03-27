@@ -43,19 +43,12 @@ class JawMoverNode(Node):
 
     def synch_jaw_to_speech(self, char):
         vowels = ['a','e','i','o','u','y','ä','ö']
-        close = ['i','y','u']
-        closeMid = ['e','o','ö']
-        open = ['a','ä']
-        consonants = ['b','d','f','g','h','j','k','l','m','n','p','r','s','t','v']
+        rounded = ['o','u','y','ö']
         bilabial = ['m','p','b']
         labiodental = ['v','f']
-        alveolar = ['t','d','n','s','r','l']
-        palatalGlottal = ['j','h']
-        velar = ['k','g']
+        coronal = ['t','d','n','s','r','l']
         if char in vowels:
-            if char in close:
-                return 0.25
-            elif char in closeMid:
+            if char in rounded:
                 return 0.35
             else:
                 return 0.5
@@ -63,13 +56,11 @@ class JawMoverNode(Node):
             if char in bilabial:
                 return 0.0 #Should be 0.0, not sure if hardware can handle
             elif char in labiodental:
-                return 0.0
-            elif char in alveolar:
-                return 0.15
-            elif char in velar:
-                return 0.3
-            else:
+                return 0.1
+            elif char in coronal:
                 return 0.2
+            else:
+                return 0.3
 
 def main():
     print('Hello from jaw_movement.')
