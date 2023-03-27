@@ -1,44 +1,45 @@
+import logging
+import time
 import rclpy
-from rclpy.node import Node
-import speech_rec
+
+from threading import Thread, Event
+from queue import Queue
+from enum import Enum
+
+from speech_python.speech_rec_service import Publish 
+from speech_python.speech_rec_client_async import Rec 
+
 
 from msg_interface.msg import SpeechRecognitionCandidates
 
 
-class MinimalPublisher(Node):
-    
-    def __init__(self):
-        super().__init__('minimal_publisher')
-        self.publisher_ = self.create_publisher(SpeechRecognitionCandidates, 'topic', 10)
-        timer_period = 0.5
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
-
-    def timer_callback(self):
-        msg = SpeechRecognitionCandidates.transcript()
-        msg.transcript = "Moro Horo!"
-        msg.confidence = 0.69
-        self.publisher_.publish(msg)
-        self.get_logger().info(f'Publishing:\nTranscript: {msg.transcript}\tConfidence: {msg.confidence}')
-        self.i += 1
-
 def main(args=None):
 
-    rclpy.init(args=args)
+    logging.basicConfig(level=logging.DEBUG)
+    quit_event = Event()
+    q_ready = Queue()
+    q_msg_data = Queue()
+    rec = Rec("Speech Recognition", quit_event)
+    pub = Publish("Minimal Publisher", quit_event)
+    thread1 = Thread(target = rec.run, args=(q_ready, q_msg_data))
+    thread2 = Thread(target = pub.run, args=(q_ready, q_msg_data))
+    thread1.start()
+    thread2.start()
 
-    minimal_publisher = MinimalPublisher()
-    
-    rclpy.spin(minimal_publisher)
-
-    minimal_publisher.destroy_node()
-    rclpy.shutdown()
-    
-
-
-    #speech_rec()
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            print(thread1.name + " exited")
+            thread1.event.set()
+            print(thread2.name + " exited")
+            thread2.event.set()
+            break
+    q_ready.join()
+    q_msg_data.join()
 
 if __name__ == '__main__':
-    main()
+    main()                
 
     
     

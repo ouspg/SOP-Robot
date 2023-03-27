@@ -14,27 +14,32 @@
 
 import rclpy
 from rclpy.node import Node
+from speech_python.speech_python import speech_rec_client_async
 
-from std_msgs.msg import String
-from tutorial_interfaces.msg import Num
+from msg_interface.msg import SpeechRecognitionCandidates
 
 
 class MinimalPublisher(Node):
-
+    
     def __init__(self):
-        super().__init__('minimal_publisher')
-        self.publisher_ = self.create_publisher(Num, 'topic', 10)
-        timer_period = 0.5  # seconds
+        super().__init__('speech_recognizer')
+        self.publisher_ = self.create_publisher(SpeechRecognitionCandidates, 'speech_recognizer', 10)
+        timer_period = 0.5
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
+        
 
     def timer_callback(self):
-        msg = Num()
-        msg.num = self.i
-        self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.num)
-        self.i += 1
 
+        msg = SpeechRecognitionCandidates()
+
+        recognizer = speech_rec_client_async()
+
+        msg.transcript = {"Moro Horo!"}
+        msg.confidence = {0.69}
+        self.publisher_.publish(msg)
+        self.get_logger().info(f'Publishing:\nTranscript: {msg.transcript}\tConfidence: {msg.confidence}')
+        self.i += 1
 
 
 def main(args=None):

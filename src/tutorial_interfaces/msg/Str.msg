@@ -1,2 +1,0 @@
-string translation
-float64 score

@@ -23,7 +23,8 @@ setup(
             #'talker = speech_python.publisher_member_function:main',
             #'listener = speech_python.subscriber_member_function:main'
             #'recognizer = speech_python.speech_rec:main'
-            'speech_rec = speech_python.main:main'
+            'speech_rec_server = speech_python.speech_rec_service:main'
+            'speech_rec_client = speech_python.speech_rec_client_async:main'
         ],
     },
 )
