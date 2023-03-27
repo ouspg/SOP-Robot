@@ -187,11 +187,23 @@ namespace robot_hardware
     for (auto const &dxl : dynamixel_)
     {
       uint16_t model_number = 0;
+      // Try pinging the servo
       if (!dxl_wb_.ping((uint8_t)dxl.second, &model_number, &log))
       {
-        RCLCPP_ERROR(logger_, "%s", log);
         RCLCPP_ERROR(logger_, "Can't find Dynamixel ID '%d'", dxl.second);
-        return false;
+        // If ping returns an error try rebooting the servo once
+
+        RCLCPP_INFO(logger_, "Trying to reboot Dynamixel ID '%d'", dxl.second);
+        dxl_wb_.reboot((uint8_t)dxl.second, &log);
+
+        // Try pinging after rebooting
+        if (!dxl_wb_.ping((uint8_t)dxl.second, &model_number, &log))
+        {
+          RCLCPP_ERROR(logger_, "Still can't find Dynamixel ID '%d'", dxl.second);
+          RCLCPP_ERROR(logger_, "%s", log);
+          RCLCPP_ERROR(logger_, "Skipping...", dxl.second);
+          continue;
+        }
       }
       RCLCPP_INFO(logger_,
                   "Name : %s, ID : %d, Model Number : %d", dxl.first.c_str(), dxl.second, model_number);
@@ -232,6 +244,10 @@ namespace robot_hardware
     for (const auto &dxl : dynamixel_)
     {
       const auto model_number = dynamixel_models_[dxl.first];
+
+      if (model_number == 0) {
+        continue;
+      }
 
       // This model was already initialized
       if (model_groups.find(model_number) != model_groups.end())
@@ -358,7 +374,7 @@ namespace robot_hardware
 
       uint16_t start_address = std::min(present_pos->address, present_curr->address);
 
-      /* 
+      /*
         As some models have an empty space between Present_Velocity and Present Current, read_length is modified as below.
       */
       // uint16_t read_length = control_items_["Present_Position"]->data_length + control_items_["Present_Velocity"]->data_length + control_items_["Present_Current"]->data_length;
@@ -435,8 +451,7 @@ namespace robot_hardware
     RCLCPP_INFO(logger_, "Arming servos...");
     if (!arm_servos())
     {
-      RCLCPP_ERROR(logger_, "Could not arm servos");
-      return return_type::ERROR;
+      RCLCPP_ERROR(logger_, "Could not arm some servos");
     }
 
     status_ = hardware_interface::status::STARTED;
