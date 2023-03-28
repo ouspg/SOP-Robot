@@ -37,11 +37,14 @@ class JawMoverNode(Node):
         trajectory_points = JointTrajectoryPoint(positions=[jawPos], time_from_start=Duration(sec=0, nanosec=0))
         goal_msg.trajectory = JointTrajectory(joint_names=['head_jaw_joint'], points=[trajectory_points])
         self._send_goal_future = self._action_client.wait_for_server()
-        self.get_logger().info("Jaw: " + str(jawPos) + "Letter: " + char)
+        self.get_logger().info('Jaw: ' + str(jawPos) + ' Letter: ' + char)
         self._action_client.send_goal_async(goal_msg)
         self.i += 1
 
     def synch_jaw_to_speech(self, char):
+        """
+        TODO: Match duration to each letter in speech
+        """
         vowels = ['a','e','i','o','u','y','ä','ö']
         rounded = ['o','u','y','ö']
         bilabial = ['m','p','b']
@@ -54,7 +57,7 @@ class JawMoverNode(Node):
                 return 0.5
         else:
             if char in bilabial:
-                return 0.0 #Should be 0.0, not sure if hardware can handle
+                return 0.0 
             elif char in labiodental:
                 return 0.1
             elif char in coronal:
