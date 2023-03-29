@@ -29,7 +29,7 @@ class SpeechRecClient(Node):
             self.confidence = None
 
     def call_speech_rec_server(self):
-        client = self.create_client(SpeechRec, "speech_rec_client")
+        client = self.create_client(SpeechRec, "speech_rec_server")
         while not client.wait_for_service(1.0):
             self.get_logger().warn("Waiting for server...")
 

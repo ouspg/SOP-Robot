@@ -11,22 +11,22 @@ class SpeechRecServer(Node):
         super().__init__('speech_rec_server')
         self.server = self.create_service(SpeechRec, "speech_rec_server", self.callback_speech_rec)
         self.get_logger().info("SpeechRecServer started...")
+        self.r = sr.Recognizer()
+        self.source = sr.Microphone(device_index=0, sample_rate=16000)
 
-    def callback_speech_rec(self, request, response):
+    def callback_speech_rec(self, response):
 
-        r = sr.Recognizer()
-        
-        with sr.Microphone(device_index=0, sample_rate=16000) as source:
+        with self.source as source:
 
             self.get_logger().info("Say something!")
-            audio = r.listen(source)
+            audio = self.r.listen(source)
             
             try:
                 # for testing purposes, we're just using the default API key
                 # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
                 # instead of `r.recognize_google(audio)`
-                self.recognized_data = r.recognize_google(audio, language="fi")
-                self.all_data = r.recognize_google(audio, language="fi", show_all=True)
+                self.recognized_data = self.r.recognize_google(audio, language="fi")
+                self.all_data = self.r.recognize_google(audio, language="fi", show_all=True)
 
                 self.get_logger().info("Google Speech Recognition thinks you said " + self.recognized_data)
             except sr.UnknownValueError:
