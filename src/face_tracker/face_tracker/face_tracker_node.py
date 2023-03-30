@@ -86,7 +86,7 @@ class FaceTracker(Node):
             Image,
             image_topic,
             self.on_frame_received,
-            1,
+            5,
         )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, face_topic, 1)
@@ -266,7 +266,7 @@ class FaceTracker(Node):
                                             y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
                                 self.face_distance1 = self.face_distance2
                                 self.face_distance2 = []
-                                self.get_logger().info(str(max_difference))
+                                #self.get_logger().info(str(max_difference))
                                 # Publish image that has rectangles around the detected faces
                                 self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
                                 self.face_publisher.publish(Faces(faces=msg_faces))
@@ -285,7 +285,7 @@ class FaceTracker(Node):
                 self.face_size_frame += 1
                 # Set frame to zero for new detection every nth frame.
                 # Large values lead to drifting of the detected faces
-                n = 5
+                n = 1
                 self.frame = self.frame % n
 
                 #set frame to zero for new face size detection every n_face_size frame
