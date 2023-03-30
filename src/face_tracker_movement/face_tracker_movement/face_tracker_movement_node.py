@@ -95,9 +95,9 @@ class FaceTrackerMovementNode(Node):
 
             if self.is_glancing:
                 # Center the eyes back to the face after glancing
-                time.sleep(0.3)
+                time.sleep(0.5)
                 self.center_eyes()
-                time.sleep(0.3)
+                time.sleep(0.5)
                 self.is_glancing = False
                 return
         
@@ -113,7 +113,7 @@ class FaceTrackerMovementNode(Node):
     def send_eye_goal(self, vertical, horizontal):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
         x_diff = abs(self.eyes_state[0] - horizontal)
-        duration = int(150000000 * x_diff)
+        duration = max(int(200000000 * x_diff), 150000000)
 
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=0, nanosec=duration))
@@ -123,7 +123,7 @@ class FaceTrackerMovementNode(Node):
         self.eye_action_client.wait_for_server()
 
         self.eye_action_client.send_goal_async(goal_msg)
-        self.get_logger().info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
+        #self.get_logger().info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
 
     def send_horizontal_tilt_goal(self, horizontalTilt):
         goal_msg = FollowJointTrajectory.Goal()
@@ -137,7 +137,7 @@ class FaceTrackerMovementNode(Node):
         
     def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt):
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=Duration(sec=0, nanosec=400000000))
+        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=Duration(sec=0, nanosec=500000000))
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
                                               points=[trajectory_points])
 
@@ -169,7 +169,9 @@ class FaceTrackerMovementNode(Node):
         # Transform face movement to head joint values
         # Head pan
         h_coeff = -0.00078
-        pan = x_diff * h_coeff
+        # Adjust the pan value slightly to make smaller movements a bit bigger
+        pan = 0.8 * abs(x_diff * h_coeff) ** 0.8
+        pan = math.copysign(pan, -x_diff)
         # Vertical tilt
         v_coeff = -0.002
         vertical_tilt = y_diff * v_coeff
@@ -187,10 +189,10 @@ class FaceTrackerMovementNode(Node):
 
         # Transform face movement to eye movement
         # Horizontal eye movement
-        h_coeff = -0.0019
+        h_coeff = -0.002
         eye_location_x = x_diff * h_coeff - 0.7
         # Vertical eye movement
-        v_coeff = 0.003125
+        v_coeff = 0.003
         eye_location_y = y_diff * v_coeff - 0.75
 
         return eye_location_x, eye_location_y

@@ -122,7 +122,7 @@ head_controller:
       - position
 
     state_publish_rate: 20.0 # Defaults to 50
-    action_monitor_rate: 20.0 # Defaults to 20
+    action_monitor_rate: 1.0 # Defaults to 20
 
 eyes_controller:
   ros__parameters:
@@ -165,7 +165,7 @@ jaw_controller:
     state_interfaces:
       - position
 
-    state_publish_rate: 20.0 # Defaults to 50
+    state_publish_rate: 5.0 # Defaults to 50
     action_monitor_rate: 20.0 # Defaults to 20
     
 
