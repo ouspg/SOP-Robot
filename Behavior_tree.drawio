@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-04-02T11:58:42.186Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="Z-kMCoEiA5lGbljAbjWu" version="21.1.2" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-02T12:00:10.127Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="inRLj2VHR30eacHkqkpt" version="21.1.2" type="github">
   <diagram name="Page-1" id="10a91c8b-09ff-31b1-d368-03940ed4cc9e">
-    <mxGraphModel dx="2798" dy="1582" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1937" dy="1008" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -259,7 +259,7 @@
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-76" value="Chatbot:&lt;br&gt;Chit chat -repliikki" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
           <mxGeometry x="320" y="210" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-89" value="Vertical Container" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-89" value="Kysymyslohko" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry y="820" width="1410" height="540" as="geometry" />
         </mxCell>
       </root>
