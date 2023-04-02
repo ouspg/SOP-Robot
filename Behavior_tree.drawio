@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-04-02T12:23:49.105Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="fG8UbsJL-5pdv8U6iKIr" version="21.1.2" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-02T12:25:24.772Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="d_HNBctIoEf4LoZdOown" version="21.1.2" type="github">
   <diagram name="Page-1" id="10a91c8b-09ff-31b1-d368-03940ed4cc9e">
     <mxGraphModel dx="2289" dy="1191" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
@@ -264,6 +264,9 @@
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-101" value="&quot;En nyt ymmärrä mitä haluat minulle sanoa.&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
           <mxGeometry x="910" y="280" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-103" value="&quot;Hienoa. Mitä haluisit minulta kysyä?&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
+          <mxGeometry x="160" y="148" width="130" height="70" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-89" value="Kysymyslohko" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry y="820" width="1410" height="610" as="geometry" />
