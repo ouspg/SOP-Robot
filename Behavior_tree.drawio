@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" modified="2023-04-02T12:00:10.127Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="inRLj2VHR30eacHkqkpt" version="21.1.2" type="github">
+<mxfile host="app.diagrams.net" modified="2023-04-02T12:23:49.105Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" etag="fG8UbsJL-5pdv8U6iKIr" version="21.1.2" type="github">
   <diagram name="Page-1" id="10a91c8b-09ff-31b1-d368-03940ed4cc9e">
-    <mxGraphModel dx="1937" dy="1008" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+    <mxGraphModel dx="2289" dy="1191" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-90" value="" style="group" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="350" y="80" width="1410" height="1360" as="geometry" />
+          <mxGeometry x="350" y="80" width="1410" height="1430" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-6" value="-&amp;gt;" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry x="740" y="420" width="80" height="80" as="geometry" />
@@ -31,7 +31,7 @@
             <mxPoint x="710" y="1120" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-28" value="Opiskelu chatbot" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-28" value="Opiskelu chatbot -vastaus" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry x="450" y="1250" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-29" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-24" target="iqq7B-e4aBvqcCyGMvhG-28">
@@ -49,7 +49,7 @@
             <mxPoint x="710" y="1120" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-32" value="Tietotekniikka chatbot" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-32" value="Tietotekniikka chatbot -vastaus" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry x="720" y="1250" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-34" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" target="iqq7B-e4aBvqcCyGMvhG-32">
@@ -85,10 +85,10 @@
             <mxPoint x="1020" y="1250" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-42" value="&lt;span&gt;Kiltatoiminta chatbot&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-42" value="&lt;span&gt;Kiltatoiminta chatbot -vastaus&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry x="990" y="1250" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-43" value="&lt;span&gt;Random chatbot&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-43" value="&lt;span&gt;Random chatbot -vastaus&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry x="980" y="1140" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-44" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-73" target="iqq7B-e4aBvqcCyGMvhG-43">
@@ -107,12 +107,6 @@
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="580" y="620" as="sourcePoint" />
             <mxPoint x="630" y="570" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-49" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-6" target="iqq7B-e4aBvqcCyGMvhG-56">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="720" y="620" as="sourcePoint" />
-            <mxPoint x="830" y="640" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-54" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-59" target="iqq7B-e4aBvqcCyGMvhG-6">
@@ -145,7 +139,7 @@
             <mxPoint x="545" y="910" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-73" value="-&amp;gt;" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-73" value="?" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry x="670" y="1000" width="80" height="80" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-16" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-73" target="iqq7B-e4aBvqcCyGMvhG-24">
@@ -166,17 +160,11 @@
             <mxPoint x="640" y="530" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-78" value="?" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
-          <mxGeometry x="1030" y="600" width="80" height="80" as="geometry" />
-        </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-79" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-6" target="iqq7B-e4aBvqcCyGMvhG-78">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="680" y="570" as="sourcePoint" />
             <mxPoint x="830" y="540" as="targetPoint" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-80" value="Keskustelun jatkaminen?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
-          <mxGeometry x="910" y="720" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-86" value="Aloituslohko" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry width="1410" height="390" as="geometry" />
@@ -191,21 +179,21 @@
           <mxGeometry x="740" y="130" width="80" height="80" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-1" value="Invert" style="rhombus;whiteSpace=wrap;html=1;direction=south;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-86">
-          <mxGeometry x="870" y="220" width="80" height="80" as="geometry" />
+          <mxGeometry x="660" y="230" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-65" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-86" source="iqq7B-e4aBvqcCyGMvhG-59" target="iqq7B-e4aBvqcCyGMvhG-1">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-65" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-86" source="iqq7B-e4aBvqcCyGMvhG-59" target="iqq7B-e4aBvqcCyGMvhG-1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="700" y="310" as="sourcePoint" />
             <mxPoint x="750" y="260" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="62893188c0fa7362-3" value="Haluatko keskustella chatbotin kanssa?" style="whiteSpace=wrap;html=1;rounded=1;shadow=1;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="iqq7B-e4aBvqcCyGMvhG-86" vertex="1">
-          <mxGeometry x="1010" y="300" width="140" height="60" as="geometry" />
+          <mxGeometry x="510" y="310" width="140" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-53" value="True&lt;br&gt;False" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-86" source="iqq7B-e4aBvqcCyGMvhG-1" target="62893188c0fa7362-3">
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-53" value="True&lt;br&gt;False" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-86" source="iqq7B-e4aBvqcCyGMvhG-1" target="62893188c0fa7362-3">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="685" y="170" as="sourcePoint" />
-            <mxPoint x="480" y="140" as="targetPoint" />
+            <mxPoint x="475" y="180" as="sourcePoint" />
+            <mxPoint x="270" y="150" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-58" value="-&amp;gt;" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-86">
@@ -229,38 +217,68 @@
             <mxPoint x="280" y="150" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-81" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-78" target="iqq7B-e4aBvqcCyGMvhG-80">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="1080" y="700" as="sourcePoint" />
-            <mxPoint x="1130" y="650" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-84" value="&lt;span&gt;Keskustelun lopettaminen ja palaaminen alkuun&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
-          <mxGeometry x="1100" y="720" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-85" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-90" source="iqq7B-e4aBvqcCyGMvhG-78" target="iqq7B-e4aBvqcCyGMvhG-84">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="880" y="720" as="sourcePoint" />
-            <mxPoint x="930" y="670" as="targetPoint" />
-          </mxGeometry>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-102" value="&quot;Hei. Olen Oulun tietoteekkarreiden kehittämä humanoidirobotti. Haluatko keskustella kanssani tietotekniikan opiskelusta, tietotekniikasta yleensä tai kiltatoiminnasta?&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-86">
+          <mxGeometry x="170" y="90" width="220" height="129" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-87" value="Keskustelun aloituslohko" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
           <mxGeometry y="390" width="1410" height="430" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-10" value="&lt;span&gt;Puheentunnistus&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
-          <mxGeometry x="490" y="210" width="120" height="60" as="geometry" />
+          <mxGeometry x="490" y="153" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-13" value="?" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
-          <mxGeometry x="670" y="200" width="80" height="80" as="geometry" />
+          <mxGeometry x="670" y="143" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="iqq7B-e4aBvqcCyGMvhG-56" value="&lt;span&gt;Vastauksen palautus&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
-          <mxGeometry x="820" y="210" width="120" height="60" as="geometry" />
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-56" value="&lt;span&gt;Random chit chat -vastauksen palautus&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
+          <mxGeometry x="770" y="273" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-76" value="Chatbot:&lt;br&gt;Chit chat -repliikki" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
-          <mxGeometry x="320" y="210" width="120" height="60" as="geometry" />
+          <mxGeometry x="320" y="153" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-78" value="?" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
+          <mxGeometry x="1190" y="153" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-80" value="Keskustelun jatkaminen?" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
+          <mxGeometry x="1070" y="273" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-81" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-87" source="iqq7B-e4aBvqcCyGMvhG-78" target="iqq7B-e4aBvqcCyGMvhG-80">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1240" y="253" as="sourcePoint" />
+            <mxPoint x="1290" y="203" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-84" value="&lt;span&gt;Keskustelun lopettaminen ja palaaminen alkuun&lt;/span&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=1;labelBackgroundColor=none;strokeWidth=2;fontFamily=Verdana;fontSize=12;align=center;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
+          <mxGeometry x="1260" y="273" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-85" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-87" source="iqq7B-e4aBvqcCyGMvhG-78" target="iqq7B-e4aBvqcCyGMvhG-84">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1040" y="273" as="sourcePoint" />
+            <mxPoint x="1090" y="223" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-94" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="iqq7B-e4aBvqcCyGMvhG-87" source="iqq7B-e4aBvqcCyGMvhG-13" target="iqq7B-e4aBvqcCyGMvhG-56">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="250" as="sourcePoint" />
+            <mxPoint x="850" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-101" value="&quot;En nyt ymmärrä mitä haluat minulle sanoa.&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-87">
+          <mxGeometry x="910" y="280" width="150" height="90" as="geometry" />
         </mxCell>
         <mxCell id="iqq7B-e4aBvqcCyGMvhG-89" value="Kysymyslohko" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-90">
-          <mxGeometry y="820" width="1410" height="540" as="geometry" />
+          <mxGeometry y="820" width="1410" height="610" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-97" value="&quot;Opiskelu kestää yleensä n vuotta" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-89">
+          <mxGeometry x="430" y="520" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-98" value="&quot;Touringin testiä ei ole vielä läpäisty, mutta lähelle on kuulemma päästy.&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-89">
+          <mxGeometry x="680" y="510" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-99" value="&quot;Kiltahuoneelta löytyy biljardipöytä ja pelikonsoleita&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-89">
+          <mxGeometry x="1020" y="505" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="iqq7B-e4aBvqcCyGMvhG-100" value="&quot;Chicago Blackhawks voitti Stanley Cupin viimeksi vuonna 2015" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="iqq7B-e4aBvqcCyGMvhG-89">
+          <mxGeometry x="1130" y="310" width="120" height="65" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
