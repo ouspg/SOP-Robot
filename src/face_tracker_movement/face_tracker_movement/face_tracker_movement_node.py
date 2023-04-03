@@ -28,6 +28,7 @@ class FaceTrackerMovementNode(Node):
         self.middle_y = 400
         self.is_glancing = False
         self.moving = False
+        self.idling = False
         self.head_joint_ids = [4, 1, 3, 2]
         self.start_head_state = [0.6, 0.5, -0.5, -0.6]
         self.head_state = self.start_head_state
@@ -50,7 +51,7 @@ class FaceTrackerMovementNode(Node):
         self.send_head_goal(self.head_state[0], self.head_state[3], self.head_state[1])
         time.sleep(1)
 
-        self.center_timer = self.create_timer(5, self.center_timer_callback)
+        self.idle_timer = self.create_timer(5, self.idle_timer_callback)
 
         self.get_logger().info('Face tracking movement client initialized.')
         
@@ -68,14 +69,17 @@ class FaceTrackerMovementNode(Node):
                 self.eyes_state[i] = self.start_eyes_state[i]
                 self.get_logger().info("Eye joint ID" + str(self.eyes_joint_ids[i]) + " is not responding")
 
-    def center_timer_callback(self):
-        self.get_logger().info("I haven't seen a face for a while...")
-        self.center_eyes()
-        self.send_head_goal(self.start_head_state[0], self.start_head_state[3], self.start_head_state[1])
+    def idle_timer_callback(self):
+        self.get_logger().info("Idling...\x1B[1A")
+        self.send_eye_goal(-0.75, self.get_random_eye_location()[0])
+        self.send_pan_and_vertical_tilt_goal(random.uniform(0.25, 1.25), -0.6, Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
+        self.idle_timer.timer_period_ns = random.randint(1000000000, 5000000000)
+        self.idle_timer.reset()
 
 
     def listener_callback(self, msg):
-        self.center_timer.reset()
+        self.idle_timer.timer_period_ns = 5000000000
+        self.idle_timer.reset()
 
         if self.eyes_enabled:
             #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
@@ -113,7 +117,7 @@ class FaceTrackerMovementNode(Node):
     def send_eye_goal(self, vertical, horizontal):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
         x_diff = abs(self.eyes_state[0] - horizontal)
-        duration = max(int(200000000 * x_diff), 150000000)
+        duration = max(int(200000000 * x_diff), 200000000)
 
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[vertical, horizontal], time_from_start=Duration(sec=0, nanosec=duration))
@@ -135,9 +139,9 @@ class FaceTrackerMovementNode(Node):
 
         self.head_action_client.send_goal_async(goal_msg)
         
-    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt):
+    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=500000000)):
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=Duration(sec=0, nanosec=500000000))
+        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
                                               points=[trajectory_points])
 
@@ -199,7 +203,6 @@ class FaceTrackerMovementNode(Node):
     
     def center_eyes(self):
         self.send_eye_goal(-0.75, -0.7)
-        self.get_logger().info('centering eyes')
 
     def get_random_eye_location(self):
         """
