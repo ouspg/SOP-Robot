@@ -285,7 +285,7 @@ class FaceTracker(Node):
                 self.face_size_frame += 1
                 # Set frame to zero for new detection every nth frame.
                 # Large values lead to drifting of the detected faces
-                n = 1
+                n = 5
                 self.frame = self.frame % n
 
                 #set frame to zero for new face size detection every n_face_size frame
