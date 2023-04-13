@@ -122,16 +122,16 @@ head_controller:
       - position
 
     state_publish_rate: 20.0 # Defaults to 50
-    action_monitor_rate: 1.0 # Defaults to 20
+    action_monitor_rate: 5.0 # Defaults to 20
 
 eyes_controller:
   ros__parameters:
     joints:
-    - eyes_shift_vertical_joint
     - eyes_shift_horizontal_joint
+    - eyes_shift_vertical_joint
     write_op_modes:
-    - eyes_shift_vertical_joint
     - eyes_shift_horizontal_joint
+    - eyes_shift_vertical_joint
     allow_partial_joints_goal: true
     interface_name: position
     
