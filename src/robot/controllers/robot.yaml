@@ -32,8 +32,8 @@ joint_state_broadcaster:
     - waist_pan_joint
     - waist_roll_joint
     #- r_shoulder_lift_joint
-    - r_upper_arm_roll_joint
-    - r_elbow_flex_joint
+    #- r_upper_arm_roll_joint
+    #- r_elbow_flex_joint
     #- r_shoulder_out_joint
     - r_thumb1_joint
     #- r_thumb_joint
@@ -174,9 +174,13 @@ r_shoulder_controller:
     joints:
     - r_shoulder_lift_joint
     - r_shoulder_out_joint
+    - r_upper_arm_roll_joint
+    - r_elbow_flex_joint
     write_op_modes:
     - r_shoulder_lift_joint
-    - r_shoulder_out
+    - r_shoulder_out_joint
+    - r_upper_arm_roll_joint
+    - r_elbow_flex_joint
     allow_partial_joints_goal: true
     interface_name: position
 

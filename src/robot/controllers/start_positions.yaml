@@ -10,12 +10,16 @@ fake_joint_driver_node:
         - eyes_shift_horizontal_joint
         - r_shoulder_lift_joint
         - r_shoulder_out_joint
+        - r_upper_arm_roll_joint
+        - r_elbow_flex_joint
         - r_thumb_joint
         - r_index1_joint
         - r_middle1_joint
         - r_ring_joint
         - r_pinky_joint
       values:
+        - 0.0
+        - 0.0
         - 0.0
         - 0.0
         - 0.0
