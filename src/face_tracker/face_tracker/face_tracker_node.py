@@ -89,7 +89,7 @@ class FaceTracker(Node):
             5,
         )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
-        self.face_publisher = self.create_publisher(Faces, face_topic, 1)
+        self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
         #timer_period = 0.5    # Face publish interval in seconds
