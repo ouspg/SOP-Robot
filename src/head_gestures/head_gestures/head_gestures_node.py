@@ -46,14 +46,16 @@ class HeadGesturesNode(Node):
         self.eye_state = None
         # The uncommented limit values worked for me in the simulator, but I'm suspecting it's not working properly on my computer.
         # The commented values are my best guesses as to what might work for others.
-        #self.head_vertical_lower_limit = -0.8
-        #self.head_vertical_upper_limit = -0.2
-        #self.head_pan_lower_limit = -0.25
-        #self.head_pan_upper_limit = 1.75
-        #self.eye_vertical_lower_limit = -0.7
-        #self.eye_vertical_upper_limit = -0.2
-        #self.eye_horizontal_lower_limit = -2.0
-        #self.eye_horizontal_upper_limit = 0.0
+        
+        self.head_vertical_lower_limit = 0.8
+        self.head_vertical_upper_limit = 1.5
+        self.head_pan_lower_limit = -0.25
+        self.head_pan_upper_limit = 1.75
+        self.eye_vertical_lower_limit = -0.7
+        self.eye_vertical_upper_limit = -0.2
+        self.eye_horizontal_lower_limit = -2.0
+        self.eye_horizontal_upper_limit = 0.0
+        """
         self.head_vertical_lower_limit = -0.3
         self.head_vertical_upper_limit = 0.3
         self.head_pan_lower_limit = -1.0
@@ -62,7 +64,7 @@ class HeadGesturesNode(Node):
         self.eye_vertical_upper_limit = 0.5
         self.eye_horizontal_lower_limit = -0.6
         self.eye_horizontal_upper_limit = 0.6
-        
+        """
         self.logger = self.get_logger()
         self.logger.info('Head gesture client initialized.')
         
