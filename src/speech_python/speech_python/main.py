@@ -6,12 +6,11 @@ from threading import Thread, Event
 from queue import Queue
 from enum import Enum
 
-from speech_python.speech_rec_service import Publish 
-from speech_python.speech_rec_client_async import Rec 
+from speech_python.speech_rec_service import Publish
+from speech_python.speech_rec_client_async import Rec
 
 
 from msg_interface.msg import SpeechRecognitionCandidates
-
 
 def main(args=None):
 
@@ -39,7 +38,4 @@ def main(args=None):
     q_msg_data.join()
 
 if __name__ == '__main__':
-    main()                
-
-    
-    
+    main()

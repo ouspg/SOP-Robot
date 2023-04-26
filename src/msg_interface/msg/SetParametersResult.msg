@@ -1,1 +1,0 @@
-bool successful # Indicates weather parameter change was successful or not
