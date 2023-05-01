@@ -19,6 +19,7 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ['speech_recognizer_node = speech_recognizer.speech_recognizer:main'],
+        'console_scripts': ['speech_recognizer_node = speech_recognizer.speech_recognizer:main',
+                            'speech_recognizer_mt_node = speech_recognizer.speech_recognizer_mt_exec:main'],
     },
 )
