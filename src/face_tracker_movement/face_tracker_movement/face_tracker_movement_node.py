@@ -31,7 +31,7 @@ class FaceTrackerMovementNode(Node):
         self.moving = False
         self.idling = False
         self.head_joint_ids = [4, 1, 3, 2]
-        self.start_head_state = [0.6, 0.5, -0.5, -0.6]
+        self.start_head_state = [0.6, 0.5, -0.5, 1.2]
         self.head_state = self.start_head_state[:]
         self.eyes_joint_ids = [9, 11]
         self.start_eyes_state = [-0.7, -0.75]
@@ -60,7 +60,7 @@ class FaceTrackerMovementNode(Node):
         self.get_logger().info('Face tracking movement client initialized.')
 
     def face_list_callback(self, msg):
-        print(msg)
+        self.get_logger().info(str(msg))
         self.visible_face_amount = len(msg.faces)
         
     def head_state_callback(self, msg):
@@ -166,8 +166,8 @@ class FaceTrackerMovementNode(Node):
 
     def send_head_goal(self, pan, verticalTilt, horizontalTilt):
         # Horizontal tilt is done separately and slower because the joints easily get stuck when moving quickly.
-        self.send_horizontal_tilt_goal(horizontalTilt)
-        time.sleep(1)
+        #self.send_horizontal_tilt_goal(horizontalTilt)
+        #time.sleep(1)
         self.send_pan_and_vertical_tilt_goal(pan, verticalTilt)
 
     def transform_face_location_to_head_values(self, face_location_x, face_location_y):
@@ -190,7 +190,7 @@ class FaceTrackerMovementNode(Node):
         h_coeff = -0.00078
 
         if self.visible_face_amount > 1:
-            h_coeff /= 4
+            h_coeff = 0
 
         pan = x_diff * h_coeff + self.head_state[0]
         pan = max(min(1.75, pan), -0.25) # limit head values to reasonable values
@@ -201,7 +201,7 @@ class FaceTrackerMovementNode(Node):
         # Vertical tilt
         v_coeff = -0.002
         vertical_tilt = y_diff * v_coeff + self.head_state[3]
-        vertical_tilt = max(min(-0.2, vertical_tilt), -0.9)
+        vertical_tilt = max(min(1.5, vertical_tilt), 0.8)
 
         return pan, vertical_tilt
 
@@ -222,6 +222,7 @@ class FaceTrackerMovementNode(Node):
         v_coeff = 0.003
         eye_location_y = y_diff * v_coeff + self.eyes_state[1]
         
+        eye_location_y = max(min(-0.2, eye_location_y), -0.7)
 
         return eye_location_x, eye_location_y
     
