@@ -18,28 +18,38 @@ class FaceTrackerMovementNode(Node):
 
     def __init__(self, functionality):
         super().__init__('face_tracker_movement_client')
+
+        # Action clients for eye and head controllers
         self.eye_action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
+        self.head_action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
+
+        # ROS2 subscriptions
         self.face_subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 1)
         self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/face_topic', self.face_list_callback, 2)
-        self.head_action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/state', self.eyes_state_callback, 5)
+
         # Middle point of image view
         self.middle_x = 640
         self.middle_y = 400
         self.is_glancing = False
-        self.moving = False
-        self.idling = False
-        self.head_joint_ids = [4, 1, 3, 2]
-        self.start_head_state = [0.6, 0.5, -0.5, 1.2]
-        self.head_state = self.start_head_state[:]
-        self.eyes_joint_ids = [9, 11]
-        self.start_eyes_state = [-0.7, -0.75]
-        self.eyes_state = self.start_eyes_state[:]
+        self.idling = False # Not used currently
+
+        self.head_joint_ids = [4, 1, 3, 2]              # Servo ids for head joints. Order comes from head_controller: [head_pan_joint, head_tilt_right_joint, head_tilt_left_joint, head_tilt_vertical_joint]
+        self.start_head_state = [0.6, 0.5, -0.5, 1.2]   # Good starting values for head servos. Should not be modified in runtime.
+        self.head_state = self.start_head_state[:]      # Tries to have the up-to-date head servo values.
+
+        self.eyes_joint_ids = [9, 11]                   # Servo ids for eye joints. Order comes from eyes_controller: [eyes_shift_horizontal_joint, eyes_shift_vertical_joint]
+        self.start_eyes_state = [-0.7, -0.75]           # Good starting values for eye servos. Should not be modified in runtime.
+        self.eyes_state = self.start_eyes_state[:]      # Tries to have the up-to-date head servo values.
+
+        # Some variables
         self.pan_diff = 0
         self.goal_pan = self.head_state[0]
         self.v_diff = 0
         self.goal_vertical_tilt = self.head_state[3]
+
+        # Are head/eye joints used in the current configuration? 
         self.head_enabled = True
         self.eyes_enabled = True
         self.visible_face_amount = 0
@@ -59,10 +69,12 @@ class FaceTrackerMovementNode(Node):
 
         self.get_logger().info('Face tracking movement client initialized.')
 
+    # Get the amount of detected faces
     def face_list_callback(self, msg):
-        self.get_logger().info(str(msg))
+        #self.get_logger().info(str(msg))
         self.visible_face_amount = len(msg.faces)
         
+    # Get the current state of head joints. Updated at 20 Hz (see robot.yaml)
     def head_state_callback(self, msg):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
@@ -71,6 +83,7 @@ class FaceTrackerMovementNode(Node):
             else:
                 self.head_state[i] = val
 
+    # Get the current state of eye joints. Updated at 20 Hz (see robot.yaml)
     def eyes_state_callback(self, msg):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
@@ -89,7 +102,7 @@ class FaceTrackerMovementNode(Node):
         self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
         self.idle_timer.reset()
         
-
+    # Main loop. Excecuted when face_tracker_node publishes face coordinates.
     def listener_callback(self, msg):
         self.idle_timer.timer_period_ns = 5000000000
         self.idle_timer.reset()
@@ -97,8 +110,8 @@ class FaceTrackerMovementNode(Node):
 
         if self.eyes_enabled:
             #self.get_logger().info('x: %d, y: %d' % (msg.x, msg.y))
-            glance_percentage = 0.005
-            randomvalue = random.uniform(0, 1)
+            glance_percentage = 0.005 # Chance of executing a glance on each frame where a face has been detected. TODO: Decide on a good value
+            randomvalue = random.uniform(0, 1)  
 
             # Check if doing the glance or not
             if randomvalue <= glance_percentage:
@@ -126,7 +139,9 @@ class FaceTrackerMovementNode(Node):
             if self.pan_diff != 0 or self.v_diff != 0: 
                 self.get_logger().info("Turning head to x: " + str(self.goal_pan) + " y: " + str(self.goal_vertical_tilt))
                 self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
-                time.sleep(0.5)
+                time.sleep(0.3)
+        
+        time.sleep(0.2)
 
     def send_eye_goal(self, horizontal, vertical, duration=None):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
@@ -164,17 +179,20 @@ class FaceTrackerMovementNode(Node):
 
         self.head_action_client.send_goal_async(goal_msg)
 
+    # Horizontal tilt is done separately and slower because the joints easily get stuck when moving quickly.
     def send_head_goal(self, pan, verticalTilt, horizontalTilt):
-        # Horizontal tilt is done separately and slower because the joints easily get stuck when moving quickly.
-        #self.send_horizontal_tilt_goal(horizontalTilt)
-        #time.sleep(1)
+        #self.send_horizontal_tilt_goal(horizontalTilt) TODO: UNCOMMENT WHEN MECHANISM HAS BEEN MADE FUNCTIONAL AGAIN
+        #time.sleep(1) # Wait a bit so that the new goal doesn't override the old, still-in-process goal
         self.send_pan_and_vertical_tilt_goal(pan, verticalTilt)
 
+    """
+    Calculates new pan and vertical tilt values corresponding to the face location coordinates given
+    as arguments. 
+
+    Returns: Absolute pan and vertical tilt values for head servos
+    """
     def transform_face_location_to_head_values(self, face_location_x, face_location_y):
-        """
-        Calculates new pan and vertical tilt values corresponding to the face location coordinates given
-        as arguments.
-        """
+       
         # Calculate face movement
         x_diff = self.middle_x - face_location_x
         y_diff = self.middle_y - face_location_y
@@ -189,7 +207,11 @@ class FaceTrackerMovementNode(Node):
         # Head pan
         h_coeff = -0.00078
 
-        if self.visible_face_amount > 1:
+        """
+        When eyes are used for movement, do not move head when there are multiple faces detected.
+        Done to mitigate robot going back and forth between detected faces when they are roughly at the same distance.
+        """
+        if self.visible_face_amount > 1 and self.eyes_enabled:
             h_coeff = 0
 
         pan = x_diff * h_coeff + self.head_state[0]
@@ -205,11 +227,12 @@ class FaceTrackerMovementNode(Node):
 
         return pan, vertical_tilt
 
+    """
+    Calculates new x and y location for the eyes corresponding to the face location coordinates given
+    as arguments.
+    """
     def transform_face_location_to_eye_location(self, face_location_x, face_location_y):
-        """
-        Calculates new x and y location for the eyes corresponding to the face location coordinates given
-        as arguments.
-        """
+        
         # Calculate face movement
         x_diff = self.middle_x - face_location_x
         y_diff = self.middle_y - face_location_y
@@ -225,14 +248,16 @@ class FaceTrackerMovementNode(Node):
         eye_location_y = max(min(-0.2, eye_location_y), -0.7)
 
         return eye_location_x, eye_location_y
-    
+
+    #   Center eyes
     def center_eyes(self, duration=None):
         self.send_eye_goal(-0.7, -0.75, duration)
 
+
+    """
+    Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance.
+    """
     def get_random_eye_location(self):
-        """
-        Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance.
-        """
         random_x = random.uniform(-2, 0.5)
         random_y = random.uniform(-1.5, 0)
 
