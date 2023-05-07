@@ -79,12 +79,13 @@ class FaceTrackerMovementNode(Node):
             else:
                 self.eyes_state[i] = val
 
+    # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
         self.idling = True
         self.get_logger().info("Idling...\x1B[1A")
         self.send_eye_goal(self.get_random_eye_location()[0], -0.75)
         self.goal_pan = random.uniform(0.25, 1.25)
-        self.send_pan_and_vertical_tilt_goal(self.goal_pan, -0.6, Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
+        self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
         self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
         self.idle_timer.reset()
         
@@ -193,7 +194,7 @@ class FaceTrackerMovementNode(Node):
 
         pan = x_diff * h_coeff + self.head_state[0]
         pan = max(min(1.75, pan), -0.25) # limit head values to reasonable values
-        # Alt version: Adjust the pan value slightly to make smaller movements a bit bigger
+        # Alternative version: Adjust the pan value slightly to make smaller movements a bit bigger
         #pan = 0.8 * abs(x_diff * h_coeff) ** 0.8
         #pan = math.copysign(pan, -x_diff)
 
