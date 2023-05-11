@@ -9,6 +9,8 @@ from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 from face_tracker_msgs.msg import Point2
+# Speech synthesis might provide something like: 
+# from speech_synthesis_msg.msg import String
 
 class JawMoverNode(Node):
 
@@ -19,7 +21,17 @@ class JawMoverNode(Node):
     def __init__(self):
         super().__init__('jaw_mover_client')
         self._action_client = ActionClient(self, FollowJointTrajectory, '/jaw_controller/follow_joint_trajectory')
-        
+
+        # 'input' is just placeholder for subscribing to speech synthesis topic. Actual code would be something like:
+        #    self.speech_synthesis.subscription = self.create_subscription(
+        #        String, 
+        #        'speech_synthesis/speech_synthesis_topic', 
+        #        self.timer_callback, 
+        #        1
+        #    )
+        self.input = 'Tällä vain testataan suun liikettä ppppp pppppp ooooooooo '
+
+
         timer_period = 0.15
         
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -27,8 +39,6 @@ class JawMoverNode(Node):
         self.i = 0
         self.jawPos = 0.0
         self.charDuration = Duration(sec=0, nanosec=0)
-
-        self.input = 'Tällä vain testataan suun liikettä ppppp pppppp ooooooooo '
         
         self.get_logger().info('Jaw mover client initialized.')
         
@@ -66,17 +76,32 @@ class JawMoverNode(Node):
         coronal = ['t','d','n','s','r','l']
         if char in vowels:
             if char in rounded:
-                self.jawPos = 0.35
-                self.charDuration = Duration(sec=0, nanosec=0)
+                if char == 'o' | char == 'ö':
+                    self.jawPos = 0.3
+                    self.charDuration = Duration(sec=0, nanosec=0)
+                else:
+                    self.jawPos = 0.25
+                    self.charDuration = Duration(sec=0, nanosec=0) 
             else:
-                self.jawPos = 0.5
-                self.charDuration = Duration(sec=0, nanosec=0)
+                if char == 'a':
+                    self.jawPos = 0.5
+                    self.charDuration = Duration(sec=0, nanosec=0)
+                elif char == 'ä':
+                    self.jawPos = 0.45
+                    self.charDuration = Duration(sec=0, nanosec=0)
+                elif char == 'e':
+                    self.jawPos = 0.4
+                    self.charDuration = Duration(sec=0, nanosec=0)
+                else:
+                    self.jawPos = 0.35
+                    self.charDuration = Duration(sec=0, nanosec=0)
+
         else:
             if char in bilabial:
                 self.jawPos = 0.0
                 self.charDuration = Duration(sec=0, nanosec=0)
             elif char in labiodental:
-                self.jawPos = 0.1
+                self.jawPos = 0.05
                 self.charDuration = Duration(sec=0, nanosec=0)
             elif char in coronal:
                 self.jawPos = 0.2
