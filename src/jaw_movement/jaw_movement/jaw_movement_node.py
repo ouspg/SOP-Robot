@@ -42,26 +42,35 @@ class JawMoverNode(Node):
         
         self.get_logger().info('Jaw mover client initialized.')
         
-        
-    """
-    TODO: 
-    1. Handle each input string only once instead of looping -> recognize end of string
-    2. Get real duration of characters (into variable charDuration)
-    3. Handle spaces in string (position, duration)
-    """
     def timer_callback(self):
 
         goal_msg = FollowJointTrajectory.Goal()
-        self.i = self.i % len(self.input) 
-        char = self.input[self.i].lower()
-        if char != ' ':
-            self.synch_jaw_to_speech(char)
-        trajectory_points = JointTrajectoryPoint(positions=[self.jawPos], time_from_start=self.charDuration)
-        goal_msg.trajectory = JointTrajectory(joint_names=['head_jaw_joint'], points=[trajectory_points])
-        self._send_goal_future = self._action_client.wait_for_server()
-        self.get_logger().info('Jaw: ' + str(self.jawPos) + ' Letter: ' + char)
-        self._action_client.send_goal_async(goal_msg)
-        self.i += 1
+        # Check if input has content
+        if (len(self.input) != 0):
+            # Check that whole input hasn't been handled
+            if (self.i < len(self.input)):
+                char = self.input[self.i].lower()
+                # Check for spaces => set values as previous character if space found
+                if char != ' ':
+                    self.synch_jaw_to_speech(char)
+                self.get_logger().info('Jaw: ' + str(self.jawPos) + ' Letter: ' + char)
+                self.i += 1
+            # Reset values & jaw once whole input is handled
+            else:
+                self.i = 0
+                self.input = ''
+                self.jawPos = 0.0
+                self.charDuration = Duration(sec=0, nanosec=0)
+                self.get_logger().info('Speech input finished')
+            # Handle movements
+            trajectory_points = JointTrajectoryPoint(positions=[self.jawPos], time_from_start=self.charDuration)
+            goal_msg.trajectory = JointTrajectory(joint_names=['head_jaw_joint'], points=[trajectory_points])
+            self._send_goal_future = self._action_client.wait_for_server()
+            self._action_client.send_goal_async(goal_msg)
+        # Waiting for content in input
+        else:
+            self.get_logger().info('Waiting for input...')
+
     
     """
     TODO: 
@@ -77,7 +86,7 @@ class JawMoverNode(Node):
         palatal_velar = ['k', 'g', 'j']
         if char in vowels:
             if char in rounded:
-                if char == 'o' | char == 'ö':
+                if char == 'o' or char == 'ö':
                     self.jawPos = 0.3
                     self.charDuration = Duration(sec=0, nanosec=0)
                 else:
