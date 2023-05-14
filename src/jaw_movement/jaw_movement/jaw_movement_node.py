@@ -73,7 +73,8 @@ class JawMoverNode(Node):
         rounded = ['o','u','y','ö']
         bilabial = ['m','p','b']
         labiodental = ['v','f']
-        coronal = ['t','d','n','s','r','l']
+        dental_alveolar = ['n', 't', 'd', 's', 'z', 'l', 'r']
+        palatal_velar = ['k', 'g', 'j']
         if char in vowels:
             if char in rounded:
                 if char == 'o' | char == 'ö':
@@ -95,7 +96,6 @@ class JawMoverNode(Node):
                 else:
                     self.jawPos = 0.35
                     self.charDuration = Duration(sec=0, nanosec=0)
-
         else:
             if char in bilabial:
                 self.jawPos = 0.0
@@ -103,11 +103,14 @@ class JawMoverNode(Node):
             elif char in labiodental:
                 self.jawPos = 0.05
                 self.charDuration = Duration(sec=0, nanosec=0)
-            elif char in coronal:
-                self.jawPos = 0.2
+            elif char in dental_alveolar:
+                self.jawPos = 0.1
+                self.charDuration = Duration(sec=0, nanosec=0)
+            elif char in palatal_velar:
+                self.jawPos = 0.15
                 self.charDuration = Duration(sec=0, nanosec=0)
             else:
-                self.jawPos = 0.3
+                self.jawPos = 0.2
                 self.charDuration = Duration(sec=0, nanosec=0)
 
 def main():
