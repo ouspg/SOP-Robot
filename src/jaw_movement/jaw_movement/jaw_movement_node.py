@@ -23,7 +23,7 @@ class JawMoverNode(Node):
         self._action_client = ActionClient(self, FollowJointTrajectory, '/jaw_controller/follow_joint_trajectory')
 
         # 'input' is just placeholder for subscribing to speech synthesis topic. Actual code would be something like:
-        #    self.speech_synthesis.subscription = self.create_subscription(
+        #    self.speech_synthesis_interface.subscription = self.create_subscription(
         #        String, 
         #        'speech_synthesis/speech_synthesis_topic', 
         #        self.timer_callback, 
@@ -46,13 +46,11 @@ class JawMoverNode(Node):
 
         goal_msg = FollowJointTrajectory.Goal()
         # Check if input has content
-        if (len(self.input) != 0):
+        if (len(self.input) > 0):
             # Check that whole input hasn't been handled
             if (self.i < len(self.input)):
                 char = self.input[self.i].lower()
-                # Check for spaces => set values as previous character if space found
-                if char != ' ':
-                    self.synch_jaw_to_speech(char)
+                self.synch_jaw_to_speech(char)
                 self.get_logger().info('Jaw: ' + str(self.jawPos) + ' Letter: ' + char)
                 self.i += 1
             # Reset values & jaw once whole input is handled
@@ -80,6 +78,7 @@ class JawMoverNode(Node):
 
         vowels = ['a','e','i','o','u','y','ä','ö']
         rounded = ['o','u','y','ö']
+        consonants = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'z']
         bilabial = ['m','p','b']
         labiodental = ['v','f']
         dental_alveolar = ['n', 't', 'd', 's', 'z', 'l', 'r']
@@ -105,7 +104,7 @@ class JawMoverNode(Node):
                 else:
                     self.jawPos = 0.35
                     self.charDuration = Duration(sec=0, nanosec=0)
-        else:
+        elif char in consonants:
             if char in bilabial:
                 self.jawPos = 0.0
                 self.charDuration = Duration(sec=0, nanosec=0)
@@ -121,6 +120,7 @@ class JawMoverNode(Node):
             else:
                 self.jawPos = 0.2
                 self.charDuration = Duration(sec=0, nanosec=0)
+
 
 def main():
     print('Hello from jaw_movement.')
