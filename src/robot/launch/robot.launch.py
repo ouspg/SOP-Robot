@@ -77,9 +77,26 @@ def generate_launch_description():
           'stderr': 'screen',
           },
     )
+    
+    controllers_to_start = [
+        "head_controller",
+        "eyes_controller",
+        "jaw_controller",
+        "r_hand_controller",
+        "r_shoulder_controller"
+    ]
+    
+    controller_spawners = [
+        Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=[controller_name]
+        ) for controller_name in controllers_to_start
+    ]
 
     nodes = [
         ros2_control_node,
+        *controller_spawners
     ]
 
     return LaunchDescription(nodes)

@@ -4,8 +4,8 @@
 
 # This file contains the servo IDs for the robot's right arm and hand
 
-#r_shoulder_lift_joint:
-#  ID: 13
+r_shoulder_lift_joint:
+  ID: 13
 
 r_thumb_joint:
   ID: 31

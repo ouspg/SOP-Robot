@@ -94,6 +94,18 @@
 			"/ros2_control_ws/install/controller_manager_msgs/lib/python3.8/site-packages",
 			"/ros2_control_ws/install/control_msgs/lib/python3.8/site-packages",
 			"/opt/ros/foxy/lib/python3.8/site-packages"
+		],
+		"python.analysis.extraPaths": [
+			"/workspace/install/head_gestures/lib/python3.8/site-packages",
+			"/workspace/install/face_tracker/lib/python3.8/site-packages",
+			"/workspace/install/example/lib/python3.8/site-packages",
+			"/workspace/install/dynamixel_workbench_msgs/lib/python3.8/site-packages",
+			"/moveit2_ws/install/warehouse_ros_mongo/lib/python3.8/site-packages",
+			"/moveit2_ws/install/moveit_msgs/lib/python3.8/site-packages",
+			"/ros2_control_ws/install/ros2controlcli/lib/python3.8/site-packages",
+			"/ros2_control_ws/install/controller_manager_msgs/lib/python3.8/site-packages",
+			"/ros2_control_ws/install/control_msgs/lib/python3.8/site-packages",
+			"/opt/ros/foxy/lib/python3.8/site-packages"
 		]
 	}
 }

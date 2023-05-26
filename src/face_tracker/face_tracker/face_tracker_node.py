@@ -1,3 +1,6 @@
+import cProfile
+import io
+import pstats
 import rclpy
 import cv2
 import dlib
@@ -17,6 +20,8 @@ from cv_bridge import CvBridge, CvBridgeError
 from .lip_movement_net import LipMovementDetector
 
 bridge = CvBridge()
+
+#pr = cProfile.Profile()
 
 class FaceTracker(Node):
     def __init__(self, lip_movement_detection=True):
@@ -81,11 +86,11 @@ class FaceTracker(Node):
             Image,
             image_topic,
             self.on_frame_received,
-            10,
+            5,
         )
-        self.face_img_publisher = self.create_publisher(Image, face_image_topic, 10)
-        self.face_publisher = self.create_publisher(Faces, face_topic, 10)
-        self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 10)
+        self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
+        self.face_publisher = self.create_publisher(Faces, face_topic, 1)
+        self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
         #timer_period = 0.5    # Face publish interval in seconds
         self.face_location = None  # Variable for face location
@@ -100,8 +105,26 @@ class FaceTracker(Node):
         self.face_size_frame = 0
         self.face_distance1 = []
         self.face_distance2 = []
+        
+        #self.timer = self.create_timer(2, self.profile_cycle)
+        #pr.enable()
+
+    """def profile_cycle(self):
+        global pr
+        pr.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).sort_stats(pstats.SortKey.CUMULATIVE)
+        ps.print_stats()
+        self.get_logger().info("Profiler: -----------------------------")
+        self.get_logger().info(s.getvalue())
+        self.get_logger().info("Profiler: -----------------------------")
+
+        pr = cProfile.Profile()
+        pr.enable()"""
 
     def on_frame_received(self, img: Image):
+
+
         try:
             # Convert ros img to opencv compatible format
             cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
@@ -213,6 +236,7 @@ class FaceTracker(Node):
 
                     face_distance2_original = self.face_distance2
                     self.face_distance2.sort(reverse=True)
+                    """
                     try:
                         for i in range(len(face_distance2_original)):
                             self.get_logger().info('s: ')
@@ -223,6 +247,7 @@ class FaceTracker(Node):
                         pass
                     except TypeError:
                         pass
+                    """
                     if not self.face_distance1:
                         self.face_distance1 = self.face_distance2
                     else:
@@ -241,7 +266,7 @@ class FaceTracker(Node):
                                             y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
                                 self.face_distance1 = self.face_distance2
                                 self.face_distance2 = []
-                                self.get_logger().info(str(max_difference))
+                                #self.get_logger().info(str(max_difference))
                                 # Publish image that has rectangles around the detected faces
                                 self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
                                 self.face_publisher.publish(Faces(faces=msg_faces))
@@ -258,8 +283,9 @@ class FaceTracker(Node):
                                             y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
                 self.frame += 1
                 self.face_size_frame += 1
-                # Set frame to zero for new detection every nth frame
-                n = 25
+                # Set frame to zero for new detection every nth frame.
+                # Large values lead to drifting of the detected faces
+                n = 1
                 self.frame = self.frame % n
 
                 #set frame to zero for new face size detection every n_face_size frame
@@ -275,6 +301,7 @@ class FaceTracker(Node):
             self.get_logger().warn("Could not convert ros img to opencv image: ", e)
         except Exception as e:
             self.get_logger().error(e)
+        
 
     def publish_face_location(self):
         # Check that there is a location to publish
@@ -288,7 +315,7 @@ class FaceTracker(Node):
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTracker(True)     # True enables lip movement detection, False disables it
+    tracker = FaceTracker(False)     # True enables lip movement detection, False disables it
 
     # Do work
     rclpy.spin(tracker)
