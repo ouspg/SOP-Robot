@@ -40,7 +40,7 @@ class UpperArmActionClient(Node):
         joints = ["shoulder lift", "upper arm roll", "bicep", "shoulder out"]
         while len(command) < 4:
             angle = int(input(f"Angle for {joints[i]} joint: "))
-            if isinstance(angle, float):
+            if isinstance(angle, int) and angle >= 0 and angle <= 180:
                 command.append(angle)
                 i += 1
             else:
