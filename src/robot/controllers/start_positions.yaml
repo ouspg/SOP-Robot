@@ -15,7 +15,17 @@ fake_joint_driver_node:
         - r_middle1_joint
         - r_ring_joint
         - r_pinky_joint
+        - l_thumb_joint
+        - l_index1_joint
+        - l_middle1_joint
+        - l_ring_joint
+        - l_pinky_joint
       values:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
         - 0.0
         - 0.0
         - 0.0

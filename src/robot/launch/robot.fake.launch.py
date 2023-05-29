@@ -173,6 +173,11 @@ def generate_launch_description():
         executable="spawner.py",
         arguments=["r_hand_controller", "-c", "/controller_manager"],
     )
+    l_hand_fake_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["l_hand_controller", "-c", "/controller_manager"],
+    )
 
     nodes = [
         controller_manager_node,
@@ -183,6 +188,7 @@ def generate_launch_description():
         eyes_fake_controller_spawner,
         jaw_fake_controller_spawner,
         r_shoulder_fake_controller_spawner,
-        r_hand_fake_controller_spawner
+        r_hand_fake_controller_spawner,
+        l_hand_fake_controller_spawner
     ]
     return LaunchDescription(declared_arguments + nodes)
