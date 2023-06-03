@@ -12,6 +12,7 @@ from control_msgs.msg import JointTrajectoryControllerState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 from face_tracker_msgs.msg import Point2, Faces
+from std_msgs.msg import Float32
 
 
 class FaceTrackerMovementNode(Node):
@@ -28,6 +29,7 @@ class FaceTrackerMovementNode(Node):
         self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/face_topic', self.face_list_callback, 2)
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/state', self.eyes_state_callback, 5)
+        self.head_gesture_length_subscription = self.create_subscription(Float32, '/head_gestures/length', self.head_gesture_callback, 1)
 
         # Middle point of image view
         self.middle_x = 640
@@ -92,17 +94,30 @@ class FaceTrackerMovementNode(Node):
             else:
                 self.eyes_state[i] = val
 
+    # When doing a head gesture, pause face tracking for the duration in order not to override the gesture
+    def head_gesture_callback(self, msg):
+        temp = (self.eyes_enabled, self.head_enabled)
+        self.eyes_enabled = False
+        self.head_enabled = False
+        time.sleep(msg.data)
+        self.eyes_enabled = temp[0]
+        self.head_enabled = temp[1]
+
     # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
         self.idling = True
         self.get_logger().info("Idling...\x1B[1A")
-        self.send_eye_goal(self.get_random_eye_location()[0], -0.75)
-        self.goal_pan = random.uniform(0.25, 1.25)
-        self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
+        if self.eyes_enabled:
+            self.send_eye_goal(self.get_random_eye_location()[0], -0.75)
+
+        if self.head_enabled:
+            self.goal_pan = random.uniform(0.25, 1.25)
+            self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
         self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
         self.idle_timer.reset()
         
     # Main loop. Excecuted when face_tracker_node publishes face coordinates.
+    # Feel free to experiment with the timings to fine-tune behavior
     def listener_callback(self, msg):
         self.idle_timer.timer_period_ns = 5000000000
         self.idle_timer.reset()
@@ -124,6 +139,9 @@ class FaceTrackerMovementNode(Node):
 
             # Move eyes
             self.send_eye_goal(eye_location_x, eye_location_y)
+
+            if self.visible_face_amount > 1:
+                time.sleep(0.5)
 
             if self.is_glancing:
                 # Center the eyes back to the face after glancing
