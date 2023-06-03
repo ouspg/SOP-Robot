@@ -8,7 +8,7 @@ from control_msgs.action import FollowJointTrajectory
 from control_msgs.msg import JointTrajectoryControllerState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 
 """ Head shake message
 ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory
@@ -41,6 +41,8 @@ class HeadGesturesNode(Node):
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/state', self.eyes_state_callback, 5)
         self.head_gesture_subscription = self.create_subscription(String, '/head_gestures/head_gesture_topic', self.head_gesture_callback, 10)
+
+        self.head_gesture_length_publisher = self.create_publisher(Float32, '/head_gestures/length', 1)
         
         self.head_state = None
         self.eye_state = None
@@ -144,6 +146,9 @@ class HeadGesturesNode(Node):
             # The delay between each individual movement
             delay = 0.5
             verticalTilt_start = self.head_state[3]
+            msg = Float32()
+            msg.data = delay * 3
+            self.head_gesture_length_publisher.publish(msg)
             self.fixed_gaze_head_turn('up', magnitude / 2)
             time.sleep(delay)
             self.fixed_gaze_head_turn('down', magnitude)
@@ -158,6 +163,9 @@ class HeadGesturesNode(Node):
             # The delay between each individual movement
             delay = 0.5
             pan_start = self.head_state[0]
+            msg = Float32()
+            msg.data = delay * 3
+            self.head_gesture_length_publisher.publish(msg)
             self.fixed_gaze_head_turn('left', magnitude / 2)
             time.sleep(delay)
             self.fixed_gaze_head_turn('right', magnitude)
