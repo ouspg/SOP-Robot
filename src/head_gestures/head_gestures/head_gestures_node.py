@@ -46,7 +46,7 @@ class HeadGesturesNode(Node):
         
         self.head_state = None
         self.eye_state = None
-        
+        """
         # Values that should work with the actual hardware
         self.head_vertical_lower_limit = 0.8
         self.head_vertical_upper_limit = 1.5
@@ -56,9 +56,9 @@ class HeadGesturesNode(Node):
         self.eye_vertical_upper_limit = -0.2
         self.eye_horizontal_lower_limit = -2.0
         self.eye_horizontal_upper_limit = 0.0
-
-
         """
+
+        
         # Values that should work in the simulator
         self.head_vertical_lower_limit = -0.3
         self.head_vertical_upper_limit = 0.3
@@ -68,7 +68,7 @@ class HeadGesturesNode(Node):
         self.eye_vertical_upper_limit = 0.5
         self.eye_horizontal_lower_limit = -0.6
         self.eye_horizontal_upper_limit = 0.6
-        """
+        
         self.logger = self.get_logger()
         self.logger.info('Head gesture client initialized.')
         
@@ -98,7 +98,16 @@ class HeadGesturesNode(Node):
     def eyes_state_callback(self, msg):
         self.eye_state = msg.actual.positions
 
-    def fixed_gaze_head_turn(self, direction, magnitude, duration=Duration(sec=0, nanosec=400000000)):
+    def fixed_gaze_head_turn(self, direction, magnitude, duration=0.4):
+        """
+        Turns the head while keeping the gaze steady by rotating the eyes in the opposite direction as the head.
+        Decreases the magnitude of the movement, if it would exceed the maximum range of either the head or the eyes. 
+        Takes 3 arguments: direction, magnitude and duration.
+            direction: The direction of the head turn. Can be "left", "right", "up" or "down".
+            magnitude: The magnitude of the head turn.
+            duration: The time in seconds it should take to finish the head turn.
+        """
+        duration = Duration(sec=0, nanosec=int(duration * 100000000))
         pan, _, _, verticalTilt = self.head_state
         eye_x, eye_y = self.eye_state
 
@@ -139,47 +148,64 @@ class HeadGesturesNode(Node):
             self.send_eye_goal(eye_x, eye_y - magnitude)
 
 
-    def nod(self):
+    def nod(self, magnitude=0.4, delay=0.5, duration_of_individual_movements=0.4):
+        """
+        Makes the head nod.
+        Takes two optional arguments:
+            magnitude: The interval between the highest and lowest points of the nod
+            delay: The delay (in seconds) between the start of each individual movement
+            duration_of_individual_movements: The time (in seconds) it takes for an individual movement to finish. Should be less than delay.
+        """
         if self.head_state:
-            # The interval between the highest and lowest points of the nod
-            magnitude = 0.4
-            # The delay between each individual movement
-            delay = 0.5
             verticalTilt_start = self.head_state[3]
             msg = Float32()
             msg.data = delay * 3
             self.head_gesture_length_publisher.publish(msg)
-            self.fixed_gaze_head_turn('up', magnitude / 2)
+            self.fixed_gaze_head_turn('up', magnitude / 2, duration_of_individual_movements)
             time.sleep(delay)
-            self.fixed_gaze_head_turn('down', magnitude)
+            self.fixed_gaze_head_turn('down', magnitude, duration_of_individual_movements)
             time.sleep(delay)
             verticalTilt = self.head_state[3]
-            self.fixed_gaze_head_turn('up', verticalTilt - verticalTilt_start)
+            self.fixed_gaze_head_turn('up', verticalTilt - verticalTilt_start, duration_of_individual_movements)
 
-    def head_shake(self):
+    def head_shake(self, magnitude=0.5, delay=0.5, duration_of_individual_movements=0.4):
+        """
+        Shakes the head.
+        Takes two optional arguments:
+            magnitude: The interval between the leftmost and rightmost points of the head shakes
+            delay: The delay (in seconds) between the start of each individual movement
+            duration_of_individual_movements: The time (in seconds) it takes for an individual movement to finish. Should be less than delay.
+        """
         if self.head_state:
-            # The interval between the leftmost and rightmost points of the head shake
-            magnitude = 0.5
-            # The delay between each individual movement
-            delay = 0.5
             pan_start = self.head_state[0]
             msg = Float32()
             msg.data = delay * 3
             self.head_gesture_length_publisher.publish(msg)
-            self.fixed_gaze_head_turn('left', magnitude / 2)
+            self.fixed_gaze_head_turn('left', magnitude / 2, duration_of_individual_movements)
             time.sleep(delay)
-            self.fixed_gaze_head_turn('right', magnitude)
+            self.fixed_gaze_head_turn('right', magnitude, duration_of_individual_movements)
             time.sleep(delay)
             pan = self.head_state[0]
-            self.fixed_gaze_head_turn('left', pan_start - pan)
+            self.fixed_gaze_head_turn('left', pan_start - pan, duration_of_individual_movements)
 
     def head_gesture_callback(self, msg):
         gesture = msg.data
         self.logger.info(gesture)
+        gesture = gesture.split(",")
+        args = {}
+        for i in range(1, len(gesture)):
+            gesture[i] = gesture[i].strip(" ")
+            if gesture[i][:10] == "magnitude=":
+                args['magnitude'] = float(gesture[i][10:])
+            if gesture[i][:6] == "delay=":
+                args['delay'] = float(gesture[i][6:])
+            if gesture[i][:9] == "duration=":
+                args['duration_of_individual_movements'] = float(gesture[i][9:])
+        gesture = gesture[0]
         if gesture == 'nod':
-            self.nod()
+            self.nod(**args)
         elif gesture == 'shake':
-            self.head_shake()
+            self.head_shake(**args)
         else:
             self.logger.info("Gesture not implemented")
 

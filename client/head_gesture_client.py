@@ -27,11 +27,12 @@ class HeadGestureClient(Node):
 
     def main(self):
         command = ""
-        while command not in self.exit_commands:
-            command = input("Input command: ").lower()
+        args = []
+        while len(args) > 0 or command not in self.exit_commands:
+            command, *args = input("Input command: ").lower().split(',')
             if command in self.available_commands:
-                self.send_gesture(command)
-            elif command not in self.exit_commands:
+                self.send_gesture(','.join([command, ','.join(args)]))
+            elif len(args) > 0 or command not in self.exit_commands:
                 self.list_available_commands()
 
 
