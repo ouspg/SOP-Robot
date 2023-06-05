@@ -72,20 +72,20 @@ class JawMoverNode(Node):
     
     """
     TODO: 
-    Define and return real duration for each character in speech
+    Define and return real duration for each character in speech based on speech synthesis' timing
     """
     def synch_jaw_to_speech(self, char):
 
-        vowels = ['a','e','i','o','u','y','ä','ö']
-        rounded = ['o','u','y','ö']
-        consonants = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'z']
+        vowels = ['a','e','i','o','u','y','ä','ö','ü','å']
+        rounded = ['o','u','y','ö','ü']
+        consonants = ['b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','z','c','q','w']
         bilabial = ['m','p','b']
-        labiodental = ['v','f']
-        dental_alveolar = ['n', 't', 'd', 's', 'z', 'l', 'r']
-        palatal_velar = ['k', 'g', 'j']
+        labiodental = ['v','f', 'w']
+        dental_alveolar = ['n','t','d','s','z','l','r','c']
+        palatal_velar_and_alveolar = ['k','g','j','š','ž','q']
         if char in vowels:
             if char in rounded:
-                if char == 'o' or char == 'ö':
+                if char == 'o' or char == 'ö' or char == 'å':
                     self.jawPos = 0.3
                     self.charDuration = Duration(sec=0, nanosec=0)
                 else:
@@ -114,7 +114,7 @@ class JawMoverNode(Node):
             elif char in dental_alveolar:
                 self.jawPos = 0.1
                 self.charDuration = Duration(sec=0, nanosec=0)
-            elif char in palatal_velar:
+            elif char in palatal_velar_and_alveolar:
                 self.jawPos = 0.15
                 self.charDuration = Duration(sec=0, nanosec=0)
             else:
