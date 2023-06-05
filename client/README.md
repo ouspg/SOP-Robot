@@ -77,3 +77,31 @@ Currently, the following actions are available.
 | --------  | ----------------------------------------- | 
 | nod       | Nods                                      | 
 | shake     | Shakes head                               | 
+
+Optionally, the following arguments are also available for the currently implemented gestures.
+
+| Gesture   | What it does                                                               |
+| --------  | -------------------------------------------------------------------------- | 
+| magnitude | Sets the magnitude of the head movements in the gesture                    | 
+| delay     | Sets the delay between the beginning of each head movement in the gesture  |
+| duration  | Sets the duration of the individual head movements in the gesture          |
+
+Arguments can be used by adding them after the command, separated by commas in the following format
+
+```
+command, argument1_name=argument1_value, argument2_name=argument2_value
+```
+
+Example commands:
+
+```
+nod
+```
+```
+shake, magnitude=0.5, delay=0.5, duration=0.4
+```
+```
+nod, duration=0.4
+```
+
+The client does not check argument validity, but invalid arguments are ignored by the face_gestures_node. The 'quit' and 'exit' commands do not take arguments.
