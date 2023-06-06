@@ -162,10 +162,10 @@ def generate_launch_description():
         arguments=["jaw_controller", "-c", "/controller_manager"],
     )
 
-    r_shoulder_fake_controller_spawner = Node(
+    shoulder_fake_controller_spawner = Node(
         package="controller_manager",
         executable="spawner.py",
-        arguments=["r_shoulder_controller", "-c", "/controller_manager"],
+        arguments=["shoulder_controller", "-c", "/controller_manager"],
     )
 
     r_hand_fake_controller_spawner = Node(
@@ -182,7 +182,7 @@ def generate_launch_description():
         head_fake_controller_spawner,
         eyes_fake_controller_spawner,
         jaw_fake_controller_spawner,
-        r_shoulder_fake_controller_spawner,
+        shoulder_fake_controller_spawner,
         r_hand_fake_controller_spawner
     ]
     return LaunchDescription(declared_arguments + nodes)

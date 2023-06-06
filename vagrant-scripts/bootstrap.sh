@@ -123,6 +123,8 @@ cd /ros2_control_ws
 
 # Making custom repo file to pull foxy versions
 vcs import src < /workspace/vagrant-scripts/ros2_control_ws.repos.yml
+rm -rf /ros-controls/ros2_controllers/tricycle_controller/
+source /opt/ros/foxy/setup.bash
 colcon build
 
 source /ros2_control_ws/install/setup.bash
