@@ -22,7 +22,9 @@ Service will now try to synthentise sentence into .wav file located in 'src/tts_
 
 These are included in the newest version of the vagrantfile. If these are not installed during bootstrap, they need to be installed to VM before starting the service.
 
+Install TTS
 > pip install TTS
+And install espeak
 > apt -y install espeak
 
 ## Potential future improvements
