@@ -1,6 +1,6 @@
 import sys
 
-from tts_package.srv import StringToWav
+from tts_msgs.srv import StringToWav
 
 import rclpy
 from rclpy.node import Node
@@ -25,12 +25,14 @@ def main():
     rclpy.init()
 
     tts_client = ttsClientAsync()
-    response = tts_client.send_request(int(sys.argv[1]))
+
+    response = tts_client.send_request(sys.argv[1])
+
     if(response.success):
-        minimal_client.get_logger().info(
+        tts_client.get_logger().info(
             'Succesfully synthentized!')
     else:
-        minimal_client.get_logger().info(
+        tts_client.get_logger().info(
             'Failed to synthentize!'
         )
     tts_client.destroy_node()
