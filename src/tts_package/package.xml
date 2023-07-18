@@ -7,7 +7,7 @@
   <maintainer email="klaurila20@student.oulu.fi">Konsta Laurila</maintainer>
   <license>TODO: License declaration</license>
 
-  <depend>TTS</depend>
+  <depend>python3-TTS</depend>
 
   <exec_depend>tts_msgs</exec_depend>
 

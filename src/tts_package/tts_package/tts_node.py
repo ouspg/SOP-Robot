@@ -14,7 +14,7 @@ class TTSService(Node):
         super().__init__('TTS_service')
         self.srv = self.create_service(StringToWav, 'StringToWav', self.stringToWav_callback)
         self.synthetizer = Synthesizer(
-            "src/tts_package/resource/model151k.pth",
+            "src/tts_package/resource/model.pth",
             "src/tts_package/resource/config.json")
         self.output = "src/tts_package/resource/output.wav"
         self.get_logger().info("Service running...")

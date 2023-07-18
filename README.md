@@ -24,6 +24,7 @@ Joint -> Servo mappings are defined in two files. Configuration file connects se
   * src/inmoov_description - robot files, which define the robot geometry and configuration for simulation (URDF, SRDF & rviz configuration)
   * src/robot - robot launch files & servo controller configurations
   * src/robot_hardware - hardware interface for ros2_controller, communicates with U2D2 via dynamixel workbench
+  * src/tts_package - Text-to-speech package for finnish speech synthesis 
 
 ## Servo Table
 
