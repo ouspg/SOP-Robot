@@ -160,8 +160,9 @@ rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
 
 # install TTS dependency
 python3 -m pip install TTS
+python3 -m pip install simpleaudio
 
-# curl TTS model and config .zip, unzip it into resources
+# curl .zip file containing model and config for TTS, unzip it into tts_package/resource folder
 curl -L 'https://www.dropbox.com/scl/fo/vtx8ieqs8n6x4khjcc9nj/h?rlkey=65mddh9yke5wag1zlauwepjg2&dl=1' --output src/tts_package/resource/model.zip
 unzip src/tts_package/resource/model.zip -d src/tts_package/resource
 

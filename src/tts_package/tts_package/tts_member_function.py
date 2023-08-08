@@ -7,7 +7,10 @@ from rclpy.node import Node
 
 
 class ttsClientAsync(Node):
-
+    
+    # Client Node that is used to call the TTS service. Takes sentence as an argument that service will try to synthetize.
+    # ros2 run tts_package client "Tässä teksti joka syntentisoidaan. Voi sisältää useampiakin lauseita kunhan ne ovat lainausmerkkien sisällä".
+    
     def __init__(self):
         super().__init__('tts_client_async')
         self.cli = self.create_client(StringToWav, 'StringToWav')

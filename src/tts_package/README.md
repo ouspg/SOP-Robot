@@ -1,4 +1,4 @@
-This package contains a service and client for finnish text-to-speech feature. 
+This package contains service and client for finnish text-to-speech feature. Service will automatically play synthesized speech when called with wanted sentence as an argument.
 
 # Usage
 
@@ -9,6 +9,7 @@ Check that model.pth and config.json are located in src/tts_package/resource/ fo
 
 * `TTS`
 * `espeak-ng`
+* `simpleaudio`
 
 These are included in the newest version of the vagrantfile. If these are not installed during bootstrap, they need to be installed to VM before starting the service.
 
@@ -23,11 +24,11 @@ And install espeak
 
 
 ## Using the service
-Service can be used by calling client with terminal, giving sentence as an argument. Note that sentence should be inside quotes and in finnish.
+Service can be used by calling client with terminal, giving sentences as an argument. Note that sentences should be inside quotes and in finnish.
 > ros2 run tts_package client "Hei. Tässä on lause joka syntentisoidaan puheeksi."
 
-Service will now try to synthentise sentence into .wav file located in 'src/tts_package/resource/output.wav' which can then be played from speaker.
+Service will now try to synthentize sentence into .wav file located in 'src/tts_package/resource/output.wav' which will then be played automatically.
 
 ## Potential future improvements
 
-* Implement feature that generated .wav file will be played automatically once when created
+* Implement this feature to work with potential speech-to-text and chatbot features.
