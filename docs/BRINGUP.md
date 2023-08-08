@@ -55,6 +55,22 @@ Anyway, you are able to test the face tracking and eye movements like this.
 
 **Note: currently, only jaw, eyes, right hand & head pan movement can be simulated**
 
+### Launching text-to-speech service
+
+Text-to-speech works as a service which can be called from terminal utilizing the ros2 client in package.
+
+Run the service in a (new) terminal
+
+```console
+ros2 run tts_package service
+```
+
+Call the service from terminal using client and synthetize speech
+
+```console
+ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
+```
+
 ## Bring-up real HW robot
 
 ### (0. Test servo communication)
@@ -140,6 +156,22 @@ Finally, start the eye movement node in a new terminal window
 
 ```console
 ros2 run eye_movement eye_movement_node
+```
+
+### 5. Launching text-to-speech service
+
+Text-to-speech works as a service which can be called from terminal utilizing the ros2 client in package.
+
+Run the service in a (new) terminal
+
+```console
+ros2 run tts_package service
+```
+
+Call the service from terminal using client and synthetize speech
+
+```console
+ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
 ```
 
 **Todo: simplify bring up process (add the starting of the controllers to the launch file)**

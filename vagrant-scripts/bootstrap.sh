@@ -113,7 +113,8 @@ source /opt/ros/foxy/setup.bash
 apt install -y \
   ros-foxy-test-msgs ros-foxy-control-msgs \
   ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-angles \
-  v4l-utils
+  v4l-utils \
+  espeak
 
 
 # Install ros2_control (https://github.com/ros-controls/ros2_control)
@@ -156,6 +157,14 @@ python3 -m pip install opencv-python dlib
 cd /workspace
 rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+
+# install TTS dependency
+python3 -m pip install TTS
+python3 -m pip install simpleaudio
+
+# curl .zip file containing model and config for TTS, unzip it into tts_package/resource folder
+curl -L 'https://www.dropbox.com/scl/fo/vtx8ieqs8n6x4khjcc9nj/h?rlkey=65mddh9yke5wag1zlauwepjg2&dl=1' --output src/tts_package/resource/model.zip
+unzip src/tts_package/resource/model.zip -d src/tts_package/resource
 
 # Enable sourcing of built ros2 environment to bash configuration
 echo "source install/setup.bash" >> /home/vagrant/.bashrc
