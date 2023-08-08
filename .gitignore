@@ -9,7 +9,7 @@
 
 src/tts_package/resource/*
 src/tts_package/resource/config.json
-src/tts_package/resource/model151k.pth
+src/tts_package/resource/model.pth
 src/tts_package/resource/output.wav
 
 build
