@@ -163,7 +163,7 @@ python3 -m pip install TTS
 python3 -m pip install simpleaudio
 
 # curl .zip file containing model and config for TTS, unzip it into tts_package/resource folder
-curl -L 'https://www.dropbox.com/scl/fo/vtx8ieqs8n6x4khjcc9nj/h?rlkey=65mddh9yke5wag1zlauwepjg2&dl=1' --output src/tts_package/resource/model.zip
+curl -L "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip" --output src/tts_package/resource/model.zip
 unzip src/tts_package/resource/model.zip -d src/tts_package/resource
 
 # Enable sourcing of built ros2 environment to bash configuration
