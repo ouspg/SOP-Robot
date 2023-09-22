@@ -4,7 +4,7 @@ import random
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-
+from std_msgs.msg import String
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
@@ -23,16 +23,11 @@ class JawMoverNode(Node):
         self._action_client = ActionClient(self, FollowJointTrajectory, '/jaw_controller/follow_joint_trajectory')
 
         # 'input' is just placeholder for subscribing to speech synthesis topic. Actual code would be something like:
-        #    self.speech_synthesis_interface.subscription = self.create_subscription(
-        #        String, 
-        #        'speech_synthesis/speech_synthesis_topic', 
-        #        self.timer_callback, 
-        #        1
-        #    )
-        self.input = 'Tällä vain testataan suun liikettä ppppp pppppp ooooooooo '
+        self.subscription = self.create_subscription(String, 'jaw_topic', self.callback, 10)
+        self.input = ''
 
 
-        timer_period = 0.15
+        timer_period = 0.05
         
         self.timer = self.create_timer(timer_period, self.timer_callback)
         
@@ -41,7 +36,10 @@ class JawMoverNode(Node):
         self.charDuration = Duration(sec=0, nanosec=0)
         
         self.get_logger().info('Jaw mover client initialized.')
-        
+
+    def callback(self, msg):
+        self.input = msg.data
+
     def timer_callback(self):
 
         goal_msg = FollowJointTrajectory.Goal()
@@ -72,20 +70,20 @@ class JawMoverNode(Node):
     
     """
     TODO: 
-    Define and return real duration for each character in speech based on speech synthesis' timing
+    Define and return real duration for each character in speech
     """
     def synch_jaw_to_speech(self, char):
 
-        vowels = ['a','e','i','o','u','y','ä','ö','ü','å']
-        rounded = ['o','u','y','ö','ü']
-        consonants = ['b','d','f','g','h','j','k','l','m','n','p','r','s','t','v','z','c','q','w']
+        vowels = ['a','e','i','o','u','y','ä','ö']
+        rounded = ['o','u','y','ö']
+        consonants = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'z']
         bilabial = ['m','p','b']
-        labiodental = ['v','f', 'w']
-        dental_alveolar = ['n','t','d','s','z','l','r','c']
-        palatal_velar_and_alveolar = ['k','g','j','š','ž','q']
+        labiodental = ['v','f']
+        dental_alveolar = ['n', 't', 'd', 's', 'z', 'l', 'r']
+        palatal_velar = ['k', 'g', 'j']
         if char in vowels:
             if char in rounded:
-                if char == 'o' or char == 'ö' or char == 'å':
+                if char == 'o' or char == 'ö':
                     self.jawPos = 0.3
                     self.charDuration = Duration(sec=0, nanosec=0)
                 else:
@@ -114,7 +112,7 @@ class JawMoverNode(Node):
             elif char in dental_alveolar:
                 self.jawPos = 0.1
                 self.charDuration = Duration(sec=0, nanosec=0)
-            elif char in palatal_velar_and_alveolar:
+            elif char in palatal_velar:
                 self.jawPos = 0.15
                 self.charDuration = Duration(sec=0, nanosec=0)
             else:

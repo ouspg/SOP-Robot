@@ -20,6 +20,9 @@ controller_manager:
     r_hand_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    l_hand_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -58,20 +61,20 @@ joint_state_broadcaster:
     - l_elbow_flex_joint
     - l_shoulder_out_joint
     - l_thumb1_joint
-    - l_thumb_joint
+    #- l_thumb_joint
     - l_thumb3_joint
-    - l_index1_joint
+    #- l_index1_joint
     - l_index_joint
     - l_index3_joint
-    - l_middle1_joint
+    #- l_middle1_joint
     - l_middle_joint
     - l_middle3_joint
     - l_ring1_joint
-    - l_ring_joint
+    #- l_ring_joint
     - l_ring3_joint
     - l_ring4_joint
     - l_pinky1_joint
-    - l_pinky_joint
+    #- l_pinky_joint
     - l_pinky3_joint
     - l_pinky4_joint
     - l_wrist_roll_joint
@@ -100,6 +103,32 @@ r_hand_controller:
 
     state_publish_rate: 20.0 # Defaults to 50
     action_monitor_rate: 20.0 # Defaults to 20
+
+l_hand_controller:
+  ros__parameters:
+    joints:
+    - l_thumb_joint
+    - l_index1_joint
+    - l_middle1_joint
+    - l_ring_joint
+    - l_pinky_joint
+    write_op_modes:
+    - l_thumb_joint
+    - l_index_joint
+    - l_middle_joint
+    - l_ring_joint
+    - l_pinky_joint
+    allow_partial_joints_goal: true
+    interface_name: position
+
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+
+    state_publish_rate: 20.0 # Defaults to 50
+    action_monitor_rate: 20.0 # Defaults to 20
+
 
 head_controller:
   ros__parameters:

@@ -1,47 +1,47 @@
-import simpleaudio as sa
-
-from TTS.utils.synthesizer import Synthesizer
-
+from TTS.api import TTS
 from rclpy.node import Node
-
-from tts_msgs.srv import StringToWav
-
+from std_msgs.msg import String
+from std_msgs.msg import Bool
+import simpleaudio as sa
 import rclpy
+
 
 
 class TTSService(Node):
 
-    # Initialize node
     def __init__(self):
         super().__init__('TTS_service')
-        self.srv = self.create_service(
-            StringToWav, 'StringToWav', self.stringToWav_callback)
-        self.synthetizer = Synthesizer(
-            "src/tts_package/resource/model.pth",
-            "src/tts_package/resource/config.json")
-        self.output = "src/tts_package/resource/output.wav"
-        self.get_logger().info("Service running...")
+        self.subscription = self.create_subscription(String, "response", self.callback, 10)
+        self.publisher = self.create_publisher(Bool, "can_listen", 10)
+        self.jaw = self.create_publisher(String, "jaw_topic", 10)
+        self.can_listen = Bool(data = True)
+        self.cant_listen = Bool(data = False)
+        self.synthetizer = TTS(
+            model_path="./src/tts_package/resource/model151k.pth",
+            config_path="./src/tts_package/resource/config.json").synthesizer
+        self.output = "./src/tts_package/resource/output.wav"
 
-    # Callback function. Waits for call and then synthetizes given request and plays synthetized speech.
-    def stringToWav_callback(self, request, response):
-        self.get_logger().info("Incoming request to synthentize string: %s" % (request.data))
+
+    def callback(self, msg):
         try:
-            wav = self.synthetizer.tts(request.data)
+            wav = self.synthetizer.tts(msg.data)
             self.synthetizer.save_wav(wav, self.output)
-            self.play_audio()
-        except Exception as e:
-            self.get_logger().info(f"Error happened: {str(e)}")
-            response.success = False
+            self.play_audio(msg)
+        except Exception:
+            self.get_logger().info("Error happened")
         else:
-            response.success = True
-        self.get_logger().info("Callback over. Service running...")
-        return response
+            self.get_logger().info("Incoming request to synthentize string: %s" % (msg.data))
 
-    # Function that plays created .wav file.
-    def play_audio(self):
+
+    def play_audio(self, msg):
+        self.publisher.publish(self.cant_listen)
         wave_obj = sa.WaveObject.from_wave_file(self.output)
+        self.jaw.publish(msg)
         play_obj = wave_obj.play()
-        play_obj.wait_done()
+        play_obj.wait_done()     
+        self.publisher.publish(self.can_listen) 
+    
+
 
 def main():
     rclpy.init()
@@ -50,7 +50,9 @@ def main():
 
     rclpy.spin(tts_service)
 
+    tts_service.destroy_node()
     rclpy.shutdown()
+
 
 
 if __name__ == '__main__':

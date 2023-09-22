@@ -21,3 +21,18 @@ r_ring_joint:
 
 r_pinky_joint:
   ID: 44
+
+l_thumb_joint:
+  ID: 248
+
+l_index1_joint:
+  ID: 201
+
+l_middle1_joint:
+  ID: 250
+
+l_ring_joint:
+  ID: 252
+
+l_pinky_joint:
+  ID: 249
