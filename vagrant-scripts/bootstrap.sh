@@ -131,6 +131,7 @@ vcs import src < /workspace/vagrant-scripts/ros2_control_ws.repos.yml # Making c
 rm -rf /ros2_control_ws/src/ros-controls/ros2_controllers/tricycle_controller # Remove unnecessary package which does not seem to work
 cd /ros2_control_ws/src/ros-controls/control_toolbox
 git checkout 66687e7c1873a039600d78b370e2d4acd24924cd
+cd /ros2_control_ws
 rosdep init
 rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
