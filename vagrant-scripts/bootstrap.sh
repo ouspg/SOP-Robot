@@ -89,7 +89,8 @@ apt install -y \
   ros-foxy-test-msgs ros-foxy-control-msgs \
   ros-foxy-realtime-tools ros-foxy-xacro ros-foxy-angles \
   v4l-utils \
-  ros-foxy-camera-calibration-parsers
+  ros-foxy-camera-calibration-parsers \
+  espeak
 
 # Set timezone and turn on NTP
 sudo timedatectl set-timezone "Europe/Helsinki"
@@ -141,6 +142,14 @@ sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagra
 
 # Install opencv_cam (https://github.com/clydemcqueen/opencv_cam)
 python3 -m pip install opencv-python dlib
+
+# Install TTS dependencies, model and config file for TTS
+python3 -m pip install TTS
+python3 -m pip install simpleaudio
+
+curl -L "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip" --output src/tts_package/resource/model.zip
+unzip src/tts_package/resource/model.zip -d src/tts_package/resource
+
 # Seems like requires foxy and no newly changed stuff
 mkdir -p /opencv_cam_ws/src
 cd /opencv_cam_ws/src
@@ -163,6 +172,7 @@ sudo -u vagrant rosdep init
 sudo -u vagrant rosdep update
 sudo -u vagrant rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
 sudo -u vagrant colcon build
+
 # Enable sourcing of built ros2 environment to bash configuration
 source /workspace/install/setup.bash
 echo "source /workspace/install/setup.bash" >> /home/vagrant/.bashrc
