@@ -143,12 +143,9 @@ sudo -u vagrant echo "source /ros2_control_ws/install/setup.bash" >> /home/vagra
 # Install opencv_cam (https://github.com/clydemcqueen/opencv_cam)
 python3 -m pip install opencv-python dlib
 
-# Install TTS dependencies, model and config file for TTS
+# Install TTS dependencies
 python3 -m pip install TTS
 python3 -m pip install simpleaudio
-
-curl -L "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip" --output src/tts_package/resource/model.zip
-unzip src/tts_package/resource/model.zip -d src/tts_package/resource
 
 # Seems like requires foxy and no newly changed stuff
 mkdir -p /opencv_cam_ws/src
@@ -179,6 +176,10 @@ echo "source /workspace/install/setup.bash" >> /home/vagrant/.bashrc
 
 # Enable colcon autocomplete
 echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> /home/vagrant/.bashrc
+
+# Curl TTS model and config file
+curl -L "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip" --output src/tts_package/resource/model.zip
+unzip src/tts_package/resource/model.zip -d src/tts_package/resource
 
 # Finnish keyboard layout, (didn't work)
 # sudo -u vagrant gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'fi')]"
