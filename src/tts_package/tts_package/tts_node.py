@@ -21,7 +21,7 @@ class TTSService(Node):
 
 
     def callback(self, msg):
-        if(msg.data != '.'){
+        if(msg.data != '.'):
             try:
                 self.get_logger().info("Incoming request to synthentize string: %s" % (msg.data))
                 wav = self.synthetizer.tts(msg.data)
@@ -31,10 +31,8 @@ class TTSService(Node):
                 self.get_logger().info("Error happened")
             else:
                 pass
-        } else {
+        else:
             self.get_logger().info("Ei vastausta.")
-        }
-
 
     def play_audio(self, msg):
         self.publisher_.publish(self.cant_listen)
