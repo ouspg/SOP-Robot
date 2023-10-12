@@ -147,9 +147,13 @@ python3 -m pip install opencv-python dlib
 python3 -m pip install TTS
 python3 -m pip install simpleaudio
 
+# Install chatbot dependencies
+python3 -m pip install farm-haystack[inference]
+
 # Install SpeechRecognition dependencies
-sudo apt-get install portaudio19-dev python-all-dev python3-all-dev && sudo pip install pyaudio
-python3 -m pip install SpeechRecognition==3.10.0
+sudo apt-get install portaudio19-dev python-all-dev python3-all-dev 
+python3 -m pip install pyaudio
+python3 -m pip install SpeechRecognition=='3.10.0'
 
 # Seems like requires foxy and no newly changed stuff
 mkdir -p /opencv_cam_ws/src
