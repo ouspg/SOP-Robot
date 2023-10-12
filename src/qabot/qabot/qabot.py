@@ -60,7 +60,7 @@ class QaBotClientNode(Node):
         else:
             final_response_text = "Anteeksi, en ymmärtänyt."
             pred = self.pipe.run(
-                query=data, params={"Retriever": {"top_k": 7}, "Reader": {"top_k": 3}}
+                query=data, params={"Retriever": {"top_k": 10}, "Reader": {"top_k": 5}}
             )
             final_response_text = pred['answers'][0].answer
             self.get_logger().info("Found answer: %s" % (final_response_text))
