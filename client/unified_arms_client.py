@@ -3,11 +3,13 @@ import time
 import random
 from std_msgs.msg import String
 from rclpy.node import Node
+from trajectory_msgs.msg import JointTrajectoryPoint
+from trajectory_msgs.msg import JointTrajectory
 
 
-# Right hand:
-
-class HandActionClient(Node):
+class RightHandActionClient(Node):
+    # TODO unify Left and Right HandAction client
+    # by defining left/right when instancing the class
     def __init__(self):
         super().__init__("right_hand_action_client")
         self.right_hand_gesture_publisher = self.create_publisher(String, "/r_hand/r_hand_topic", 10)
@@ -64,9 +66,8 @@ class HandActionClient(Node):
             elif command not in self.exit_commands:
                 self.list_available_commands()
 
-# Left hand:
 
-class LeftClient(Node):
+class LeftHandActionClient(Node):
     def __init__(self):
         super().__init__("left_hand_action_client")
         self.left_hand_gesture_publisher = self.create_publisher(String, "/l_hand/l_hand_topic", 10)
@@ -211,8 +212,31 @@ class ShoulderController(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    action_client = HandActionClient()
-    action_client.main()
+    action_clients = {}
+    action_clients["right_hand"] = RightHandActionClient()
+    action_clients["left_hand"] = LeftHandActionClient()
+    action_clients["shoulders"] = ShoulderController()
+
+    exit_commands = ["exit", "quit"]
+    client_selection = ""
+
+    while client_selection not in exit_commands:
+        client_selection = input("Select body part to actuate: ").lower()
+        if client_selection in action_clients:
+            active_client = action_clients[client_selection]
+            command = ""
+            while command not in exit_commands:
+                command = input("Input command: ").lower()
+                if command in active_client.available_commands:
+                    if command == "rps":
+                        active_client.rps()
+                    else:
+                        active_client.send_gesture(command)
+                elif command not in exit_commands:
+                    active_client.list_available_commands()
+        elif client_selection not in exit_commands:
+            for part in action_clients:
+                print(part)
 
     rclpy.shutdown()
 
