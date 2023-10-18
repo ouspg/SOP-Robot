@@ -1,20 +1,38 @@
 import time
 import rclpy
+import serial
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
 from trajectory_msgs.msg import JointTrajectoryPoint
 from trajectory_msgs.msg import JointTrajectory
+from control_msgs.action import FollowJointTrajectory
+from std_msgs.msg import String
 
+# Define the Arduino serial port and baud rate
+SERIAL_PORT = '/dev/ttyACM0'  # Replace with the appropriate port
+BAUD_RATE = 115200
+
+# Define the ROS2 topic names
+TOPIC_NAME = 'shoulder_controller/joint_trajectory'
+FEEDBACK_TOPIC_NAME = 'feedback'
 
 class ShoulderController(Node):
 
     def __init__(self):
         super().__init__('minimal_publisher')
-        self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
-        self.args = ['trial', 'zero', 'rps_1']
+
+        # Initialize the serial connection
+        self.serial = serial.Serial(SERIAL_PORT, BAUD_RATE)
+        # Create a ROS2 publisher for the feedback
+        self.publisher = self.create_publisher(String, FEEDBACK_TOPIC_NAME, 10)
+        
+        
+        #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
+        self.args = ['trial', 'zero', 'rps_1', 'rps_2']
         self.positions_dict = {
             "zero": [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
-            "rps_1": [75.0, 90.0, 80.0, 0.0, 34.0, 80.0, 10.0, 0.0]
+            "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 60.0, 0.0],
+            "rps_2": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 95.0, 0.0]
         }
         self.logger = self.get_logger()
 
@@ -66,7 +84,28 @@ class ShoulderController(Node):
 
         self.logger.info(f"Sending request")
         print(type(goal_msg))
-        self.publisher_.publish(goal_msg)
+        #self.publisher_.publish(goal_msg)
+
+        # Extract the desired angles from the received message
+        angles = []
+        for point in msg.points:
+            angles.extend(point.positions)
+
+        # Prepare the command to be sent to the Arduino
+        command = ','.join(str(angle) for angle in angles)
+
+        # Send the command to the Arduino
+        self.serial.write(command.encode())
+
+        # Read the feedback from the Arduino
+        feedback = self.serial.readline().decode().strip()
+        self.get_logger().info('Received feedback: %s' % feedback)
+
+        # Publish the feedback to the ROS2 topic
+        feedback_msg = String()
+        feedback_msg.data = feedback
+        self.publisher.publish(feedback_msg)
+
 
 
 def main(args=None):
