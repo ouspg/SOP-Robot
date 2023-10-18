@@ -147,10 +147,21 @@ python3 -m pip install opencv-python dlib
 python3 -m pip install TTS
 python3 -m pip install simpleaudio
 
+# Install chatbot dependencies
+python3 -m pip install farm-haystack[inference]
+python3 -m pip install numpy=='1.22.1'
+python3 -m pip install numba --upgrade
+
+# Install SpeechRecognition dependencies
+sudo apt-get install portaudio19-dev python-all-dev python3-all-dev 
+sudo apt install python3-pyaudio
+python3 -m pip install SpeechRecognition=='3.10.0'
+
 # Seems like requires foxy and no newly changed stuff
 mkdir -p /opencv_cam_ws/src
 cd /opencv_cam_ws/src
 git clone https://github.com/clydemcqueen/opencv_cam.git
+
 # Checkout specific commit of ros2_shared
 git clone https://github.com/ptrmu/ros2_shared.git
 cd /opencv_cam_ws/src/ros2_shared

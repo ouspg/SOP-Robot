@@ -1,17 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>tts_package</name>
-  <version>1.0.0</version>
-  <description>Text-to-speech pacakge for synthetizing speech.</description>
-  <maintainer email="klaurila20@student.oulu.fi">Konsta Laurila</maintainer>
+  <name>qabot</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="vagrant@todo.todo">vagrant</maintainer>
   <license>TODO: License declaration</license>
 
-  <depend>python3-TTS</depend>
-  <depend>python3-simpleaudio</depend>
-
-  <exec_depend>tts_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>tts_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
