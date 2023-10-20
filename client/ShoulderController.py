@@ -88,7 +88,7 @@ class ShoulderController(Node):
 
         # Extract the desired angles from the received message
         angles = []
-        for point in msg.points:
+        for point in goal_msg.points:
             angles.extend(point.positions)
 
         # Prepare the command to be sent to the Arduino
