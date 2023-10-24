@@ -55,10 +55,10 @@ class ChatBotClientNode(Node):
 
     def tts_callback(self, msg):
         data = self.chatbot_worker_callback(msg.data)
-        #if (data != "I am sorry, but I do not understand."):
-        tts_msg = String()
-        tts_msg.data = data
-        self.publisher_.publish(tts_msg)
+        if (data != "I am sorry, but I do not understand."):
+            tts_msg = String()
+            tts_msg.data = data
+            self.publisher_.publish(tts_msg)
 
 
 
