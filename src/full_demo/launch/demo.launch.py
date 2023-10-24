@@ -8,6 +8,23 @@ def generate_launch_description():
             executable="service"
         ),
         Node(
+            package="speech_recognizer",
+            executable="speech_recognizer_node",
+            namespace="speech_recognizer"
+        ),
+        Node(
+            package="qabot",
+            executable="client",
+            namespace="chatbot"
+        ),
+        
+        Node(
+            package="full_demo",
+            executable="full_demo_node"
+        )
+    ])
+"""
+Node(
         package="opencv_cam",
         executable="opencv_cam_main",
         parameters=[
@@ -30,8 +47,4 @@ def generate_launch_description():
             }
         ],
         ),
-        Node(
-            package="full_demo",
-            executable="full_demo_node"
-        )
-    ])
+        """

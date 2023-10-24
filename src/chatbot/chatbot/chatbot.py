@@ -8,8 +8,8 @@ from rclpy.node import Node
 #from ament_index_python.packages import get_package_share_directory
 
 from std_msgs.msg import String
-from chatbot_speech_recognizer_interface.srv import Speechrec
-from tts_messages.srv import StringToWav
+#from chatbot_speech_recognizer_interface.srv import Speechrec
+#from tts_messages.srv import StringToWav
 from chatterbot import ChatBot
 import logging
 #from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -55,10 +55,10 @@ class ChatBotClientNode(Node):
 
     def tts_callback(self, msg):
         data = self.chatbot_worker_callback(msg.data)
-        if (data != "I am sorry, but I do not understand."):
-            tts_msg = String()
-            tts_msg.data = data
-            self.publisher_.publish(tts_msg)
+        #if (data != "I am sorry, but I do not understand."):
+        tts_msg = String()
+        tts_msg.data = data
+        self.publisher_.publish(tts_msg)
 
 
 
