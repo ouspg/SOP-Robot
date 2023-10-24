@@ -1,0 +1,3 @@
+Robotin nimi on Robo.
+
+Mitä kuuluu: Robotille kuuluu hyvää.
