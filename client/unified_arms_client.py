@@ -28,10 +28,10 @@ class UnifiedArms(Node):
         self.publisher                    = self.create_publisher(String, FEEDBACK_TOPIC_NAME, 10)
         self.left_hand_gesture_publisher  = self.create_publisher(String, "/l_hand/l_hand_topic", 10)
         self.right_hand_gesture_publisher = self.create_publisher(String, "/r_hand/r_hand_topic", 10)
-        
+
         #Create main program subscriber
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
-        
+
         #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
         self.args = ['wave', 'rock', 'test', 'zero']
         self.positions_dict = {
@@ -39,8 +39,8 @@ class UnifiedArms(Node):
             "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
             "rps_2": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 75.0, 0.0]
         }
-        
-        self.available_commands  = [
+
+        self.available_commands = [
             "open",
             "fist",
             "scissors",
@@ -59,7 +59,7 @@ class UnifiedArms(Node):
 
     def action_callback(self, msg):
         arg = msg.data
-        hand = "r"
+        hand = "r" #TODO tätä pitäis muuttaa
         self.logger.info(f"arg: {arg}")
         if arg not in self.args:
             self.logger.info("Action not implemented")
@@ -75,63 +75,63 @@ class UnifiedArms(Node):
 #Action functions
 
     def action_zero(self):
-        self.l_hand_gesture("fist")
+        self.hand_gesture("left", "fist")
         time.sleep(1)
-        self.r_hand_gesture("fist")
+        self.hand_gesture("right", "fist")
         time.sleep(1)
-        self.send_action("zero")
+        self.arm_gesture("zero")
 
     def action_test(self):
-        self.l_hand_gesture("fist")
+        self.hand_gesture("left", "fist")
         time.sleep(1)
-        self.r_hand_gesture("fist")
+        self.hand_gesture("right", "fist")
         time.sleep(1)
-        self.send_action("zero")
+        self.arm_gesture("zero")
         time.sleep(1)
-        self.l_hand_gesture("open")
+        self.hand_gesture("left", "open")
         time.sleep(1)
-        self.r_hand_gesture("open")
+        self.hand_gesture("right", "open")
         time.sleep(1)
-        self.l_hand_gesture("fist")
+        self.hand_gesture("left", "fist")
         time.sleep(1)
-        self.r_hand_gesture("fist")
+        self.hand_gesture("right", "fist")
         time.sleep(1)
 
     def action_wave(self):
-        self.l_hand_gesture("fist")
+        self.hand_gesture("left", "fist")
         time.sleep(0.5)
-        self.send_action("rps_1")
+        self.arm_gesture("rps_1")
         time.sleep(0.5)
-        self.send_action("rps_2")
+        self.arm_gesture("rps_2")
         time.sleep(0.5)
-        self.send_action("rps_1")
+        self.arm_gesture("rps_1")
         time.sleep(0.5)
-        self.send_action("rps_2")
+        self.arm_gesture("rps_2")
         time.sleep(0.5)
-        self.send_action("rps_1")
+        self.arm_gesture("rps_1")
         time.sleep(0.5)
-        self.send_action("zero")
+        self.arm_gesture("zero")
         time.sleep(0.5)
-        self.l_hand_gesture("open")
+        self.hand_gesture("left", "open")
 
     def action_rock(self):
-        self.l_hand_gesture("hard_rock")
+        self.hand_gesture("left", "hard_rock")
         time.sleep(1)
-        self.send_action("rps_1")
+        self.arm_gesture("rps_1")
         time.sleep(1)
-        self.send_action("rps_2")
+        self.arm_gesture("rps_2")
         time.sleep(1)
-        self.send_action("rps_1")
+        self.arm_gesture("rps_1")
         time.sleep(1)
-        self.send_action("rps_2")
+        self.arm_gesture("rps_2")
         time.sleep(1)
-        self.send_action("rps_1")
+        self.arm_gesture("rps_1")
         time.sleep(1)
-        self.send_action("rps_2")
+        self.arm_gesture("rps_2")
         time.sleep(1)
-        self.send_action("zero")
+        self.arm_gesture("zero")
         time.sleep(1)
-        self.l_hand_gesture("open")
+        self.hand_gesture("left", "open")
 
 
 
@@ -141,10 +141,6 @@ class UnifiedArms(Node):
         print("Command not recognized, available commands are")
         print(f"{self.args[:-1]}")
         print(f"and quit.")
-
-    def send_action(self, action):
-        self.logger.info(f"Action: {action}")
-        self.arm_gesture(self.positions_dict[action])
 
     def trial(self):
         command = []
@@ -161,11 +157,12 @@ class UnifiedArms(Node):
         self.arm_gesture(command)
 
     def arm_gesture(self, action):
+        self.logger.info(f"Action: {action}")
         goal_msg = JointTrajectory()
         goal_msg.joint_names = ["r_shoulder_lift_joint", "r_shoulder_out_joint", "r_upper_arm_roll_joint", "r_elbow_flex_joint",
         "l_shoulder_lift_joint", "l_shoulder_out_joint", "l_upper_arm_roll_joint", "l_elbow_flex_joint"]
         point = JointTrajectoryPoint()
-        point.positions = action
+        point.positions = self.positions_dict[action]
         dur = Duration()
         dur.sec = 1
         point.time_from_start = dur
@@ -195,18 +192,18 @@ class UnifiedArms(Node):
         feedback_msg.data = feedback
         self.publisher.publish(feedback_msg)
 
-   
+
 #Hands
-    def l_hand_gesture(self, gesture):
+    def hand_gesture(self, hand, gesture):
         msg = String()
         msg.data = gesture
+        if hand == "right":
+            self.right_hand_gesture_publisher.publish(msg)
+        elif hand == "left":
+            self.left_hand_gesture_publisher.publish(msg)
+        else:
+            self.logger.info(f"Should be 'left' or 'right instead of: '{hand}'")
         self.left_hand_gesture_publisher.publish(msg)
-
-    def r_hand_gesture(self, gesture):
-        msg = String()
-        msg.data = gesture
-        self.right_hand_gesture_publisher.publish(msg)
-
 
 
     def list_available_commands(self):
@@ -226,14 +223,14 @@ class UnifiedArms(Node):
         self.send_gesture("point")
         time.sleep(2)
         self.send_gesture(random.choice(["open", "fist", "scissors"]))
- 
+
 
 
 def main(args=None):
     rclpy.init(args=args)
     armController = UnifiedArms()
     rclpy.spin(armController)
-    
+
 
 
 if __name__ == "__main__":
