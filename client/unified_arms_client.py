@@ -33,7 +33,10 @@ class UnifiedArms(Node):
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
 
         #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
-        self.args = ['wave', 'rock', 'test', 'zero']
+        self.args = ['wave', 'rock', 'test', 'zero', 
+            'l_hand_open', 'l_hand_fist', 'l_hand_scissors', 'l_hand_point', 'l_hand_thumbs_up', 'l_hand_grasp', 'l_hand_pen_grasp', 'l_hand_hard_rock', 'l_hand_rps', 'l_hand_funny',
+            'r_hand_open', 'r_hand_fist', 'r_hand_scissors', 'r_hand_point', 'r_hand_thumbs_up', 'r_hand_grasp', 'r_hand_pen_grasp', 'r_hand_hard_rock', 'r_hand_rps', 'r_hand_funny',
+        ]
         self.positions_dict = {
             "zero": [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
             "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
@@ -72,6 +75,46 @@ class UnifiedArms(Node):
                 self.action_test()
             if arg in ['zero']:
                 self.action_zero()
+            if arg in ['l_hand_open']:
+                self.hand_gesture("left", "open")
+            if arg in ['l_hand_fist']:
+                self.hand_gesture("left", "fist")
+            if arg in ['l_hand_scissors']:
+                self.hand_gesture("left", "scissors")
+            if arg in ['l_hand_point']:
+                self.hand_gesture("left", "point")
+            if arg in ['l_hand_thumbs_up']:
+                self.hand_gesture("left", "thumbs_up")
+            if arg in ['l_hand_grasp']:
+                self.hand_gesture("left", "grasp")
+            if arg in ['l_hand_pen_grasp']:
+                self.hand_gesture("left", "pen_grasp")
+            if arg in ['l_hand_hard_rock']:
+                self.hand_gesture("left", "hard_rock")
+            if arg in ['l_hand_rps']:
+                self.hand_gesture("left", "rps")
+            if arg in ['l_hand_funny']:
+                self.hand_gesture("left", "funny")
+            if arg in ['r_hand_open']:
+                self.hand_gesture("right", "open")
+            if arg in ['r_hand_fist']:
+                self.hand_gesture("right", "fist")
+            if arg in ['r_hand_scissors']:
+                self.hand_gesture("right", "scissors")
+            if arg in ['r_hand_point']:
+                self.hand_gesture("right", "point")
+            if arg in ['r_hand_thumbs_up']:
+                self.hand_gesture("right", "thumbs_up")
+            if arg in ['r_hand_grasp']:
+                self.hand_gesture("right", "grasp")
+            if arg in ['r_hand_pen_grasp']:
+                self.hand_gesture("right", "pen_grasp")
+            if arg in ['r_hand_hard_rock']:
+                self.hand_gesture("right", "hard_rock")
+            if arg in ['r_hand_rps']:
+                self.hand_gesture("right", "rps")
+            if arg in ['r_hand_funny']:
+                self.hand_gesture("right", "funny")
 #Action functions
 
     def action_zero(self):
