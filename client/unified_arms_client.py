@@ -17,22 +17,6 @@ BAUD_RATE = 115200
 TOPIC_NAME = 'shoulder_controller/joint_trajectory'
 FEEDBACK_TOPIC_NAME = 'feedback'
 
-"""
-    def main(self):
-        arg = input("Input command: ").lower()
-        while arg != "quit":
-            if arg not in self.args:
-                self.available_commands()
-            elif arg == "trial":
-                self.trial()
-            else:
-                self.send_action(arg)
-            time.sleep(2)
-            arg = input("Input command: ").lower()
-"""
-
-
-
 class UnifiedArms(Node):
     def __init__(self):
         #ShoulderController
@@ -49,7 +33,7 @@ class UnifiedArms(Node):
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
         
         #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
-        self.args = ['wave', 'rock']
+        self.args = ['wave', 'rock', 'test', 'zero']
         self.positions_dict = {
             "zero": [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
             "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
@@ -84,6 +68,34 @@ class UnifiedArms(Node):
                 self.action_wave()
             if arg in ['rock']:
                 self.action_rock()
+            if arg in ['test']:
+                self.action_test()
+            if arg in ['zero']:
+                self.action_zero()
+#Action functions
+
+    def action_zero(self):
+        self.l_hand_gesture("fist")
+        time.sleep(1)
+        self.r_hand_gesture("fist")
+        time.sleep(1)
+        self.send_action("zero")
+
+    def action_test(self):
+        self.l_hand_gesture("fist")
+        time.sleep(1)
+        self.r_hand_gesture("fist")
+        time.sleep(1)
+        self.send_action("zero")
+        time.sleep(1)
+        self.l_hand_gesture("open")
+        time.sleep(1)
+        self.r_hand_gesture("open")
+        time.sleep(1)
+        self.l_hand_gesture("fist")
+        time.sleep(1)
+        self.r_hand_gesture("fist")
+        time.sleep(1)
 
     def action_wave(self):
         self.l_hand_gesture("fist")
@@ -101,7 +113,6 @@ class UnifiedArms(Node):
         self.send_action("zero")
         time.sleep(0.5)
         self.l_hand_gesture("open")
-
 
     def action_rock(self):
         self.l_hand_gesture("hard_rock")
