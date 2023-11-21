@@ -33,7 +33,7 @@ class UnifiedArms(Node):
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
 
         #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
-        self.args = ['wave', 'rock', 'test', 'zero', 
+        self.args = ['wave', 'rock', 'test', 'zero',
             'l_hand_open', 'l_hand_fist', 'l_hand_scissors', 'l_hand_point', 'l_hand_thumbs_up', 'l_hand_grasp', 'l_hand_pen_grasp', 'l_hand_hard_rock', 'l_hand_rps', 'l_hand_funny',
             'r_hand_open', 'r_hand_fist', 'r_hand_scissors', 'r_hand_point', 'r_hand_thumbs_up', 'r_hand_grasp', 'r_hand_pen_grasp', 'r_hand_hard_rock', 'r_hand_rps', 'r_hand_funny',
         ]
@@ -199,13 +199,26 @@ class UnifiedArms(Node):
         self.logger.info("Sending positions")
         self.arm_gesture(command)
 
-    def arm_gesture(self, action):
+    def arm_gesture(self, action, hand="both"):
         self.logger.info(f"Action: {action}")
+
         goal_msg = JointTrajectory()
         goal_msg.joint_names = ["r_shoulder_lift_joint", "r_shoulder_out_joint", "r_upper_arm_roll_joint", "r_elbow_flex_joint",
         "l_shoulder_lift_joint", "l_shoulder_out_joint", "l_upper_arm_roll_joint", "l_elbow_flex_joint"]
         point = JointTrajectoryPoint()
-        point.positions = self.positions_dict[action]
+
+        match hand:
+            case "right":
+                # Replace left hand values with -1.0 which means do nothing for that servo
+                point.positions = self.positions_dict[action][4:] + [-1.0, -1.0, -1.0, -1.0]
+            case "left":
+                # Replace right hand values with -1.0 which means do nothing for that servo
+                point.positions = [-1.0, -1.0, -1.0, -1.0] + self.positions_dict[action][:4]
+            case "both":
+                point.positions = self.positions_dict[action]
+            case _:
+                self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
+
         dur = Duration()
         dur.sec = 1
         point.time_from_start = dur
@@ -245,7 +258,7 @@ class UnifiedArms(Node):
         elif hand == "left":
             self.left_hand_gesture_publisher.publish(msg)
         else:
-            self.logger.info(f"Should be 'left' or 'right instead of: '{hand}'")
+            self.logger.info(f"Should be 'left' or 'right' instead of: '{hand}'")
         self.left_hand_gesture_publisher.publish(msg)
 
 
