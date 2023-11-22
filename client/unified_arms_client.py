@@ -54,6 +54,46 @@ class UnifiedArms(Node):
             "three"
         ]
 
+        self.ACTION_PATTERNS = {
+            # These should be (hand/arm, sleef_after, action, left/right/both(default))
+            # left or right can be left out to default to both
+            "zero": [
+                ("hand", 1, "fist", "left"),
+                ("hand", 1, "fist", "right"),
+                ("arm", 0, "zero", "both")
+            ],
+            "test": [
+                ("hand", 1, "fist", "left"),
+                ("hand", 1, "fist", "right"),
+                ("arm", 1, "zero"),
+                ("hand", 1, "open", "left"),
+                ("hand", 1, "open", "right"),
+                ("hand", 1, "fist", "left"),
+                ("hand", 0, "fist", "right")
+            ],
+            "wave": [
+                ("hand", 0.5, "fist", "left"),
+                ("arm", 0.5, "rps_1"),
+                ("arm", 0.5, "rps_2"),
+                ("arm", 0.5, "rps_1"),
+                ("arm", 0.5, "rps_2"),
+                ("arm", 0.5, "rps_1"),
+                ("arm", 0.5, "zero"),
+                ("hand", 0, "open", "left")
+            ],
+            "rock": [
+                ("hand", 1, "hard_rock", "left"),
+                ("arm", 1, "rps_1"),
+                ("arm", 1, "rps_2"),
+                ("arm", 1, "rps_1"),
+                ("arm", 1, "rps_2"),
+                ("arm", 1, "rps_1"),
+                ("arm", 1, "rps_2"),
+                ("arm", 1, "zero"),
+                ("hand", 0, "open", "left")
+            ]
+        }
+
         self.exit_commands = ["quit", "exit"]
         self.logger = self.get_logger()
 
@@ -64,86 +104,37 @@ class UnifiedArms(Node):
 
         # Action messages for hands can be eg. "l_hand_fist"
         if arg[0:7] in ("r_hand_", "l_hand_"):
-            # Action is for hand
+            # Action is for hands
             hand = "right" if arg[0:2] == "r_" else "left"
             hand_action = arg[7:]
             if hand_action in self.available_commands:
                 self.hand_gesture(hand, hand_action)
             return
-        # Action messages for arms for now are for both
-        # If these match actions are for arms
-        if arg == 'wave':
-            self.action_wave()
-        elif arg == 'rock':
-            self.action_rock()
-        elif arg == 'test':
-            self.action_test()
-        elif arg == 'zero':
-            self.action_zero()
+
+        if arg in self.ACTION_PATTERNS:
+            # Action is a pattern
+            self.perform_action_from_pattern(arg)
         else:
             self.logger.info("Action not implemented")
-#Action functions
-
-    def action_zero(self):
-        self.hand_gesture("left", "fist")
-        time.sleep(1)
-        self.hand_gesture("right", "fist")
-        time.sleep(1)
-        self.arm_gesture("zero")
-
-    def action_test(self):
-        self.hand_gesture("left", "fist")
-        time.sleep(1)
-        self.hand_gesture("right", "fist")
-        time.sleep(1)
-        self.arm_gesture("zero")
-        time.sleep(1)
-        self.hand_gesture("left", "open")
-        time.sleep(1)
-        self.hand_gesture("right", "open")
-        time.sleep(1)
-        self.hand_gesture("left", "fist")
-        time.sleep(1)
-        self.hand_gesture("right", "fist")
-        time.sleep(1)
-
-    def action_wave(self):
-        self.hand_gesture("left", "fist")
-        time.sleep(0.5)
-        self.arm_gesture("rps_1")
-        time.sleep(0.5)
-        self.arm_gesture("rps_2")
-        time.sleep(0.5)
-        self.arm_gesture("rps_1")
-        time.sleep(0.5)
-        self.arm_gesture("rps_2")
-        time.sleep(0.5)
-        self.arm_gesture("rps_1")
-        time.sleep(0.5)
-        self.arm_gesture("zero")
-        time.sleep(0.5)
-        self.hand_gesture("left", "open")
-
-    def action_rock(self):
-        self.hand_gesture("left", "hard_rock")
-        time.sleep(1)
-        self.arm_gesture("rps_1")
-        time.sleep(1)
-        self.arm_gesture("rps_2")
-        time.sleep(1)
-        self.arm_gesture("rps_1")
-        time.sleep(1)
-        self.arm_gesture("rps_2")
-        time.sleep(1)
-        self.arm_gesture("rps_1")
-        time.sleep(1)
-        self.arm_gesture("rps_2")
-        time.sleep(1)
-        self.arm_gesture("zero")
-        time.sleep(1)
-        self.hand_gesture("left", "open")
 
 
+    def perform_action_from_pattern(self, pattern):
+        # pattern should be (hand/arm, sleef_after, action, left/right/both(default))
+        if pattern not in self.ACTION_PATTERNS:
+            self.logger.info("Action pattern not implemented")
+            return
+        for action in self.ACTION_PATTERNS[pattern]:
+            hand_or_arm = pattern[0]
+            sleep_after = pattern[1]
+            action = pattern[2]
+            side = pattern[3] if len(pattern) == 4 else "both"
+
+            if pattern[0] == "hand":
+                self.hand_gesture(action, side)
+            elif pattern[0] == "arm":
+                self.arm_gesture(action, side)
+
+            time.sleep[sleep_after]
 
 
 #ShoulderController
@@ -211,16 +202,16 @@ class UnifiedArms(Node):
 
 
 #Hands
-    def hand_gesture(self, hand, gesture):
+    def hand_gesture(self, gesture, hand="both"):
         msg = String()
         msg.data = gesture
-        if hand == "right":
-            self.right_hand_gesture_publisher.publish(msg)
-        elif hand == "left":
-            self.left_hand_gesture_publisher.publish(msg)
-        else:
+        if hand not in ("right", "left", "both"):
             self.logger.info(f"Should be 'left' or 'right' instead of: '{hand}'")
-        self.left_hand_gesture_publisher.publish(msg)
+            return
+        if hand == ("right", "both"):
+            self.right_hand_gesture_publisher.publish(msg)
+        if hand == ("left", "both"):
+            self.left_hand_gesture_publisher.publish(msg)
 
 
     def list_available_commands(self):
