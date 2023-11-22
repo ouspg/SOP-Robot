@@ -59,8 +59,11 @@ class UnifiedArms(Node):
 
     def action_callback(self, msg):
         arg = msg.data
-        hand = "r" #TODO tätä pitäis muuttaa
         self.logger.info(f"arg: {arg}")
+
+        if arg[0:1] in ("r_", "l_"):
+            arg = arg[2:]
+            hand = "right" if arg[0:1] == "r_" else "left"
         match arg:
             case 'wave':
                 self.action_wave()
@@ -70,46 +73,26 @@ class UnifiedArms(Node):
                 self.action_test()
             case 'zero':
                 self.action_zero()
-            case 'l_hand_open':
-                self.hand_gesture("left", "open")
-            case 'l_hand_fist':
-                self.hand_gesture("left", "fist")
-            case 'l_hand_scissors':
-                self.hand_gesture("left", "scissors")
-            case 'l_hand_point':
-                self.hand_gesture("left", "point")
-            case 'l_hand_thumbs_up':
-                self.hand_gesture("left", "thumbs_up")
-            case 'l_hand_grasp':
-                self.hand_gesture("left", "grasp")
-            case 'l_hand_pen_grasp':
-                self.hand_gesture("left", "pen_grasp")
-            case 'l_hand_hard_rock':
-                self.hand_gesture("left", "hard_rock")
-            case 'l_hand_rps':
-                self.hand_gesture("left", "rps")
-            case 'l_hand_funny':
-                self.hand_gesture("left", "funny")
-            case 'r_hand_open':
-                self.hand_gesture("right", "open")
-            case 'r_hand_fist':
-                self.hand_gesture("right", "fist")
-            case 'r_hand_scissors':
-                self.hand_gesture("right", "scissors")
-            case 'r_hand_point':
-                self.hand_gesture("right", "point")
-            case 'r_hand_thumbs_up':
-                self.hand_gesture("right", "thumbs_up")
-            case 'r_hand_grasp':
-                self.hand_gesture("right", "grasp")
-            case 'r_hand_pen_grasp':
-                self.hand_gesture("right", "pen_grasp")
-            case 'r_hand_hard_rock':
-                self.hand_gesture("right", "hard_rock")
-            case 'r_hand_rps':
-                self.hand_gesture("right", "rps")
-            case 'r_hand_funny':
-                self.hand_gesture("right", "funny")
+            case 'hand_open':
+                self.hand_gesture(hand, "open")
+            case 'hand_fist':
+                self.hand_gesture(hand, "fist")
+            case 'hand_scissors':
+                self.hand_gesture(hand, "scissors")
+            case 'hand_point':
+                self.hand_gesture(hand, "point")
+            case 'hand_thumbs_up':
+                self.hand_gesture(hand, "thumbs_up")
+            case 'hand_grasp':
+                self.hand_gesture(hand, "grasp")
+            case 'hand_pen_grasp':
+                self.hand_gesture(hand, "pen_grasp")
+            case 'hand_hard_rock':
+                self.hand_gesture(hand, "hard_rock")
+            case 'hand_rps':
+                self.hand_gesture(hand, "rps")
+            case 'hand_funny':
+                self.hand_gesture(hand, "funny")
             case _:
                 self.logger.info("Action not implemented")
 #Action functions
