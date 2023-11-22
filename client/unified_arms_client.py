@@ -33,10 +33,7 @@ class UnifiedArms(Node):
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
 
         #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
-        self.args = ['wave', 'rock', 'test', 'zero',
-            'l_hand_open', 'l_hand_fist', 'l_hand_scissors', 'l_hand_point', 'l_hand_thumbs_up', 'l_hand_grasp', 'l_hand_pen_grasp', 'l_hand_hard_rock', 'l_hand_rps', 'l_hand_funny',
-            'r_hand_open', 'r_hand_fist', 'r_hand_scissors', 'r_hand_point', 'r_hand_thumbs_up', 'r_hand_grasp', 'r_hand_pen_grasp', 'r_hand_hard_rock', 'r_hand_rps', 'r_hand_funny',
-        ]
+
         self.positions_dict = {
             "zero": [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
             "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
@@ -180,11 +177,6 @@ class UnifiedArms(Node):
 
 
 #ShoulderController
-    def available_commands(self):
-        print("Command not recognized, available commands are")
-        print(f"{self.args[:-1]}")
-        print(f"and quit.")
-
     def trial(self):
         command = []
         i = 0
