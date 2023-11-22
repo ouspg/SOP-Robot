@@ -50,7 +50,8 @@ class UnifiedArms(Node):
             "pen_grasp",
             "hard_rock",
             "rps",
-            "funny"
+            "funny",
+            "three"
         ]
 
         self.exit_commands = ["quit", "exit"]
@@ -61,10 +62,17 @@ class UnifiedArms(Node):
         arg = msg.data
         self.logger.info(f"arg: {arg}")
 
-        if arg[0:1] in ("r_", "l_"):
-            arg = arg[2:]
-            hand = "right" if arg[0:1] == "r_" else "left"
+        # Action messages for hands can be eg. "l_hand_fist"
+        if arg[0:7] in ("r_hand_", "l_hand_"):
+            # Action is for hand
+            hand = "right" if arg[0:2] == "r_" else "left"
+            hand_action = arg[7:]
+            if hand_action in self.available_commands:
+                self.hand_gesture(hand, hand_action)
+            return
+        # Action messages for arms for now are for both
         match arg:
+            # If these match actions are for arms
             case 'wave':
                 self.action_wave()
             case 'rock':
@@ -73,26 +81,6 @@ class UnifiedArms(Node):
                 self.action_test()
             case 'zero':
                 self.action_zero()
-            case 'hand_open':
-                self.hand_gesture(hand, "open")
-            case 'hand_fist':
-                self.hand_gesture(hand, "fist")
-            case 'hand_scissors':
-                self.hand_gesture(hand, "scissors")
-            case 'hand_point':
-                self.hand_gesture(hand, "point")
-            case 'hand_thumbs_up':
-                self.hand_gesture(hand, "thumbs_up")
-            case 'hand_grasp':
-                self.hand_gesture(hand, "grasp")
-            case 'hand_pen_grasp':
-                self.hand_gesture(hand, "pen_grasp")
-            case 'hand_hard_rock':
-                self.hand_gesture(hand, "hard_rock")
-            case 'hand_rps':
-                self.hand_gesture(hand, "rps")
-            case 'hand_funny':
-                self.hand_gesture(hand, "funny")
             case _:
                 self.logger.info("Action not implemented")
 #Action functions
