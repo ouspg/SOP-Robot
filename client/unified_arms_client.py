@@ -71,18 +71,17 @@ class UnifiedArms(Node):
                 self.hand_gesture(hand, hand_action)
             return
         # Action messages for arms for now are for both
-        match arg:
-            # If these match actions are for arms
-            case 'wave':
-                self.action_wave()
-            case 'rock':
-                self.action_rock()
-            case 'test':
-                self.action_test()
-            case 'zero':
-                self.action_zero()
-            case _:
-                self.logger.info("Action not implemented")
+        # If these match actions are for arms
+        if arg == 'wave':
+            self.action_wave()
+        elif arg == 'rock':
+            self.action_rock()
+        elif arg == 'test':
+            self.action_test()
+        elif arg == 'zero':
+            self.action_zero()
+        else:
+            self.logger.info("Action not implemented")
 #Action functions
 
     def action_zero(self):
@@ -170,17 +169,16 @@ class UnifiedArms(Node):
         "l_shoulder_lift_joint", "l_shoulder_out_joint", "l_upper_arm_roll_joint", "l_elbow_flex_joint"]
         point = JointTrajectoryPoint()
 
-        match hand:
-            case "right":
-                # Replace left hand values with -1.0 which means do nothing for that servo
-                point.positions = self.positions_dict[action][4:] + [-1.0, -1.0, -1.0, -1.0]
-            case "left":
-                # Replace right hand values with -1.0 which means do nothing for that servo
-                point.positions = [-1.0, -1.0, -1.0, -1.0] + self.positions_dict[action][:4]
-            case "both":
-                point.positions = self.positions_dict[action]
-            case _:
-                self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
+        if hand == "right":
+            # Replace left hand values with -1.0 which means do nothing for that servo
+            point.positions = self.positions_dict[action][4:] + [-1.0, -1.0, -1.0, -1.0]
+        elif hand == "left":
+            # Replace right hand values with -1.0 which means do nothing for that servo
+            point.positions = [-1.0, -1.0, -1.0, -1.0] + self.positions_dict[action][:4]
+        elif hand == "both":
+            point.positions = self.positions_dict[action]
+        else:
+            self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
 
         dur = Duration()
         dur.sec = 1
