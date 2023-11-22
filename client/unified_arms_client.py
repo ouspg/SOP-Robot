@@ -64,57 +64,57 @@ class UnifiedArms(Node):
         arg = msg.data
         hand = "r" #TODO tätä pitäis muuttaa
         self.logger.info(f"arg: {arg}")
-        if arg not in self.args:
-            self.logger.info("Action not implemented")
-        else:
-            if arg in ['wave']:
+        match arg:
+            case 'wave':
                 self.action_wave()
-            if arg in ['rock']:
+            case 'rock':
                 self.action_rock()
-            if arg in ['test']:
+            case 'test':
                 self.action_test()
-            if arg in ['zero']:
+            case 'zero':
                 self.action_zero()
-            if arg in ['l_hand_open']:
+            case 'l_hand_open':
                 self.hand_gesture("left", "open")
-            if arg in ['l_hand_fist']:
+            case 'l_hand_fist':
                 self.hand_gesture("left", "fist")
-            if arg in ['l_hand_scissors']:
+            case 'l_hand_scissors':
                 self.hand_gesture("left", "scissors")
-            if arg in ['l_hand_point']:
+            case 'l_hand_point':
                 self.hand_gesture("left", "point")
-            if arg in ['l_hand_thumbs_up']:
+            case 'l_hand_thumbs_up':
                 self.hand_gesture("left", "thumbs_up")
-            if arg in ['l_hand_grasp']:
+            case 'l_hand_grasp':
                 self.hand_gesture("left", "grasp")
-            if arg in ['l_hand_pen_grasp']:
+            case 'l_hand_pen_grasp':
                 self.hand_gesture("left", "pen_grasp")
-            if arg in ['l_hand_hard_rock']:
+            case 'l_hand_hard_rock':
                 self.hand_gesture("left", "hard_rock")
-            if arg in ['l_hand_rps']:
+            case 'l_hand_rps':
                 self.hand_gesture("left", "rps")
-            if arg in ['l_hand_funny']:
+            case 'l_hand_funny':
                 self.hand_gesture("left", "funny")
-            if arg in ['r_hand_open']:
+            case 'r_hand_open':
                 self.hand_gesture("right", "open")
-            if arg in ['r_hand_fist']:
+            case 'r_hand_fist':
                 self.hand_gesture("right", "fist")
-            if arg in ['r_hand_scissors']:
+            case 'r_hand_scissors':
                 self.hand_gesture("right", "scissors")
-            if arg in ['r_hand_point']:
+            case 'r_hand_point':
                 self.hand_gesture("right", "point")
-            if arg in ['r_hand_thumbs_up']:
+            case 'r_hand_thumbs_up':
                 self.hand_gesture("right", "thumbs_up")
-            if arg in ['r_hand_grasp']:
+            case 'r_hand_grasp':
                 self.hand_gesture("right", "grasp")
-            if arg in ['r_hand_pen_grasp']:
+            case 'r_hand_pen_grasp':
                 self.hand_gesture("right", "pen_grasp")
-            if arg in ['r_hand_hard_rock']:
+            case 'r_hand_hard_rock':
                 self.hand_gesture("right", "hard_rock")
-            if arg in ['r_hand_rps']:
+            case 'r_hand_rps':
                 self.hand_gesture("right", "rps")
-            if arg in ['r_hand_funny']:
+            case 'r_hand_funny':
                 self.hand_gesture("right", "funny")
+            case _:
+                self.logger.info("Action not implemented")
 #Action functions
 
     def action_zero(self):
