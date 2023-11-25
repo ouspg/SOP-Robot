@@ -41,6 +41,7 @@ Currently, the following actions are available.
 | test      | Tests the motion of both hands            | 
 | zero      | Puts both hands at resting position with  | 
 
+## Fingers-only movements
 
 | Action    | What it does                              |
 | --------  | ----------------------------------------- | 
