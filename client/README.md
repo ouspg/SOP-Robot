@@ -27,7 +27,8 @@ Once the client is up and running you will be greeted by a command line interfac
 Input command:
 ```
 
-Type in the command you want and watch as the hands completes the action.
+Type in the command you want and watch as the hands completes the action. 
+#Note: The simulator only support the fingers movements in both hands. It does not support hand movements.
 
 ## The commands
 
