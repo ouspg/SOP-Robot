@@ -36,3 +36,6 @@ l_ring_joint:
 
 l_pinky_joint:
   ID: 249
+
+r_wrist_roll_joint:
+  ID: 47

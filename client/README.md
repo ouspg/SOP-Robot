@@ -8,17 +8,16 @@ Once the robot is running properly, open a new command window, and run the hand_
 ```
 ros2 run hand_gestures hand_gestures_node
 ```
-Then run the client for the right hand in a new command window with the command:
+Then run the unified arms client in new terminal window
 
 ```
-python3 client/hand_action_client.py 
+python3 client/unified_arms_client.py 
 ```
-For the left hand client run the following command in a new command window
 
+Run tester client in new terminal window, from there you can send commands to hands
 ```
-python3 client/left_hand_action_client.py 
+python3 client/hand_client_tester.py
 ```
-Both clients work in the same but for different hands
 
 ## How to use
 
@@ -28,11 +27,19 @@ Once the client is up and running you will be greeted by a command line interfac
 Input command:
 ```
 
-Type in the command you want and watch as the hand completes the action.
+Type in the command you want and watch as the hands completes the action.
 
 ## The commands
 
 Currently, the following actions are available.
+
+| Action    | What it does                              |
+| --------  | ----------------------------------------- | 
+| wave      | Waves with the left hand                  | 
+| rock      | Rocks with the left hand                  | 
+| test      | Tests the motion of both hands            | 
+| zero      | Puts both hands at resting position with  | 
+
 
 | Action    | What it does                              |
 | --------  | ----------------------------------------- | 
