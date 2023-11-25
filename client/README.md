@@ -28,7 +28,7 @@ Input command:
 ```
 
 Type in the command you want and watch as the hands completes the action. 
-#Note: The simulator only support the fingers movements in both hands. It does not support hand movements.
+### Note: The simulator only support the fingers movements in both hands. It does not support hand movements.
 
 ## The commands
 
