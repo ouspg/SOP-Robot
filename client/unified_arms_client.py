@@ -123,18 +123,18 @@ class UnifiedArms(Node):
         if pattern not in self.ACTION_PATTERNS:
             self.logger.info("Action pattern not implemented")
             return
-        for action in self.ACTION_PATTERNS[pattern]:
-            hand_or_arm = pattern[0]
-            sleep_after = pattern[1]
-            action = pattern[2]
-            side = pattern[3] if len(pattern) == 4 else "both"
-
-            if pattern[0] == "hand":
+        for action_data in self.ACTION_PATTERNS[pattern]:
+            hand_or_arm = action_data[0]
+            sleep_after = action_data[1]
+            action = action_data[2]
+            print(len)
+            side = action_data[3] if len(action_data) == 4 else "both"
+            if hand_or_arm == "hand":
                 self.hand_gesture(action, side)
-            elif pattern[0] == "arm":
+            elif hand_or_arm == "arm":
                 self.arm_gesture(action, side)
 
-            time.sleep[sleep_after]
+            time.sleep(sleep_after)
 
 
 #ShoulderController
@@ -193,7 +193,7 @@ class UnifiedArms(Node):
 
         # Read the feedback from the Arduino
         feedback = self.serial.readline().decode().strip()
-        self.get_logger().info('Received feedback: %s' % feedback)
+        self.logger.info('Received feedback: %s' % feedback)
 
         # Publish the feedback to the ROS2 topic
         feedback_msg = String()
