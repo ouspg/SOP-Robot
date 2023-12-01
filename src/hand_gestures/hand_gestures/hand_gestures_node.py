@@ -69,7 +69,6 @@ class HandGestureNode(Node):
         self.left_hand_action_client.send_goal_async(goal_msg)
 
 
-
     def r_hand_callback(self, msg):
         arg = msg.data
         hand = "r"
@@ -81,7 +80,6 @@ class HandGestureNode(Node):
 
 
     def l_hand_callback(self, msg):
-        print("TUli jotain")
         arg = msg.data
         hand = "l"
         self.logger.info(f"{hand}_hand, arg: {arg}")
