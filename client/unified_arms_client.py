@@ -216,9 +216,9 @@ class UnifiedArms(Node):
         if hand not in ("right", "left", "both"):
             self.logger.info(f"Should be 'left' or 'right' instead of: '{hand}'")
             return
-        if hand == ("right", "both"):
+        if hand in ("right", "both"):
             self.right_hand_gesture_publisher.publish(msg)
-        if hand == ("left", "both"):
+        if hand in ("left", "both"):
             self.left_hand_gesture_publisher.publish(msg)
 
 
