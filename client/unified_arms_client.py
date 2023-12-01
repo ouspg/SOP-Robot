@@ -39,13 +39,13 @@ class UnifiedArms(Node):
 
         #self.publisher_ = self.create_publisher(JointTrajectory, 'shoulder_controller/joint_trajectory', 10)
 
-        self.positions_dict = {
+        self.SHOULDER_POSITIONS = {
             "zero": [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
             "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
             "rps_2": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 75.0, 0.0]
         }
 
-        self.available_commands = [
+        self.HAND_ACTIONS = [
             "open",
             "fist",
             "scissors",
@@ -109,10 +109,10 @@ class UnifiedArms(Node):
 
         # Action messages for hands can be eg. "l_hand_fist"
         if arg[0:7] in ("r_hand_", "l_hand_"):
-            # Action is for hands
+            # Action is for hands (fingers)
             hand = "right" if arg[0:2] == "r_" else "left"
             hand_action = arg[7:]
-            if hand_action in self.available_commands:
+            if hand_action in self.HAND_ACTIONS:
                 self.hand_gesture(hand, hand_action)
             return
 
@@ -124,25 +124,22 @@ class UnifiedArms(Node):
 
 
     def perform_action_from_pattern(self, pattern):
-        # pattern should be (hand/arm, sleef_after, action, left/right/both(default))
         if pattern not in self.ACTION_PATTERNS:
             self.logger.info("Action pattern not implemented")
             return
         for action_data in self.ACTION_PATTERNS[pattern]:
+            # action_data should be (hand/arm, sleef_after, action, left/right/both(default))
             hand_or_arm = action_data[0]
             sleep_after = action_data[1]
             action = action_data[2]
-            print(len)
             side = action_data[3] if len(action_data) == 4 else "both"
             if hand_or_arm == "hand":
                 self.hand_gesture(action, side)
             elif hand_or_arm == "arm":
-                self.arm_gesture(action, side)
-
+                self.arm_gesture
             time.sleep(sleep_after)
 
 
-#ShoulderController
     def trial(self):
         command = []
         i = 0
@@ -157,6 +154,7 @@ class UnifiedArms(Node):
         self.logger.info("Sending positions")
         self.arm_gesture(command)
 
+
     def arm_gesture(self, action, hand="both"):
         self.logger.info(f"Action: {action}")
 
@@ -167,12 +165,12 @@ class UnifiedArms(Node):
 
         if hand == "right":
             # Replace left hand values with -1.0 which means do nothing for that servo
-            point.positions = self.positions_dict[action][4:] + [-1.0, -1.0, -1.0, -1.0]
+            point.positions = self.SHOULDER_POSITIONS[action][4:] + [-1.0, -1.0, -1.0, -1.0]
         elif hand == "left":
             # Replace right hand values with -1.0 which means do nothing for that servo
-            point.positions = [-1.0, -1.0, -1.0, -1.0] + self.positions_dict[action][:4]
+            point.positions = [-1.0, -1.0, -1.0, -1.0] + self.SHOULDER_POSITIONS[action][:4]
         elif hand == "both":
-            point.positions = self.positions_dict[action]
+            point.positions = self.SHOULDER_POSITIONS[action]
         else:
             self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
 
@@ -209,7 +207,6 @@ class UnifiedArms(Node):
             self.publisher.publish(feedback_msg)
 
 
-#Hands
     def hand_gesture(self, gesture, hand="both"):
         msg = String()
         msg.data = gesture
@@ -224,9 +221,9 @@ class UnifiedArms(Node):
 
     def list_available_commands(self):
         print("Available commands:", end=" ")
-        for command in self.available_commands[:-1]:
+        for command in self.HAND_ACTIONS[:-1]:
             print(command, end=", ")
-        print(self.available_commands[-1])
+        print(self.HAND_ACTIONS[-1])
         print("You can also input 'quit' or 'exit' to quit.")
 
 
@@ -245,8 +242,8 @@ class UnifiedArms(Node):
 def main(args=None):
     rclpy.init(args=args)
     armController = UnifiedArms()
+    print("Arm controller ready for messages.")
     rclpy.spin(armController)
-
 
 
 if __name__ == "__main__":
