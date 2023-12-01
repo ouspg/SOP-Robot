@@ -113,7 +113,7 @@ class UnifiedArms(Node):
             hand = "right" if arg[0:2] == "r_" else "left"
             hand_action = arg[7:]
             if hand_action in self.HAND_ACTIONS:
-                self.hand_gesture(hand, hand_action)
+                self.hand_gesture(hand_action, hand)
             return
 
         if arg in self.ACTION_PATTERNS:
