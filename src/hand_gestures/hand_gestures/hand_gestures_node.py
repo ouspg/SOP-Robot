@@ -13,7 +13,6 @@ class HandGestureNode(Node):
         self.left_hand_action_client = ActionClient(self, FollowJointTrajectory, "l_hand_controller/follow_joint_trajectory")
         self.right_hand_gesture_subscription = self.create_subscription(String, "/r_hand/r_hand_topic", self.r_hand_callback, 10)
         self.left_hand_gesture_subscription = self.create_subscription(String, "/l_hand/l_hand_topic", self.l_hand_callback, 10)
-        self.args = ["open", "fist", "scissors", "point", "thumbs_up", "grasp", "pen_grasp", "hard_rock", "funny", "three"]
         self.right_positions_dict = {
             "open": [-0.3, -0.2, -0.2, 0.0, -0.3, 0.0],
             "fist": [1.5, 1.7, 1.8, 1.5, 1.3, 0.0],
@@ -57,7 +56,7 @@ class HandGestureNode(Node):
         self.right_hand_action_client.wait_for_server()
 
         self.right_hand_action_client.send_goal_async(goal_msg)
-        
+
 
     def send_left_hand_goal(self, action, duration=Duration(sec=1)):
         goal_msg = FollowJointTrajectory.Goal()
@@ -75,17 +74,18 @@ class HandGestureNode(Node):
         arg = msg.data
         hand = "r"
         self.logger.info(f"{hand}_hand, arg: {arg}")
-        if arg not in self.args:
+        if arg not in self.right_positions_dict:
             self.logger.info("Action not implemented")
         else:
             self.send_action(arg, hand)
 
-    
+
     def l_hand_callback(self, msg):
+        print("TUli jotain")
         arg = msg.data
         hand = "l"
         self.logger.info(f"{hand}_hand, arg: {arg}")
-        if arg not in self.args:
+        if arg not in self.left_positions_dict:
             self.logger.info("Action not implemented")
         else:
             self.send_action(arg, hand)
