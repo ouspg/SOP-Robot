@@ -10,12 +10,32 @@ class UnifiedClientTester(Node):
         super().__init__("unified_arms_client_tester")
         self.arm_action_publisher = self.create_publisher(String, "/arms/arm_action", 10)
         self.available_commands  = [
+            "zero", # Action patterns
+            "test",
             "wave",
-            "rps",
             "rock",
-            "hug",
-            "intimidate"
-            "searchanddestroy",
+            "r_hand_open", # Individual actions for each hand
+            "r_hand_fist",
+            "r_hand_scissors",
+            "r_hand_point",
+            "r_hand_thumbs_up",
+            "r_hand_grasp",
+            "r_hand_pen_grasp",
+            "r_hand_hard_rock",
+            "r_hand_rps",
+            "r_hand_funny",
+            "r_hand_three",
+            "l_hand_open",
+            "l_hand_fist",
+            "l_hand_scissors",
+            "l_hand_point",
+            "l_hand_thumbs_up",
+            "l_hand_grasp",
+            "l_hand_pen_grasp",
+            "l_hand_hard_rock",
+            "l_hand_rps",
+            "l_hand_funny",
+            "l_hand_three",
         ]
         self.exit_commands = ["quit", "exit"]
         self.logger = self.get_logger()
@@ -28,9 +48,9 @@ class UnifiedClientTester(Node):
 
 
     def list_available_commands(self):
-        print("Available commands:", end=" ")
+        print("Available commands:")
         for command in self.available_commands[:-1]:
-            print(command, end=", ")
+            print(command)
         print(self.available_commands[-1])
         print("You can also input 'quit' or 'exit' to quit.")
 
