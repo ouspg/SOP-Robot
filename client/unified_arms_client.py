@@ -23,7 +23,12 @@ class UnifiedArms(Node):
         super().__init__('minimal_publisher')
 
         # Initialize the serial connection
-        self.serial = serial.Serial(SERIAL_PORT, BAUD_RATE)
+        try:
+            self.serial = serial.Serial(SERIAL_PORT, BAUD_RATE)
+            print("Serial port opened")
+        except serial.SerialException:
+            self.serial = None
+            print("Could not open serial port. Assuming fake robot.")
         # Create a ROS2 publisher for the feedback
         self.publisher                    = self.create_publisher(String, FEEDBACK_TOPIC_NAME, 10)
         self.left_hand_gesture_publisher  = self.create_publisher(String, "/l_hand/l_hand_topic", 10)
@@ -188,17 +193,20 @@ class UnifiedArms(Node):
         # Prepare the command to be sent to the Arduino
         command = ','.join(str(angle) for angle in angles)
 
-        # Send the command to the Arduino
-        self.serial.write(command.encode())
+        # Note: Could return at the start of function
+        # but this leaves room for implementation for fake robot
+        if self.serial:
+            # Send the command to the Arduino
+            self.serial.write(command.encode())
 
-        # Read the feedback from the Arduino
-        feedback = self.serial.readline().decode().strip()
-        self.logger.info('Received feedback: %s' % feedback)
+            # Read the feedback from the Arduino
+            feedback = self.serial.readline().decode().strip()
+            self.logger.info('Received feedback: %s' % feedback)
 
-        # Publish the feedback to the ROS2 topic
-        feedback_msg = String()
-        feedback_msg.data = feedback
-        self.publisher.publish(feedback_msg)
+            # Publish the feedback to the ROS2 topic
+            feedback_msg = String()
+            feedback_msg.data = feedback
+            self.publisher.publish(feedback_msg)
 
 
 #Hands
