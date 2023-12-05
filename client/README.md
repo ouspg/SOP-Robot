@@ -5,20 +5,21 @@
 Ensure that you have set up the robot as instructed in [Robot bring-up](../docs/BRINGUP.md) and that r_hand_controller is up and running. If not, refer back to the [bring-up](../docs/BRINGUP.md).
 
 Once the robot is running properly, open a new command window, and run the hand_gestures_node with the following command.
+
+### The simulator only supports the finger movements. the unified_arms_client tries to connect with serial and if it does not find it, it will assume it is in simulator.
 ```
 ros2 run hand_gestures hand_gestures_node
 ```
-Then run the client for the right hand in a new command window with the command:
+Then run the unified arms client in new terminal window
 
 ```
-python3 client/hand_action_client.py 
+python3 client/unified_arms_client.py 
 ```
-For the left hand client run the following command in a new command window
 
+Run tester client in new terminal window, from there you can send commands to hands
 ```
-python3 client/left_hand_action_client.py 
+python3 client/hand_client_tester.py
 ```
-Both clients work in the same but for different hands
 
 ## How to use
 
@@ -28,11 +29,21 @@ Once the client is up and running you will be greeted by a command line interfac
 Input command:
 ```
 
-Type in the command you want and watch as the hand completes the action.
+Type in the command you want and watch as the hands completes the action. 
+### Note: The simulator only support the fingers movements in both hands. It does not support hand movements.
 
 ## The commands
 
 Currently, the following actions are available.
+
+| Action    | What it does                              |
+| --------  | ----------------------------------------- | 
+| wave      | Waves with the left hand                  | 
+| rock      | Rocks with the left hand                  | 
+| test      | Tests the motion of both hands            | 
+| zero      | Puts both hands at resting position with  | 
+
+## Fingers-only movements
 
 | Action    | What it does                              |
 | --------  | ----------------------------------------- | 
@@ -45,11 +56,6 @@ Currently, the following actions are available.
 | hard_rock | Heavy metal                               | 
 | pen_grasp | Grasps with index and middle finger       | 
 | rps       | Plays a round of Rock-Paper_scissors      | 
-| #trial     | #Allows you to put in your custom position | 
-
-### Trial
-
-As told above the trial command allows you to set a custom position for the fingers. This is done by asking a position for each finger separately. Each finger must be given a position as ROS2 does not allow the hand to move without specifying positions for all the joints in the r_hand_controller. 
 
 ## IMPORTANT THE CUSTOM STATES MUST BE BETWEEN -0.5 AND 2 YOU WILL BREAK THE HAND IF YOU GO BEYOND THESE
 
