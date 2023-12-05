@@ -5,6 +5,8 @@
 Ensure that you have set up the robot as instructed in [Robot bring-up](../docs/BRINGUP.md) and that r_hand_controller is up and running. If not, refer back to the [bring-up](../docs/BRINGUP.md).
 
 Once the robot is running properly, open a new command window, and run the hand_gestures_node with the following command.
+
+### The simulator only supports the finger movements. the unified_arms_client tries to connect with serial and if it does not find it, it will assume it is in simulator.
 ```
 ros2 run hand_gestures hand_gestures_node
 ```
@@ -54,11 +56,6 @@ Currently, the following actions are available.
 | hard_rock | Heavy metal                               | 
 | pen_grasp | Grasps with index and middle finger       | 
 | rps       | Plays a round of Rock-Paper_scissors      | 
-| #trial     | #Allows you to put in your custom position | 
-
-### Trial
-
-As told above the trial command allows you to set a custom position for the fingers. This is done by asking a position for each finger separately. Each finger must be given a position as ROS2 does not allow the hand to move without specifying positions for all the joints in the r_hand_controller. 
 
 ## IMPORTANT THE CUSTOM STATES MUST BE BETWEEN -0.5 AND 2 YOU WILL BREAK THE HAND IF YOU GO BEYOND THESE
 
