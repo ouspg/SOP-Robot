@@ -7,6 +7,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu2004"
   config.vm.hostname = "vagrant-ros"
   config.vm.define "vagrant-ros"
+  config.vm.box_download_options = {"ssl-no-revoke" => true}
 
   config.vm.provider "virtualbox" do |vb|
     # Don't boot with headless mode
