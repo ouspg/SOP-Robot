@@ -1,0 +1,7 @@
+gnome-terminal -- sh -c "ros2 run tts_package service"
+gnome-terminal -- sh -c "ros2 run speech_recognizer speech_recognizer_node --ros-args -r __ns:=/speech_recognizer"
+gnome-terminal -- sh -c "ros2 run qabot client --ros-args -r __ns:=/chatbot"
+gnome-terminal -- sh -c "ros2 run hand_gestures hand_gestures_node"
+gnome-terminal -- sh -c "python3 client/unified_arms_client.py"
+gnome-terminal -- sh -c "ros2 launch face_tracker face_tracker.test.launch.py"
+gnome-terminal -- sh -c "ros2 run full_demo full_demo_node"

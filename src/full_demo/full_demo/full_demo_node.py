@@ -28,6 +28,9 @@ class FullDemoNode(Node):
 
         self.face_list_subscription = self.create_subscription(Faces, "/face_tracker/face_topic", self.update_face_count, 2)
         self.new_face_subscription = self.create_subscription(Point2, "/face_tracker/face_location_topic", self.say_hello, 2)
+
+        self.arm_action_publisher = self.create_publisher(String, "/arms/arm_action", 10)
+
         self.tts_ready = True
         # Turn off listening for now
         self.speech_recognizer_can_listen.publish(Bool(data=False))
@@ -39,6 +42,7 @@ class FullDemoNode(Node):
             self.robot_state = State.LISTENING
             self.get_logger().info("switched state to LISTENING")
             self.tts_message_publisher.publish(String(data="Hei, kysy minulta mitä vaan"))
+            self.arm_action_publisher.publish(String(data="wave"))
             self.t = self.create_timer(30, self.close_timer)
             self.speech_recognizer_can_listen.publish(Bool(data=True))
     

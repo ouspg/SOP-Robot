@@ -41,7 +41,7 @@ class QaBotClientNode(Node):
         self.indexing_pipeline = TextIndexingPipeline(self.document_store)
         self.indexing_pipeline.run_batch(file_paths=self.files_to_index)
         self.retriever = BM25Retriever(document_store=self.document_store)
-        self.reader = FARMReader(model_name_or_path="timpa101/mdberta-v3-base-squad2", use_gpu=False)
+        self.reader = FARMReader(model_name_or_path="timpal0l/mdeberta-v3-base-squad2", use_gpu=False)
         self.pipe = ExtractiveQAPipeline(self.reader, self.retriever)
         self.greetings = ["terve", "hei", "päivää", "moi", "iltaa", "huomenta", "moikka"]
 
