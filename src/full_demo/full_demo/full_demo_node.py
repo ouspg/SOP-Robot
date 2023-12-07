@@ -32,16 +32,15 @@ class FullDemoNode(Node):
         # Turn off listening for now
         self.speech_recognizer_can_listen.publish(Bool(data=False))
         self.robot_state = State.IDLE
+        self.get_logger().info("switched state to IDLE")
 
     def say_hello(self, msg):
         if self.tts_ready and self.robot_state == State.IDLE:
-            req = String()
-            req.data = "Hei, kysy minulta mitä vaan"
-            self.speech_recognizer_can_listen.publish(Bool(data=True))
             self.robot_state = State.LISTENING
             self.get_logger().info("switched state to LISTENING")
-            self.tts_message_publisher.publish(req)
-            self.t = self.create_timer(20, self.close_timer)
+            self.tts_message_publisher.publish(String(data="Hei, kysy minulta mitä vaan"))
+            self.t = self.create_timer(30, self.close_timer)
+            self.speech_recognizer_can_listen.publish(Bool(data=True))
     
     def update_face_count(self, message):
         self.face_count = len(message.faces)
@@ -53,22 +52,29 @@ class FullDemoNode(Node):
         if self.tts_ready:
             # Speak out the message and continue listening
             self.tts_message_publisher.publish(msg)
-            self.speech_recognizer_can_listen.publish(Bool(data=True))
+            self.speech_timer = self.create_timer(5, self.resume_listening)
+
+    def resume_listening(self):
+        self.destroy_timer(self.speech_timer)
+        if not self.tts_ready:
+            self.speech_timer = self.create_timer(1, self.resume_listening)
+        else:
             self.robot_state = State.LISTENING
             self.get_logger().info("switched state to LISTENING")
             # Set timeout to return to IDLE if nothing else heard
             self.t = self.create_timer(30, self.close_timer)
+            self.speech_recognizer_can_listen.publish(Bool(data=True))
 
     def close_timer(self):
-        self.t.cancel()
+        self.destroy_timer(self.t)
         self.robot_state = State.IDLE
         self.get_logger().info("switched state to IDLE")
 
 
     def on_speech_recognized(self, msg):
         if self.robot_state == State.LISTENING:
-            self.get_logger().info("I heard something...")
-            self.t.cancel()
+            self.get_logger().info("Heard: "+msg.data)
+            self.destroy_timer(self.t)
             # When speech recognized, stop listening
             self.robot_state = State.THINKING
             self.get_logger().info("switched state to THINKING")

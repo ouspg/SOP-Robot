@@ -41,7 +41,7 @@ class QaBotClientNode(Node):
         self.indexing_pipeline = TextIndexingPipeline(self.document_store)
         self.indexing_pipeline.run_batch(file_paths=self.files_to_index)
         self.retriever = BM25Retriever(document_store=self.document_store)
-        self.reader = FARMReader(model_name_or_path="TurkuNLP/bert-base-finnish-cased-squad2", use_gpu=False)
+        self.reader = FARMReader(model_name_or_path="timpa101/mdberta-v3-base-squad2", use_gpu=False)
         self.pipe = ExtractiveQAPipeline(self.reader, self.retriever)
         self.greetings = ["terve", "hei", "päivää", "moi", "iltaa", "huomenta", "moikka"]
 
@@ -55,16 +55,18 @@ class QaBotClientNode(Node):
             pass
         
     def chatbot_worker_callback(self, data):
-        if(data in self.greetings):
+        if(data == "hei"):
             return("terve")
+        pred = self.pipe.run(
+            query=data, params={"Retriever": {"top_k": 10}, "Reader": {"top_k":5}}
+        )
+        if(pred['answers'][0].score < 0.3):
+            final_response_text = "Anteeksi, en tiedä vastausta"
+            self.get_logger().info("Retrieved score was %s for answer %s" % (pred['answers'][0].score, pred['answers'[0].answer]))
         else:
-            final_response_text = "Anteeksi, en ymmärtänyt."
-            pred = self.pipe.run(
-                query=data, params={"Retriever": {"top_k": 10}, "Reader": {"top_k": 5}}
-            )
             final_response_text = pred['answers'][0].answer
-            self.get_logger().info("Found answer: %s" % (final_response_text))
-            return(final_response_text)
+            self.get_logger().info("Found answer: %s with score %s" % ((final_response_text), pred['answers'][0].score))
+        return(final_response_text)
 
 def main():
     rclpy.init()
