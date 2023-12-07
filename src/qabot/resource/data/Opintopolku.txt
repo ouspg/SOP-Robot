@@ -1,0 +1,29 @@
+Tietotekniikan tutkinto-ohjelmassa saat vahvan perustan digitalisaatiossa keskeisten tietoteknisten laitteiden ja ohjelmistojen suunnitteluun ja toteuttamiseen. Hallitset alan keskeiset käsitteet, menetelmät ja teknologiat.
+
+Tietotekniikan kandiopinnot Oulussa tarjoavat monipuolisen osaamisen tietotekniikan alan tärkeistä perusteista. Näitä ovat mm. ohjelmointi ja ohjelmistojen perustoiminta, tietotekniset laitteistot ja käyttöjärjestelmät, tekoälyn perusteet, data ja datan käsittely. Matematiikan ja matemaattisten menetelmien soveltaminen on tärkeä osa tietotekniikkaa ja kandiopinnot sisältävätkin monipuolisesti opintoja erilaisista insinöörimatematiikan sovelluksista, kuten matriisilaskenta, tilastotiede ja todennäköisyyslaskenta. Opinnot aloitetaan aivan perusteista, joten aikaisempi osaaminen esimerkiksi ohjelmoinnista ei ole hakijalle välttämätöntä. Jo kandiopintojen aikana opiskelija pääsee valitsemaan syventävän suuntautumisen oman mielenkiinnon mukaan. Tarjolla olevat vaihtoehdot ovat 1) Tekoäly, 2) Soveltava tietotekniikka, 3) Tietokonetekniikka sekä 4) Kyberturvallisuus. Lisäksi opiskelija voi valita täydentävän moduulisen sekä vapaavalintaisia opintoja, joten tutkinnosta on mahdollista räätälöidä sopiva juuri oman kiinnostuksen tai omien urahaaveiden näkökulmasta. Opinnoissa keskitytään teorian lisäksi myös käytännön osaamiseen erilaisten harjoitustöiden ja projektien kautta. Kandiopinnot tarjoavat vahvan pohjan tietotekniikan Diplomi-insinöörivaiheen opintoihin siirtymiseen.
+
+Mahdollisia työnimikkeitä voi olla esimerkiksi: ohjelmistosuunnittelija, järjestelmäsuunnittelija, projektipäällikkö, asiantuntija tai tutkija
+
+Diplomi-insinöörin opinnoissa opiskelija jatkaa syventymistä valitsemaansa suuntautumiseen. Myös Diplomi-insinööri vaihe sisältää valinnaisia opintoja ja näin edelleen tukee oman asiantuntijaprofiilin kehittymistä juuri omiin tarpeisiin soveltuvaksi. Diplomi-insinöörin opinnot suoritettuaan opiskelija on valmis toimimaan asiantuntijana vaativissa tietotekniikan alan tehtävissä, kuten esimerkiksi uusien algoritmien, ohjelmistojen, laitteiden tai järjestelmien suunnittelussa ja toteutuksessa. Diplomi-insinöörin tutkinto antaa myös valmiudet tieteellisiin jatko-opintoihin.
+
+Tietotekniikan opiskelu tarjoaa monipuolisia työmahdollisuuksia erilaisissa organisaatioissa, kuten yrityksissä, julkishallinnossa, tutkimuslaitoksissa, koulutusorganisaatioissa ja teknologiayrityksissä.
+
+Tietotekniikan opiskelu voi olla ajoittain haastavaa ja vaikeaa, mutta pääosin se on hyvin mielenkiintoista.
+
+Opiskelu yliopistossa on pääosin aika itsenäistä ja siihen kuuluu sekä lähiopetusta että etäopetusta. Opintoihin kuuluu monenlaisia erilaisia kursseja, joista voi valita itselleen mielenkiintoisia. Opiskelijat saavat yleensä mieleisen työpaikan. Tietotekniikan alan tulevaisuus näyttää lupaavalta, sillä teknologian kehitys jatkuu ja tietotekniikan osaajille on jatkuvaa kysyntää monilla eri aloilla.
+
+Ohjelmointiosaamista ei tarvitse etukäteen. Riittää, että on mielenkiintoa oppia uutta ja ajatella asioita matemaattisesti ja loogisesti.
+
+Tietotekniikan opiskelu voi auttaa sinua kehittämään monia taitoja, kuten ongelmanratkaisua, järjestelmäsuunnittelua ja ohjelmointia, jotka ovat hyödyllisiä monilla eri aloilla.
+
+Ohjelmointitaitojen kehittämiseen tietotekniikan opiskelun aikana kannattaa harjoitella säännöllisesti, lukea ohjelmointikirjoja ja -artikkeleita, osallistua hackathoneihin ja rakentaa omia sovelluksia.
+
+Tyypillinen päivä tietotekniikan opiskelijalle sisältää luentojen tai käytännön harjoitusten seuraamista, ohjelmointitehtävien tekemistä, tutkimusta ja ryhmäprojektien parissa työskentelyä.
+
+Tietotekniikan opiskelussa oppii useita eri ohjelmointikieliä kuten esimerkiksi Java, Python, C++ ja JavaScript.
+
+Voit valmistautua tietotekniikan opiskeluun ottamalla matematiikan ja fysiikan kursseja sekä harjoittelemalla ohjelmointia.
+
+Tietotekniikan opiskeluun tarvitaan kiinnostusta teknologiaa kohtaan, matemaattista ajattelukykyä, ongelmanratkaisutaitoja ja ohjelmointitaitoja.
+
+Oulun yliopiston tietotekniikan laitoksella vallitsee innostunut ja kannustava opiskeluilmapiiri. Opiskelijat voivat tutustua toisiinsa erilaisten opiskelijajärjestöjen ja harrastuskerhojen kautta, ja yliopisto tarjoaa myös paljon mahdollisuuksia verkostoitua alan ammattilaisten kanssa.

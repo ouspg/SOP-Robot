@@ -147,6 +147,14 @@ python3 -m pip install opencv-python dlib
 python3 -m pip install TTS
 python3 -m pip install simpleaudio
 
+# Install dependencies for speech recognition
+apt install python3-pyaudio
+python3 -m pip install SpeechRecognition
+
+# Install dependencies for chatbot
+python3 -m pip install farm-haystack
+python3 -m pip install farm-haystack[inference]
+
 # Seems like requires foxy and no newly changed stuff
 mkdir -p /opencv_cam_ws/src
 cd /opencv_cam_ws/src
