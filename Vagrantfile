@@ -23,12 +23,18 @@ Vagrant.configure("2") do |config|
   #  vb.customize ["modifyvm", :id, "--uartmode1", "file", File::NULL]
   end
 
+  config.vm.provider "libvirt" do |vi|
+    vi.graphics_type = "spice"
+    vi.memory =  4096
+    vi.cpus = 4
+  end
+
   config.vm.provider "vmware_desktop" do |v|
     v.gui = true
   end
 
   # Sync folders
-  config.vm.synced_folder "./", "/workspace/"
+  config.vm.synced_folder "./", "/workspace/", type: "nfs", nfs_udp: false
 
   config.vm.provision :shell, path: "vagrant-scripts/bootstrap.sh"
 end

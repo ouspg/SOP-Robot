@@ -7,7 +7,7 @@ sudo -u vagrant echo "cd /workspace" >> /home/vagrant/.bashrc
 sudo -u vagrant echo "source /opt/ros/foxy/setup.bash" >> /home/vagrant/.bashrc
 
 # Enable X11 Forwarding
-# echo "X11Forwarding yes" >> /etc/ssh/sshd_config
+echo "X11Forwarding yes" >> /etc/ssh/sshd_config
 # echo "export LIBGL_ALWAYS_INDIRECT=1" >> /home/vagrant/.bashrc
 # Note: if using LIBGL_ALWAYS_INDIRECT=1, rviz2 does not run! (Failed to create an OpenGL context)
 
@@ -175,7 +175,7 @@ sudo -u vagrant echo "source /opencv_cam_ws/install/setup.bash" >> /home/vagrant
 cd /workspace
 sudo -u vagrant rosdep init
 sudo -u vagrant rosdep update
-sudo -u vagrant rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+sudo -u vagrant rosdep install --from-paths ./src --ignore-src --rosdistro foxy -r -y
 sudo -u vagrant colcon build
 
 # Enable sourcing of built ros2 environment to bash configuration
@@ -186,10 +186,10 @@ echo "source /workspace/install/setup.bash" >> /home/vagrant/.bashrc
 echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> /home/vagrant/.bashrc
 
 # Curl TTS model and config file
-curl -L "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip" --output src/tts_package/resource/model.zip
+curl -L "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip" --output ./src/tts_package/resource/model.zip
 unzip src/tts_package/resource/model.zip -d src/tts_package/resource
 
 # Finnish keyboard layout, (didn't work)
 # sudo -u vagrant gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'fi')]"
-# Finnish keyboard layout 
-sudo -u vagrant setxkbmap fi
+# Finnish keyboard layout
+sudo -u vagrant setxkbmap de
