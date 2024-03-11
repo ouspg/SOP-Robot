@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  name: SOP Robot Bootstrap
+  connection: local
+
+  tasks:
+    #    - name: Install ansible.community
+    #      ansible.builtin.command: ansible-galaxy collection install community.general
+
+    - name: Update all apt packages
+      ansible.builtin.package:
+        name: '*'
+        update_cache: true
+
+    - name: Export workspace in .bashrc
+      ansible.builtin.lineinfile:
+        path: /home/vagrant/.bashrc
+        line: export WORKSPACE=/workspace
+
+    - name: Add cd to workspace in .bashrc
+      ansible.builtin.lineinfile:
+        path: /home/vagrant/.bashrc
+        line: cd $WORKSPACE
+
+    - name: Srouce ros setup
+      ansible.builtin.lineinfile:
+        path: /home/vagrant/.bashrc
+        line: source /opt/ros/foxy/setup.bash
