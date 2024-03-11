@@ -25,8 +25,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "libvirt" do |vi|
     vi.graphics_type = "spice"
-    vi.memory =  4096
-    vi.cpus = 4
+    vi.memory =  6144
+    vi.cpus = 3
   end
 
   config.vm.provider "vmware_desktop" do |v|
@@ -34,7 +34,12 @@ Vagrant.configure("2") do |config|
   end
 
   # Sync folders
-  config.vm.synced_folder "./", "/workspace/", type: "nfs", nfs_udp: false
+  config.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_udp: false
 
-  config.vm.provision :shell, path: "vagrant-scripts/bootstrap.sh"
+  # config.vm.provision :shell, path: "vagrant-scripts/bootstrap.sh"
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "ansible-scripts/playbook.yml"
+    # ansible.raw_arguments = "--tags current"
+    ansible.verbose = true
+  end
 end

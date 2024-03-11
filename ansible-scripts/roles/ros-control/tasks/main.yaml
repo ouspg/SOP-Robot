@@ -1,0 +1,51 @@
+---
+- name: Create folder for ros2_control for {{ ansible_env.USER }}
+  become: true
+  ansible.builtin.file:
+    path: /home/{{ ansible_env.USER }}/ros2_control_ws/src
+    state: directory
+    owner: "{{ ansible_env.USER }}"
+    group: "{{ ansible_env.USER }}"
+    mode: "0755"
+
+- name: Making custom repo file
+  ansible.builtin.shell: vcs import src < /home/{{ ansible_env.USER }}/SOP-Robot/vagrant-scripts/ros2_control_ws.repos.yml
+  args:
+    chdir: /home/{{ ansible_env.USER }}/ros2_control_ws/
+    creates: /home/{{ ansible_env.USER }}/ros2_control_ws/src/angles/
+
+- name: Remove tricycle_controler directory
+  ansible.builtin.file:
+    path: /home/{{ ansible_env.USER }}/ros2_control_ws/src/ros-controls/ros2_controllers/tricycle_controller
+    state: absent
+
+- name: Checkout commit in control_toolbox repository
+  ansible.builtin.git:
+    repo: https://github.com/ros-controls/control_toolbox
+    dest: /home/{{ ansible_env.USER }}/ros2_control_ws/src/ros-controls/control_toolbox
+    version: 66687e7c1873a039600d78b370e2d4acd24924cd
+
+- name: Run rosdep install, runs every time
+  ansible.builtin.command:
+  args:
+    cmd: rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+    chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
+
+- name: Run colcon build for ~/ros2_control_ws
+  # explicitly source the ros environment
+  ansible.builtin.shell: source /home/{{ ansible_env.USER }}/.bashrc_noninteractive && colcon build
+  args:
+    chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
+    executable: /bin/bash
+
+- name: Source ROS setup for {{ ansible_env.USER }}
+  ansible.builtin.lineinfile:
+    path: /home/{{ ansible_env.USER }}/.bashrc
+    line: source /home/{{ ansible_env.USER }}/ros2_control_ws/install/local_setup.bash
+    state: present
+
+- name: Source ROS setup for noninteractive bash for {{ ansible_env.USER }}
+  ansible.builtin.lineinfile:
+    path: /home/{{ ansible_env.USER }}/.bashrc_noninteractive
+    line: source /home/{{ ansible_env.USER }}/ros2_control_ws/install/local_setup.bash
+    state: present
