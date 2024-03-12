@@ -24,9 +24,9 @@ import argparse
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 from keras.utils import to_categorical
-from keras.layers.core import Dense
-from keras.layers.wrappers import Bidirectional
-from keras.layers.recurrent import GRU, SimpleRNN
+from keras.layers import Dense
+from keras.layers import Bidirectional
+from keras.layers import GRU, SimpleRNN
 from keras.layers import Dropout
 from keras.models import Sequential
 from keras.models import load_model
