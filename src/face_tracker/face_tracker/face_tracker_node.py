@@ -19,6 +19,8 @@ from cv_bridge import CvBridge, CvBridgeError
 
 from .lip_movement_net import LipMovementDetector
 
+from .face_recognition import FaceRecognizer
+
 bridge = CvBridge()
 
 #pr = cProfile.Profile()
@@ -27,6 +29,10 @@ class FaceTracker(Node):
     def __init__(self, lip_movement_detection=True):
         super().__init__("face_tracker")
         self.lip_movement_detection = lip_movement_detection
+
+        # Test that deepface works
+        # TODO: Remove, when something proper is implemented
+        FaceRecognizer.test_deepface(self.get_logger())
 
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
