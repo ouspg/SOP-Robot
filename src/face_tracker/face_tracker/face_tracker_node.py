@@ -92,10 +92,6 @@ class FaceTracker(Node):
                                         detector_backend="opencv",
                                         distance_metric="cosine")
 
-        # Test that deepface works
-        # TODO: Remove, when something proper is implemented
-        self.face_recognizer.test_deepface(self.get_logger())
-
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
             Image,
