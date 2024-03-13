@@ -25,14 +25,13 @@ bridge = CvBridge()
 
 #pr = cProfile.Profile()
 
+# TODO: Ask from Aapo, where to store the database
+DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
+
 class FaceTracker(Node):
-    def __init__(self, lip_movement_detection=True):
+    def __init__(self, lip_movement_detection=True, face_db_path=DEFAULT_FACE_DB_PATH):
         super().__init__("face_tracker")
         self.lip_movement_detection = lip_movement_detection
-
-        # Test that deepface works
-        # TODO: Remove, when something proper is implemented
-        FaceRecognizer.test_deepface(self.get_logger())
 
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
@@ -87,6 +86,16 @@ class FaceTracker(Node):
         else:
             self.get_logger().info('Lip movement detection disabled.')
 
+        self.face_recognizer = FaceRecognizer(db_path=face_db_path,
+                                        logger=self.get_logger(),
+                                        model_name="VGG-Face",
+                                        detector_backend="opencv",
+                                        distance_metric="cosine")
+
+        # Test that deepface works
+        # TODO: Remove, when something proper is implemented
+        self.face_recognizer.test_deepface(self.get_logger())
+
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
             Image,
@@ -111,6 +120,8 @@ class FaceTracker(Node):
         self.face_size_frame = 0
         self.face_distance1 = []
         self.face_distance2 = []
+
+        self.identifier = "Face not recognized"
         
         #self.timer = self.create_timer(2, self.profile_cycle)
         #pr.enable()
@@ -287,6 +298,33 @@ class FaceTracker(Node):
                 # Calculate midpoint of largest face
                 self.face_location = Point2(x=round((msg_faces[idx].top_left.x + msg_faces[idx].bottom_right.x) / 2),
                                             y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
+                
+
+
+                face_coords = (msg_faces[idx].top_left.x,
+                               msg_faces[idx].top_left.y,
+                               msg_faces[idx].top_left.x - msg_faces[idx].bottom_right.x,
+                               msg_faces[idx].top_left.y - msg_faces[idx].bottom_right.y)
+                
+                # Run face recognition
+                # TODO: Use original frame instead of frame with bounding boxes
+                if self.frame == 0:
+                    self.identifier = self.face_recognizer.find_match(cv2_bgr_img, face_coords)
+                
+                # Text about face recognition
+                if not self.identifier:
+                    text = "Face not recognized"
+                else:
+                    text = self.identifier
+                
+                # Add text to image
+                cv2.putText(cv2_bgr_img,
+                            text,
+                            (msg_faces[idx].top_left.x + 2, msg_faces[idx].top_left.y + 10),
+                            font, 0.3, (255, 255, 255),
+                            1,
+                            cv2.LINE_AA)
+
                 self.frame += 1
                 self.face_size_frame += 1
                 # Set frame to zero for new detection every nth frame.
@@ -316,7 +354,6 @@ class FaceTracker(Node):
             self.face_location_publisher.publish(self.face_location)
             # Set location back to None to prevent publishing same location multiple times
             self.face_location = None
-
 
 def main(args=None):
     # Initialize
