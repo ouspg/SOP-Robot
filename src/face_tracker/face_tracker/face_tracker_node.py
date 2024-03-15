@@ -24,6 +24,10 @@ from .face_recognition import FaceRecognizer
 
 bridge = CvBridge()
 
+class WebcamError(Exception):
+    """signal that webcam has stopped working"""
+    pass
+
 #pr = cProfile.Profile()
 
 # TODO: Ask from Aapo, where to store the database
@@ -35,11 +39,6 @@ class FaceTracker(Node):
         self.lip_movement_detection = lip_movement_detection
         self.logger = self.get_logger()
 
-        # image_topic = (
-        #     self.declare_parameter("image_topic", "/image_raw")
-        #     .get_parameter_value()
-        #     .string_value
-        # )
         face_image_topic = (
             self.declare_parameter(
                 "face_image_topic", "image_face"
@@ -94,13 +93,6 @@ class FaceTracker(Node):
                                         detector_backend="opencv",
                                         distance_metric="cosine")
 
-        # Create subscription, that receives camera frames
-        # self.subscriber = self.create_subscription(
-        #     Image,
-        #     image_topic,
-        #     self.on_frame_received,
-        #     5,
-        # )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
@@ -121,25 +113,9 @@ class FaceTracker(Node):
 
         self.identifier = "Face not recognized"
 
-        self.frame_count = 0
         self.cap = None
 
-        self.open_webcam()
-        while True:
-            # Read a frame from the video stream
-            ret, frame = self.cap.read()
-
-            # Process the frame (e.g., apply filters, resize, etc.)
-            self.on_frame_received(img=frame)
-
-            # Display the frame
-            cv2.imshow("Video Stream", frame)
-
-            # Press 'q' to exit the loop
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        self.close_webcam()
+        self.webcam_loop()
         
         #self.timer = self.create_timer(2, self.profile_cycle)
         #pr.enable()
@@ -156,6 +132,43 @@ class FaceTracker(Node):
 
         pr = cProfile.Profile()
         pr.enable()"""
+    
+    def webcam_loop(self):
+        fps = FramesPerSecond()
+        fps.start()
+
+        self.open_webcam()
+        while True:
+            # Read a frame from the video stream
+            try:
+                # Capture a frame from webcam
+                ret, frame = self.cap.read()
+                if not ret:
+                    raise WebcamError
+
+            except WebcamError:
+                self.logger.error("[*] something went wrong, restarting webcam..")
+                # close and try reopening webcam 
+                self.close_webcam()
+                self.open_webcam()
+
+            # Draw fps to the frame
+            cv2.putText(frame,
+                        '%.2f' % fps.fps,
+                        (10, 20),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (255, 255, 255),
+                        1,
+                        cv2.LINE_AA) 
+
+            # Process the frame
+            self.on_frame_received(img=frame)
+
+            fps.update_fps()
+
+        # TODO: Close webcam properly
+        # self.close_webcam()
 
     def on_frame_received(self, img: cv2.typing.MatLike):
         try:
@@ -382,7 +395,6 @@ class FaceTracker(Node):
         if not self.cap.isOpened():
             self.logger.fatal("[*] Cannot open a webcam!")
             sys.exit(1)
-        self.cap.read()
 
 
     def close_webcam(self):
@@ -392,6 +404,32 @@ class FaceTracker(Node):
         #self.logger.info("closing webcam handle...")
         self.cap.release()
         cv2.destroyAllWindows()
+
+class FramesPerSecond:
+    """
+    Class for calculating real time fps of video stream. Code is based from stack owerflow thread:
+    https://stackoverflow.com/questions/55154753/trouble-calculating-fps-on-output-video-stream
+    """
+    def __init__(self):
+        self.startTime = None
+        self.total_number_of_frames = 0
+        self.counter = 0
+        self.frameRate = 1  # The number of seconds to wait for each measurement.
+        self.fps = 0
+
+    def start(self):
+        self.startTime = time.time()  # Returns a UNIX timestamp.
+
+    def update_fps(self):
+        self.total_number_of_frames += 1
+        self.counter += 1  # Count will increase until the if condition executes.
+        if self._elapsed_time() > self.frameRate:  # We measure the self only after 1 second has passed.
+            self.fps = self.counter / self._elapsed_time()
+            self.counter = 0  # reset the counter for next iteration.
+            self.start()  # reset the start time.
+
+    def _elapsed_time(self):
+        return time.time() - self.startTime
 
 def main(args=None):
     # Initialize
@@ -404,7 +442,6 @@ def main(args=None):
     # Shutdown
     tracker.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == "__main__":
     main()
