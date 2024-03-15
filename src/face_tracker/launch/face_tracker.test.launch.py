@@ -7,15 +7,15 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    camera_node = Node(
-        package="opencv_cam",
-        executable="opencv_cam_main",
-        parameters=[
-            {
-                "index": 0,
-            }
-        ],
-    )
+    # camera_node = Node(
+    #     package="opencv_cam",
+    #     executable="opencv_cam_main",
+    #     parameters=[
+    #         {
+    #             "index": 0,
+    #         }
+    #     ],
+    # )
 
     tracker_node = Node(
         package="face_tracker",
@@ -32,4 +32,4 @@ def generate_launch_description():
         ],
     )
 
-    return LaunchDescription([camera_node, tracker_node])
+    return LaunchDescription([tracker_node])

@@ -35,11 +35,11 @@ class FaceTracker(Node):
         self.lip_movement_detection = lip_movement_detection
         self.logger = self.get_logger()
 
-        image_topic = (
-            self.declare_parameter("image_topic", "/image_raw")
-            .get_parameter_value()
-            .string_value
-        )
+        # image_topic = (
+        #     self.declare_parameter("image_topic", "/image_raw")
+        #     .get_parameter_value()
+        #     .string_value
+        # )
         face_image_topic = (
             self.declare_parameter(
                 "face_image_topic", "image_face"
@@ -95,12 +95,12 @@ class FaceTracker(Node):
                                         distance_metric="cosine")
 
         # Create subscription, that receives camera frames
-        self.subscriber = self.create_subscription(
-            Image,
-            image_topic,
-            self.on_frame_received,
-            5,
-        )
+        # self.subscriber = self.create_subscription(
+        #     Image,
+        #     image_topic,
+        #     self.on_frame_received,
+        #     5,
+        # )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
@@ -120,6 +120,26 @@ class FaceTracker(Node):
         self.face_distance2 = []
 
         self.identifier = "Face not recognized"
+
+        self.frame_count = 0
+        self.cap = None
+
+        self.open_webcam()
+        while True:
+            # Read a frame from the video stream
+            ret, frame = self.cap.read()
+
+            # Process the frame (e.g., apply filters, resize, etc.)
+            self.on_frame_received(img=frame)
+
+            # Display the frame
+            cv2.imshow("Video Stream", frame)
+
+            # Press 'q' to exit the loop
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        self.close_webcam()
         
         #self.timer = self.create_timer(2, self.profile_cycle)
         #pr.enable()
@@ -137,13 +157,14 @@ class FaceTracker(Node):
         pr = cProfile.Profile()
         pr.enable()"""
 
-    def on_frame_received(self, img: Image):
-
-
+    def on_frame_received(self, img: cv2.typing.MatLike):
         try:
             # Convert ros img to opencv compatible format
-            cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
-            cv2_gray_img = bridge.imgmsg_to_cv2(img, "mono8")
+            # cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
+            # cv2_gray_img = bridge.imgmsg_to_cv2(img, "mono8")
+            cv2_bgr_img = img
+            cv2_gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
             font = cv2.FONT_HERSHEY_SIMPLEX
             msg_faces = []
 
@@ -352,6 +373,26 @@ class FaceTracker(Node):
             self.face_location_publisher.publish(self.face_location)
             # Set location back to None to prevent publishing same location multiple times
             self.face_location = None
+
+    def open_webcam(self):
+        '''
+        Open webcam handle
+        '''
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened():
+            self.logger.fatal("[*] Cannot open a webcam!")
+            sys.exit(1)
+        self.cap.read()
+
+
+    def close_webcam(self):
+        '''
+        Destroy webcam handle and close all windows
+        '''
+        #self.logger.info("closing webcam handle...")
+        self.cap.release()
+        cv2.destroyAllWindows()
+
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
