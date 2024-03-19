@@ -34,7 +34,7 @@ class WebcamError(Exception):
 DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
 
 class FaceTracker(Node):
-    def __init__(self, lip_movement_detection=True, face_db_path=DEFAULT_FACE_DB_PATH):
+    def __init__(self, lip_movement_detection=True, face_recognizer=True, face_db_path=DEFAULT_FACE_DB_PATH):
         super().__init__("face_tracker")
         self.lip_movement_detection = lip_movement_detection
         self.logger = self.get_logger()
@@ -87,11 +87,14 @@ class FaceTracker(Node):
         else:
             self.logger.info('Lip movement detection disabled.')
 
-        self.face_recognizer = FaceRecognizer(db_path=face_db_path,
-                                        logger=self.logger,
-                                        model_name="VGG-Face",
-                                        detector_backend="opencv",
-                                        distance_metric="cosine")
+        if face_recognizer:
+            self.face_recognizer = FaceRecognizer(db_path=face_db_path,
+                                                  logger=self.logger,
+                                                  model_name="SFace",
+                                                  detector_backend="opencv",
+                                                  distance_metric="euclidean_l2") # In deepface repo, it is said that this should be more stable than others
+        else:
+            self.face_recognizer = None
 
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
@@ -340,22 +343,23 @@ class FaceTracker(Node):
                 
                 # Run face recognition
                 # TODO: Use original frame instead of frame with bounding boxes
-                if self.frame == 0:
-                    self.identifier = self.face_recognizer.find_match(cv2_bgr_img, face_coords)
-                
-                # Text about face recognition
-                if not self.identifier:
-                    text = "Face not recognized"
-                else:
-                    text = self.identifier
-                
-                # Add text to image
-                cv2.putText(cv2_bgr_img,
-                            text,
-                            (msg_faces[idx].top_left.x + 2, msg_faces[idx].top_left.y + 10),
-                            font, 0.3, (255, 255, 255),
-                            1,
-                            cv2.LINE_AA)
+                if self.face_recognizer:
+                    if self.frame == 0:
+                        self.identifier = self.face_recognizer.find_match(cv2_bgr_img, face_coords)
+                    
+                    # Text about face recognition
+                    if not self.identifier:
+                        text = "Face not recognized"
+                    else:
+                        text = self.identifier
+                    
+                    # Add text to image
+                    cv2.putText(cv2_bgr_img,
+                                text,
+                                (msg_faces[idx].top_left.x + 2, msg_faces[idx].top_left.y + 10),
+                                font, 0.3, (255, 255, 255),
+                                1,
+                                cv2.LINE_AA)
 
                 self.frame += 1
                 self.face_size_frame += 1
@@ -434,7 +438,7 @@ class FramesPerSecond:
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTracker(True)     # True enables lip movement detection, False disables it
+    tracker = FaceTracker(lip_movement_detection=True, face_recognizer=True)
 
     # Do work
     rclpy.spin(tracker)

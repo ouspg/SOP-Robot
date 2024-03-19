@@ -35,7 +35,7 @@ class FaceRecognizer(object):
         face_coords: [x, y, w, h]
         """
 
-        cropped_img = self._crop_face_image(frame, face_coords, padding=20)
+        cropped_img = self._crop_face_image(frame, face_coords, padding=30)
 
         dfs = DeepFace.find(
             img_path=frame,
@@ -99,3 +99,55 @@ class FaceRecognizer(object):
         #    return None
         
         return face
+
+def main(args=None):
+    # Initialize
+
+    import logging
+    import sys
+    import cv2
+    import os
+    import dlib
+    # Set up the logger
+    logger = logging.getLogger("")
+    logger.setLevel(logging.DEBUG)
+
+    # Create a stream handler (logs to stdout)
+    console_handler = logging.StreamHandler(sys.stdout)
+    logger.addHandler(console_handler)
+
+    face_db_path = os.path.expanduser('~')+"/database"
+
+    face_recognizer = FaceRecognizer(db_path=face_db_path,
+                                     logger=logger,
+                                     model_name="VGG-Face",
+                                     detector_backend="opencv",
+                                     distance_metric="cosine")
+    
+    face_recognizer.test_deepface(logger)
+
+    # Initialize video capture (0 for default webcam)
+    cap = cv2.VideoCapture(0)
+    
+    face_detector = dlib.get_frontal_face_detector()
+
+    while True:
+        # Read a frame from the video stream
+        ret, frame = cap.read()
+
+        # Process the frame (e.g., apply filters, resize, etc.)
+
+        # Display the frame
+        cv2.imshow("Video Stream", frame)
+
+        # Press 'q' to exit the loop
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Release the video capture object
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
