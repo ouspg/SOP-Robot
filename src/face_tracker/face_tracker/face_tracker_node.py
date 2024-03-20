@@ -8,6 +8,8 @@ import os
 import numpy as np
 import time
 import sys
+from typing import List
+
 from ament_index_python.packages import get_package_share_directory
 
 from rclpy.node import Node
@@ -19,8 +21,8 @@ from face_tracker_msgs.msg import Faces, Face, Point2
 from cv_bridge import CvBridge, CvBridgeError
 
 from .lip_movement_net import LipMovementDetector
-
 from .face_recognition import FaceRecognizer
+from .face import FaceStruct
 
 bridge = CvBridge()
 
@@ -100,24 +102,13 @@ class FaceTracker(Node):
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
-        #timer_period = 0.5    # Face publish interval in seconds
-        self.face_location = None  # Variable for face location
-        # Call publish_face_location every timer_period seconds
-        #self.timer = self.create_timer(timer_period, self.publish_face_location)
-
         self.frame = 0
-
-        self.trackers = []
-        self.speaking_states = []
-
-        self.face_size_frame = 0
-        self.face_distance1 = []
-        self.face_distance2 = []
-
-        self.identifier = "Face not recognized"
+        self.faces: List[FaceStruct] = []
 
         self.cap = None
+        self.font = cv2.FONT_HERSHEY_SIMPLEX
 
+        # Run face tracker
         self.webcam_loop()
         
         #self.timer = self.create_timer(2, self.profile_cycle)
@@ -155,233 +146,150 @@ class FaceTracker(Node):
                 self.close_webcam()
                 self.open_webcam()
 
+            # Process the frame
+            self.on_frame_received(frame=frame)
+
             # Draw fps to the frame
             cv2.putText(frame,
                         '%.2f' % fps.fps,
                         (10, 20),
-                        cv2.FONT_HERSHEY_SIMPLEX,
+                        self.font,
                         0.5,
                         (255, 255, 255),
                         1,
                         cv2.LINE_AA) 
 
-            # Process the frame
-            self.on_frame_received(img=frame)
+            try:
+                # Publish modified frame image
+                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(frame, "bgr8"))
+            except CvBridgeError as e:
+                self.logger.warn("Could not convert ros img to opencv image: ", e)
 
             fps.update_fps()
 
         # TODO: Close webcam properly
         # self.close_webcam()
+            
+    def on_frame_received(self, frame: cv2.typing.MatLike):
+        # try:
+        cv2_gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    def on_frame_received(self, img: cv2.typing.MatLike):
-        try:
-            # Convert ros img to opencv compatible format
-            # cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
-            # cv2_gray_img = bridge.imgmsg_to_cv2(img, "mono8")
-            cv2_bgr_img = img
-            cv2_gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            msg_faces = []
-
-            # Do face detection on frame 0
-            if self.frame == 0:
-                self.trackers = []
-                # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
-                # Todo: use dlib correlation_tracker to track the same face across frames?
-                faces = self.face_detector(cv2_gray_img)
-
-                # Initialize new input sequences for lip movement detector if the number of detected faces change
-                if self.lip_movement_detection:
-                    if len(faces) != len(self.speaking_states):
-                        self.speaking_states = []
-                        self.lip_movement_detector.initialize_input_sequence(len(faces))
-
-                for i, face in enumerate(faces):
-                    (x1, y1, x2, y2) = (
-                        face.left(),
-                        face.top(),
-                        face.right(),
-                        face.bottom(),
-                    )
-
-                    green = (0, 255, 0)
-
-                    # Draw rectangle around the face
-                    cv2.rectangle(cv2_bgr_img, (x1, y1), (x2, y2), green, 1)
-
-                    #initialize tracker
-                    tracker = dlib.correlation_tracker()
-                    #start track on face detected on first frame
-                    rect = dlib.rectangle(x1, y1, x2, y2)
-                    tracker.start_track(cv2_gray_img, rect)
-                    self.trackers.append(tracker)
-
-                    if self.lip_movement_detection:
-                        # Determine if the face is speaking or silent
-                        state = self.lip_movement_detector.test_video_frame(cv2_gray_img, rect, i)
-                        try:
-                            self.speaking_states[i] = state
-                        except IndexError:
-                            self.speaking_states.append(state)
-                        # Write the speaking/silent state below the face's bounding box
-                        cv2.putText(cv2_bgr_img, state, (x1 + 2, y2 + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
-
-                    msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
-                    msg_faces.append(msg_face)
-
-            else:
-                green = (0, 255, 0)
-                for i, tracker in enumerate(self.trackers):
-                    tracker.update(cv2_gray_img)
-                    pos = tracker.get_position()
-
-                    #unpack the positions
-                    x1 = int(pos.left())
-                    y1 = int(pos.top())
-                    x2 = int(pos.right())
-                    y2 = int(pos.bottom())
-
-                    rect = dlib.rectangle(x1, y1, x2, y2)
-
-                    if self.lip_movement_detection:
-                        # Determine if the face is speaking or silent
-                        state = self.lip_movement_detector.test_video_frame(cv2_gray_img, rect, i)
-                        self.speaking_states[i] = state
-                        # Write the speaking/silent state below the face's bounding box
-                        cv2.putText(cv2_bgr_img, state, (x1 + 2, y2 + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
-
-                    msg_face = Face(top_left=Point2(x=x1, y=y1), bottom_right=Point2(x=x2, y=y2))
-                    msg_faces.append(msg_face)
-                    #draw bounding box
-                    cv2.rectangle(cv2_bgr_img, (x1, y1), (x2, y2), green, 1)
-
-            if len(msg_faces) > 0:
-                face_sizes = []
-
-                if self.lip_movement_detection:
-                    # Get indices of speaking faces
-                    speaking_idx = [i for i, state in enumerate(self.speaking_states) if state == 'speaking']
-
-                    # Find the largest speaking face
-                    if len(speaking_idx) > 0:
-                        for face in [msg_faces[i] for i in speaking_idx]:
-                            # Calculate the length of the face bounding box diagonal
-                            face_sizes.append(np.sqrt((face.top_left.x - face.bottom_right.x)**2 +
-                                                      (face.top_left.y - face.bottom_right.y)**2))
-                    # If no speaking faces, just find the largest face
-                    else:
-                        for face in msg_faces:
-                            face_sizes.append(np.sqrt((face.top_left.x - face.bottom_right.x)**2 +
-                                                      (face.top_left.y - face.bottom_right.y)**2))
-                else:
-                    for face in msg_faces:
-                        face_sizes.append(np.sqrt((face.top_left.x - face.bottom_right.x)**2 +
-                                                  (face.top_left.y - face.bottom_right.y)**2))
-
-                #face distance function
-                if self.face_size_frame == 0:
-                    face_distance2_original = []
-                    for face in msg_faces:
-                        self.face_distance2.append(np.sqrt((face.top_left.x - face.bottom_right.x)**2 +
-                                                    (face.top_left.y - face.bottom_right.y)**2))
-
-                    face_distance2_original = self.face_distance2
-                    self.face_distance2.sort(reverse=True)
-                    """
-                    try:
-                        for i in range(len(face_distance2_original)):
-                            self.logger.info('s: ')
-                            self.logger.info(str(self.face_distance2[i]))
-                            self.logger.info(', o: ')
-                            self.logger.info(str(face_distance2_original[i]))
-                    except ValueError:
-                        pass
-                    except TypeError:
-                        pass
-                    """
-                    if not self.face_distance1:
-                        self.face_distance1 = self.face_distance2
-                    else:
-                        max_difference = 0
-                        difference_threshhold = 10
-                        max_difference_face_location = 0
-                        try:
-                            for i in range(len(self.face_distance1)):
-                                if(max_difference < self.face_distance2[i] - self.face_distance1[i]):
-                                    max_difference = self.face_distance2[i] - self.face_distance1[i]
-                                    max_difference_face_location = i
-                            if max_difference > difference_threshhold:
-                                idx = face_distance2_original.index(self.face_distance2[max_difference_face_location])
-                                #calculating midpoint of the face
-                                self.face_location = Point2(x=round((msg_faces[idx].top_left.x + msg_faces[idx].bottom_right.x) / 2),
-                                            y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
-                                self.face_distance1 = self.face_distance2
-                                self.face_distance2 = []
-                                #self.logger.info(str(max_difference))
-                                # Publish image that has rectangles around the detected faces
-                                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
-                                self.face_publisher.publish(Faces(faces=msg_faces))
-                            else:
-                                self.face_distance1 = self.face_distance2
-                                self.face_distance2 = []
-
-                        except IndexError:
-                            pass
-                # Get the index of the largest face
-                idx = face_sizes.index(max(face_sizes))
-                # Calculate midpoint of largest face
-                self.face_location = Point2(x=round((msg_faces[idx].top_left.x + msg_faces[idx].bottom_right.x) / 2),
-                                            y=round((msg_faces[idx].top_left.y + msg_faces[idx].bottom_right.y) / 2))
-                
-
-
-                face_coords = (msg_faces[idx].top_left.x,
-                               msg_faces[idx].top_left.y,
-                               msg_faces[idx].top_left.x - msg_faces[idx].bottom_right.x,
-                               msg_faces[idx].top_left.y - msg_faces[idx].bottom_right.y)
-                
-                # Run face recognition
-                # TODO: Use original frame instead of frame with bounding boxes
-                if self.face_recognizer:
-                    if self.frame == 0:
-                        self.identifier = self.face_recognizer.find_match(cv2_bgr_img, face_coords)
-                    
-                    # Text about face recognition
-                    if not self.identifier:
-                        text = "Face not recognized"
-                    else:
-                        text = self.identifier
-                    
-                    # Add text to image
-                    cv2.putText(cv2_bgr_img,
-                                text,
-                                (msg_faces[idx].top_left.x + 2, msg_faces[idx].top_left.y + 10),
-                                font, 0.3, (255, 255, 255),
-                                1,
-                                cv2.LINE_AA)
-
-                self.frame += 1
-                self.face_size_frame += 1
-                # Set frame to zero for new detection every nth frame.
-                # Large values lead to drifting of the detected faces
-                n = 5
-                self.frame = self.frame % n
-
-                #set frame to zero for new face size detection every n_face_size frame
-                n_face_size = 5
-                self.face_size_frame = self.face_size_frame % n_face_size
-
-                self.publish_face_location()
-
-            # Publish image that has rectangles around the detected faces
-            self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
-            self.face_publisher.publish(Faces(faces=msg_faces))
-        except CvBridgeError as e:
-            self.logger.warn("Could not convert ros img to opencv image: ", e)
-        except Exception as e:
-            self.logger.error(e)
         
+        msg_faces = []
+
+
+        # Get the face locations
+        if self.frame == 0:
+            faces_len_old = len(self.faces)
+            # Use face detection to get face locations
+            self.faces = self.detect_faces(cv2_gray_img)
+
+            # Initialize new input sequences for lip movement detector if the number of detected faces change
+            if self.lip_movement_detection:
+                if faces_len_old != len(self.faces):
+                    #TODO: original implementation had speaking state clearing here
+                    self.lip_movement_detector.initialize_input_sequence(len(self.faces))
+
+            self.logger.info(f"Face detection: faces={len(self.faces)}")
+        else:
+            # Use dlib correlation tracker to update face locations
+            for face in self.faces:
+                face.update_location(frame)
+
+            self.logger.info(f"correlation tracking: faces={len(self.faces)}")
+        
+        # loop through all faces
+        for i, face in enumerate(self.faces):
+            if self.lip_movement_detection:
+                # Determine if the face is speaking or silent
+                face.speaking = self.lip_movement_detector.test_video_frame(cv2_gray_img, face.rect, i)
+
+            # Run face recognition
+            if self.face_recognizer:
+                face_coords = (face.x1,
+                                face.y1,
+                                face.x2 - face.x1,
+                                face.y2 - face.y1)
+
+                if self.frame == 0:
+                    self.logger.info(f"face recognition: face_index={i}")
+                    face.identity = self.face_recognizer.find_match(frame, face_coords)
+            
+            # Draw information to frame
+            self.draw_face_info(frame, face, self.font)
+
+            msg_face = Face(top_left=Point2(x=face.x1, y=face.y1), bottom_right=Point2(x=face.x2, y=face.y2))
+            msg_faces.append(msg_face)
+
+        self.frame += 1
+        # Set frame to zero for new detection every nth frame.
+        # Large values lead to drifting of the detected faces
+        n = 5
+        self.frame = self.frame % n
+
+        # publish faces
+        # self.publish_face_location() largest face calculating not implemented yet
+        self.face_publisher.publish(Faces(faces=msg_faces))
+
+        # except Exception as e:
+        #     self.logger.error(str(e))
+    
+    def detect_faces(self, frame):
+        """
+        Get face locations using dlib face detection.
+        Intialize dlib correlation trackers.
+        """
+        faces: List[FaceStruct] = []
+
+        # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
+        # Todo: use dlib correlation_tracker to track the same face across frames?
+        dlib_faces = self.face_detector(frame)
+        
+        for dlib_face in dlib_faces:
+            (x1, y1, x2, y2) = (
+                dlib_face.left(),
+                dlib_face.top(),
+                dlib_face.right(),
+                dlib_face.bottom(),
+            )
+            # TODO: compare size and location to tracked faces to determine if the face is same
+            face = FaceStruct(x1, x2, y1, y2)
+            face.start_track(frame)
+
+            faces.append(face)
+        return faces
+    
+    @staticmethod
+    def draw_face_info(frame, face:FaceStruct, font):
+        """
+        Draws rectangle around face and other information to display 
+        """
+        green = (0, 255, 0)
+
+        # Draw rectangle around the face
+        cv2.rectangle(frame, (face.x1, face.y1), (face.x2, face.y2), green, 1)
+
+        if face.speaking is not None:
+            cv2.putText(frame,
+                        face.speaking,
+                        (face.x1 + 2, face.y2 + 10 - 3),
+                        font,
+                        0.3,
+                        (255, 255, 255),
+                        1,
+                        cv2.LINE_AA)
+        
+
+        if face.identity:
+            # Add text to image
+            cv2.putText(frame,
+                        face.identity,
+                        (face.x1 + 2, face.y1 + 10),
+                        font,
+                        0.3,
+                        (255, 255, 255),
+                        1,
+                        cv2.LINE_AA)        
 
     def publish_face_location(self):
         # Check that there is a location to publish
