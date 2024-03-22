@@ -1,23 +1,29 @@
 import dlib
 
-# TODO: change to better name, plain face has conflict with Face class in face_tracker_msg
-class FaceStruct():
-    def __init__(self, x1, x2, y1, y2):
-        self.x1 = x1
-        self.x2 = x2
-        self.y1 = y1
-        self.y2 = y2
+from collections import deque
+from collections import Counter
 
-        self.rect = dlib.rectangle(x1, y1, x2, y2)
+# TODO: change to better name, plain face has conflict with Face class in face_tracker_msg
+class Face():
+    def __init__(self, left, right, top, bottom):
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+
+        self.rect = dlib.rectangle(left, top, right, bottom)
         self.correlation_tracker = None # dlib correlation tracker
 
         self.speaking = None
         self.identity = None
+        self.last_identity = None
+        self.identity_deque: deque = deque(maxlen=10)
 
     def start_track(self, frame):
         """
         Init and start dlib correlation tracker.
         """
+        self.rect = dlib.rectangle(self.left, self.top, self.right, self.bottom)
         self.correlation_tracker = dlib.correlation_tracker()
         self.correlation_tracker.start_track(frame, self.rect)
     
@@ -29,7 +35,27 @@ class FaceStruct():
         pos = self.correlation_tracker.get_position()
         
         #unpack the face position
-        self.x1 = int(pos.left())
-        self.x2 = int(pos.right())
-        self.y1 = int(pos.top())
-        self.y2 = int(pos.bottom())
+        self.left = int(pos.left())
+        self.right = int(pos.right())
+        self.top = int(pos.top())
+        self.bottom = int(pos.bottom())
+    
+    def update_identity(self, identity):
+        """
+        Update face identity deque with new identity value from face recognition result. 
+        Doen't add None to the deque.
+        Calculate the face identity by calculating the most common identity in the deque.
+        Update the resent identity value.
+        """
+        if identity is not None:
+            self.identity_deque.append(identity)
+            
+            # Do not update unnecessarily
+            if identity != self.identity:
+                identity_counts = Counter(self.identity_deque)
+                self.identity = identity_counts.most_common(1)[0][0]
+
+        self.last_identity = identity
+        
+
+

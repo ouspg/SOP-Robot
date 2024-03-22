@@ -8,6 +8,7 @@ import os
 import numpy as np
 import time
 import sys
+import traceback
 from typing import List
 
 from ament_index_python.packages import get_package_share_directory
@@ -16,13 +17,14 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from face_tracker_msgs.msg import Faces, Face, Point2
+# import face_tracker_msgs.msg as msg
+from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2
 
 from cv_bridge import CvBridge, CvBridgeError
 
 from .lip_movement_net import LipMovementDetector
 from .face_recognition import FaceRecognizer
-from .face import FaceStruct
+from .face import Face
 
 bridge = CvBridge()
 
@@ -103,7 +105,7 @@ class FaceTracker(Node):
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
         self.frame = 0
-        self.faces: List[FaceStruct] = []
+        self.faces: List[Face] = []
 
         self.cap = None
         self.font = cv2.FONT_HERSHEY_SIMPLEX
@@ -146,8 +148,11 @@ class FaceTracker(Node):
                 self.close_webcam()
                 self.open_webcam()
 
-            # Process the frame
-            self.on_frame_received(frame=frame)
+            try:
+                # Process the frame
+                self.on_frame_received(frame=frame)
+            except Exception as e:
+                self.logger.error(traceback.format_exc())
 
             # Draw fps to the frame
             cv2.putText(frame,
@@ -171,12 +176,9 @@ class FaceTracker(Node):
         # self.close_webcam()
             
     def on_frame_received(self, frame: cv2.typing.MatLike):
-        # try:
         cv2_gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        
         msg_faces = []
-
 
         # Get the face locations
         if self.frame == 0:
@@ -190,13 +192,14 @@ class FaceTracker(Node):
                     #TODO: original implementation had speaking state clearing here
                     self.lip_movement_detector.initialize_input_sequence(len(self.faces))
 
-            self.logger.info(f"Face detection: faces={len(self.faces)}")
+            # self.logger.info(f"Face detection: faces={len(self.faces)}")
+            
         else:
             # Use dlib correlation tracker to update face locations
             for face in self.faces:
                 face.update_location(frame)
 
-            self.logger.info(f"correlation tracking: faces={len(self.faces)}")
+            # self.logger.info(f"correlation tracking: faces={len(self.faces)}")
         
         # loop through all faces
         for i, face in enumerate(self.faces):
@@ -206,19 +209,20 @@ class FaceTracker(Node):
 
             # Run face recognition
             if self.face_recognizer:
-                face_coords = (face.x1,
-                                face.y1,
-                                face.x2 - face.x1,
-                                face.y2 - face.y1)
+                face_coords = (face.left,
+                               face.top,
+                               face.right - face.left,
+                               face.bottom - face.top)
 
                 if self.frame == 0:
-                    self.logger.info(f"face recognition: face_index={i}")
-                    face.identity = self.face_recognizer.find_match(frame, face_coords)
+                    # self.logger.info(f"face recognition: face_index={i}")
+                    identity = self.face_recognizer.find_match(frame, face_coords)
+                    face.update_identity(identity)
             
             # Draw information to frame
             self.draw_face_info(frame, face, self.font)
 
-            msg_face = Face(top_left=Point2(x=face.x1, y=face.y1), bottom_right=Point2(x=face.x2, y=face.y2))
+            msg_face = FaceMsg(top_left=Point2(x=face.left, y=face.top), bottom_right=Point2(x=face.right, y=face.bottom))
             msg_faces.append(msg_face)
 
         self.frame += 1
@@ -230,49 +234,80 @@ class FaceTracker(Node):
         # publish faces
         # self.publish_face_location() largest face calculating not implemented yet
         self.face_publisher.publish(Faces(faces=msg_faces))
-
-        # except Exception as e:
-        #     self.logger.error(str(e))
     
-    def detect_faces(self, frame):
+    # TODO: adjust distance treshold
+    def detect_faces(self, frame, distance_treshold=50):
         """
         Get face locations using dlib face detection.
         Intialize dlib correlation trackers.
         """
-        faces: List[FaceStruct] = []
+        faces: List[Face] = []
 
         # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
         # Todo: use dlib correlation_tracker to track the same face across frames?
         dlib_faces = self.face_detector(frame)
         
         for dlib_face in dlib_faces:
-            (x1, y1, x2, y2) = (
+
+            face: Face = None
+            
+            (left, top, right, bottom) = (
                 dlib_face.left(),
                 dlib_face.top(),
                 dlib_face.right(),
                 dlib_face.bottom(),
             )
-            # TODO: compare size and location to tracked faces to determine if the face is same
-            face = FaceStruct(x1, x2, y1, y2)
-            face.start_track(frame)
+            
+            # Compare face position to previously found faces using distance between them
+            if len(self.faces) != 0:
+                #middle point
+                middle_point = np.array([right - left, bottom - top])
 
+                closest_face: Face = None
+                min_distance = None
+
+                for old_face in self.faces:
+                    # TODO: use deepface to verify that faces are same?
+                    # Calculate distance to face
+                    face_middle_point = np.array([old_face.right - old_face.left, old_face.bottom - old_face.top])
+                    distance = np.linalg.norm(middle_point-face_middle_point)
+                    if not min_distance or distance < min_distance:
+                        min_distance = distance
+                        closest_face = old_face
+                
+                if min_distance < distance_treshold:
+                    closest_face.left = left
+                    closest_face.right = right
+                    closest_face.top = top
+                    closest_face.bottom = bottom
+                    face = closest_face
+
+                    # self.logger.info("Face detection - update excisting face location")
+
+            if face is None:
+                # Matching face not found
+                face = Face(left, right, top, bottom)
+
+                # self.logger.info("Face detection - new face found")
+
+            face.start_track(frame)
             faces.append(face)
         return faces
     
     @staticmethod
-    def draw_face_info(frame, face:FaceStruct, font):
+    def draw_face_info(frame, face:Face, font):
         """
         Draws rectangle around face and other information to display 
         """
         green = (0, 255, 0)
 
         # Draw rectangle around the face
-        cv2.rectangle(frame, (face.x1, face.y1), (face.x2, face.y2), green, 1)
+        cv2.rectangle(frame, (face.left, face.top), (face.right, face.bottom), green, 1)
 
         if face.speaking is not None:
             cv2.putText(frame,
                         face.speaking,
-                        (face.x1 + 2, face.y2 + 10 - 3),
+                        (face.left + 2, face.bottom + 10 - 3),
                         font,
                         0.3,
                         (255, 255, 255),
@@ -281,15 +316,23 @@ class FaceTracker(Node):
         
 
         if face.identity:
-            # Add text to image
             cv2.putText(frame,
-                        face.identity,
-                        (face.x1 + 2, face.y1 + 10),
+                        f"Identity: {face.identity}",
+                        (face.left + 2, face.top + 10),
                         font,
                         0.3,
                         (255, 255, 255),
                         1,
-                        cv2.LINE_AA)        
+                        cv2.LINE_AA)  
+               
+            cv2.putText(frame,
+                        f"Last result: {face.last_identity}",
+                        (face.left + 2, face.top + 20),
+                        font,
+                        0.3,
+                        (255, 255, 255),
+                        1,
+                        cv2.LINE_AA)     
 
     def publish_face_location(self):
         # Check that there is a location to publish
@@ -313,7 +356,7 @@ class FaceTracker(Node):
         '''
         Destroy webcam handle and close all windows
         '''
-        #self.logger.info("closing webcam handle...")
+        self.logger.info("closing webcam handle...")
         self.cap.release()
         cv2.destroyAllWindows()
 
