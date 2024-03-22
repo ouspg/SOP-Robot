@@ -1,15 +1,18 @@
 import dlib
+import cv2
 
 from collections import deque
 from collections import Counter
 
 # TODO: change to better name, plain face has conflict with Face class in face_tracker_msg
 class Face():
-    def __init__(self, left, right, top, bottom):
+    def __init__(self, left, right, top, bottom, image):
         self.left = left
         self.right = right
         self.top = top
         self.bottom = bottom
+
+        self.image = image
 
         self.rect = dlib.rectangle(left, top, right, bottom)
         self.correlation_tracker = None # dlib correlation tracker
@@ -39,6 +42,16 @@ class Face():
         self.right = int(pos.right())
         self.top = int(pos.top())
         self.bottom = int(pos.bottom())
+
+    def update(self, left, right, top, bottom, image):
+        """
+        Update stored face image and face position
+        """
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+        self.image = image
     
     def update_identity(self, identity):
         """

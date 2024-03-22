@@ -235,8 +235,7 @@ class FaceTracker(Node):
         # self.publish_face_location() largest face calculating not implemented yet
         self.face_publisher.publish(Faces(faces=msg_faces))
     
-    # TODO: adjust distance treshold
-    def detect_faces(self, frame, distance_treshold=50):
+    def detect_faces(self, frame):
         """
         Get face locations using dlib face detection.
         Intialize dlib correlation trackers.
@@ -244,55 +243,131 @@ class FaceTracker(Node):
         faces: List[Face] = []
 
         # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
-        # Todo: use dlib correlation_tracker to track the same face across frames?
+        # Todo: use deepface also for face detection?
         dlib_faces = self.face_detector(frame)
         
         for dlib_face in dlib_faces:
 
             face: Face = None
             
-            (left, top, right, bottom) = (
+            face_coords = (dlib_face.left(),
+                           dlib_face.top(),
+                           dlib_face.right() - dlib_face.left(),
+                           dlib_face.bottom() - dlib_face.top())
+            # Todo: use deepface to crop and align the face image
+            face_image = self._crop_face_image(frame, face_coords)
+
+
+            detected_face = Face(
                 dlib_face.left(),
-                dlib_face.top(),
                 dlib_face.right(),
+                dlib_face.top(),
                 dlib_face.bottom(),
+                face_image
             )
             
             # Compare face position to previously found faces using distance between them
             if len(self.faces) != 0:
-                #middle point
-                middle_point = np.array([right - left, bottom - top])
 
-                closest_face: Face = None
-                min_distance = None
+                matched_face = self.find_matching_face(detected_face, self.faces)
 
-                for old_face in self.faces:
-                    # TODO: use deepface to verify that faces are same?
-                    # Calculate distance to face
-                    face_middle_point = np.array([old_face.right - old_face.left, old_face.bottom - old_face.top])
-                    distance = np.linalg.norm(middle_point-face_middle_point)
-                    if not min_distance or distance < min_distance:
-                        min_distance = distance
-                        closest_face = old_face
-                
-                if min_distance < distance_treshold:
-                    closest_face.left = left
-                    closest_face.right = right
-                    closest_face.top = top
-                    closest_face.bottom = bottom
-                    face = closest_face
+                if matched_face:
+                    matched_face.update(detected_face.left,
+                                        detected_face.right,
+                                        detected_face.top,
+                                        detected_face.bottom,
+                                        detected_face.image)
+                    face = matched_face
 
                     # self.logger.info("Face detection - update excisting face location")
 
             if face is None:
-                # Matching face not found
-                face = Face(left, right, top, bottom)
+                # Matching face not found, create new one
+                face = detected_face
 
                 # self.logger.info("Face detection - new face found")
-
+            self.logger.info(str(face.__dict__))
             face.start_track(frame)
             faces.append(face)
         return faces
+    
+    def find_matching_face(self, face, faces):
+        """
+        Method for finding maching face in faces list.
+
+        return: maching Face object or None
+        """
+        # TODO: Add to some kind of global config
+        distance_treshold = 50
+
+        # TODO: use face verification instead of face distance to find maching face
+        closest_face, distance = self.closest_face(face, faces)
+
+        if distance < distance_treshold:
+            return closest_face
+        return None
+
+    @staticmethod
+    def closest_face(face, faces):
+        """
+        Method to find closes face from list of faces.
+        Returns: tuple (closes face, distance) or None
+        """
+        if not faces:
+            return None
+
+        closest_face: Face = None
+        distance = None
+
+        #middle point
+        middle_point = np.array([face.right - face.left, face.bottom - face.top])
+
+        closest_face: Face = None
+        min_distance = None
+
+        for old_face in faces:
+            # TODO: use deepface to verify that faces are same?
+            # Calculate distance to face
+            face_middle_point = np.array([old_face.right - old_face.left, old_face.bottom - old_face.top])
+            distance = np.linalg.norm(middle_point-face_middle_point)
+            if not min_distance or distance < min_distance:
+                min_distance = distance
+                closest_face = old_face
+
+        return closest_face, min_distance
+
+    @staticmethod
+    def _crop_face_image(original_img, face_coords, padding=None, resize=True):
+        '''
+        Crop face image from original_img using face_coords.
+        if padding is not None, add padding to face coordinates to include more of the detected face
+        for better emotion recognition.
+        If no room for padding, return the original sized face image.
+        :return: 48x48 image or None
+        '''
+        # unpack face coordinates from a tuple
+        x, y, w, h = face_coords
+
+        if padding is not None and padding > 0:
+            # get array/image shape
+            y_max, x_max, *_ = original_img.shape
+
+            # check if padded coordinates are within bounds
+            if (0 <= y-padding and y+h+padding < y_max and
+            0 <= x-padding and x+w+padding < x_max): 
+                x -= padding
+                y -= padding
+                h += padding
+                w += padding
+
+        # crop face from the webcam image
+        face = original_img[y:y+h, x:x+w]
+
+        if resize:
+            face = cv2.resize(face, (124, 124), interpolation=cv2.INTER_NEAREST)
+        # return face
+        return face
+
     
     @staticmethod
     def draw_face_info(frame, face:Face, font):
