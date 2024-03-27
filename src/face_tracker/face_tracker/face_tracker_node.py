@@ -10,6 +10,7 @@ import time
 import sys
 import traceback
 from typing import List
+from deepface import DeepFace
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -95,7 +96,7 @@ class FaceTracker(Node):
             self.face_recognizer = FaceRecognizer(db_path=face_db_path,
                                                   logger=self.logger,
                                                   model_name="SFace",
-                                                  detector_backend="opencv",
+                                                  detector_backend="dlib",
                                                   distance_metric="euclidean_l2") # In deepface repo, it is said that this should be more stable than others
         else:
             self.face_recognizer = None
@@ -184,7 +185,7 @@ class FaceTracker(Node):
         if self.frame == 0:
             faces_len_old = len(self.faces)
             # Use face detection to get face locations
-            self.faces = self.detect_faces(cv2_gray_img)
+            self.faces = self.detect_faces(frame)
 
             # Initialize new input sequences for lip movement detector if the number of detected faces change
             if self.lip_movement_detection:
@@ -209,14 +210,10 @@ class FaceTracker(Node):
 
             # Run face recognition
             if self.face_recognizer:
-                face_coords = (face.left,
-                               face.top,
-                               face.right - face.left,
-                               face.bottom - face.top)
 
                 if self.frame == 0:
                     # self.logger.info(f"face recognition: face_index={i}")
-                    identity = self.face_recognizer.find_match(frame, face_coords)
+                    identity = self.face_recognizer.find(face.image)
                     face.update_identity(identity)
             
             # Draw information to frame
@@ -242,29 +239,18 @@ class FaceTracker(Node):
         """
         faces: List[Face] = []
 
-        # Uses HOG + SVM, CNN would probably have better detection at higher computing cost
-        # Todo: use deepface also for face detection?
-        dlib_faces = self.face_detector(frame)
+        # Uses deepface to extract face locations from frame
+        face_objs = self.face_recognizer.extract_faces(frame)
+
+        self.logger.info(f"face_objs: {face_objs}")
         
-        for dlib_face in dlib_faces:
+        for (x, y, w, h) in face_objs:
 
             face: Face = None
             
-            face_coords = (dlib_face.left(),
-                           dlib_face.top(),
-                           dlib_face.right() - dlib_face.left(),
-                           dlib_face.bottom() - dlib_face.top())
-            # Todo: use deepface to crop and align the face image
-            face_image = self._crop_face_image(frame, face_coords)
+            face_img = frame[int(y) : int(y + h), int(x) : int(x + w)]  # crop detected face
 
-
-            detected_face = Face(
-                dlib_face.left(),
-                dlib_face.right(),
-                dlib_face.top(),
-                dlib_face.bottom(),
-                face_image
-            )
+            detected_face = Face(x, y, x + w, y + h, face_img)
             
             # Compare face position to previously found faces using distance between them
             if len(self.faces) != 0:
