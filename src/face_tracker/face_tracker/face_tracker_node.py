@@ -92,14 +92,18 @@ class FaceTracker(Node):
         else:
             self.logger.info('Lip movement detection disabled.')
 
+        # Face recognition
         if face_recognizer:
             self.face_recognizer = FaceRecognizer(db_path=face_db_path,
                                                   logger=self.logger,
                                                   model_name="SFace",
-                                                  detector_backend="dlib",
-                                                  distance_metric="euclidean_l2") # In deepface repo, it is said that this should be more stable than others
+                                                  detector_backend="yunet",
+                                                  distance_metric="cosine") # uses our own implemenation
         else:
             self.face_recognizer = None
+
+        # TODO: implement proper way to save faces
+        self.face_ids, self.face_representations = self.face_recognizer.get_database_representations()
 
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
@@ -185,7 +189,7 @@ class FaceTracker(Node):
         if self.frame == 0:
             faces_len_old = len(self.faces)
             # Use face detection to get face locations
-            self.faces = self.detect_faces(frame)
+            self.faces = self.analyze_frame(frame)
 
             # Initialize new input sequences for lip movement detector if the number of detected faces change
             if self.lip_movement_detection:
@@ -208,13 +212,13 @@ class FaceTracker(Node):
                 # Determine if the face is speaking or silent
                 face.speaking = self.lip_movement_detector.test_video_frame(cv2_gray_img, face.rect, i)
 
-            # Run face recognition
-            if self.face_recognizer:
+            # # Run face recognition
+            # if self.face_recognizer:
 
-                if self.frame == 0:
-                    # self.logger.info(f"face recognition: face_index={i}")
-                    identity = self.face_recognizer.find(face.image)
-                    face.update_identity(identity)
+            #     if self.frame == 0:
+            #         # self.logger.info(f"face recognition: face_index={i}")
+            #         identity = self.face_recognizer.find(face.image)
+            #         face.update_identity(identity)
             
             # Draw information to frame
             self.draw_face_info(frame, face, self.font)
@@ -232,69 +236,89 @@ class FaceTracker(Node):
         # self.publish_face_location() largest face calculating not implemented yet
         self.face_publisher.publish(Faces(faces=msg_faces))
     
-    def detect_faces(self, frame):
+    def analyze_frame(self, frame):
         """
-        Get face locations using dlib face detection.
-        Intialize dlib correlation trackers.
+        Get face objects from frame. Detect faces and recognize them. Intialize dlib correlation trackers.
         """
         faces: List[Face] = []
 
         # Uses deepface to extract face locations from frame
         face_objs = self.face_recognizer.extract_faces(frame)
 
-        self.logger.info(f"face_objs: {face_objs}")
+        # self.logger.info(f"face_objs: {face_objs}")
         
-        for (x, y, w, h) in face_objs:
+        for face_obj in face_objs:
+            
+            face_img = face_obj["face"]
+            face_region = face_obj["facial_area"]
+            x = face_region["x"]
+            y = face_region["y"]
+            w = face_region["w"]
+            h = face_region["h"]
 
             face: Face = None
-            
-            face_img = frame[int(y) : int(y + h), int(x) : int(x + w)]  # crop detected face
+            representation: List[float] = self.face_recognizer.represent(face_img)
 
-            detected_face = Face(x, y, x + w, y + h, face_img)
+            # Compare face to the database
+            if self.face_recognizer:
+                matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
+                if matching_index is not None:
+                    identity = self.face_ids[matching_index]
+                else:
+                    identity = None
             
-            # Compare face position to previously found faces using distance between them
+            # Compare face to previously found faces using distance between them
             if len(self.faces) != 0:
 
-                matched_face = self.find_matching_face(detected_face, self.faces)
+                matched_face: Face = self.find_matching_face((x, y, w, h), representation, self.faces)
 
-                if matched_face:
-                    matched_face.update(detected_face.left,
-                                        detected_face.right,
-                                        detected_face.top,
-                                        detected_face.bottom,
-                                        detected_face.image)
+                if matched_face is not None:
+                    matched_face.update(x, x + w, y, y + h, face_img, representation)
                     face = matched_face
 
-                    # self.logger.info("Face detection - update excisting face location")
+                    self.logger.info("Same face found")
 
             if face is None:
                 # Matching face not found, create new one
-                face = detected_face
+                face = Face(x, x + w, y, y + h, face_img, representation)
 
-                # self.logger.info("Face detection - new face found")
-            self.logger.info(str(face.__dict__))
+                self.logger.info("new face found")
+            if identity is not None:
+                face.update_identity(identity, distance)
             face.start_track(frame)
             faces.append(face)
         return faces
-    
-    def find_matching_face(self, face, faces):
+
+    def find_matching_face(self, face_coords, representation, faces, distance_treshold=30):
         """
         Method for finding maching face in faces list.
 
+        face_coords Tuple(x, y, w, h)
+
+        representation (List[float]): Multidimensional vector representing facial features.
+            The number of dimensions varies based on the reference model
+
+        faces List[Face]: List of Face object, where matching face are looked from.
+
         return: maching Face object or None
         """
-        # TODO: Add to some kind of global config
-        distance_treshold = 50
+        # First compare representations
+        representations = [face.representation for face in faces]
+        matching_index, distance = self.face_recognizer.match_face(representation, representations)
+        if matching_index is not None:
+            return faces[matching_index]
+        
+        (x, y, w, h) = face_coords
 
-        # TODO: use face verification instead of face distance to find maching face
-        closest_face, distance = self.closest_face(face, faces)
-
+        # Find closes face
+        closest_face, distance = self.closest_face(x, y, w, h, faces)
         if distance < distance_treshold:
             return closest_face
+        
         return None
 
     @staticmethod
-    def closest_face(face, faces):
+    def closest_face(x, y, w, h, faces):
         """
         Method to find closes face from list of faces.
         Returns: tuple (closes face, distance) or None
@@ -306,19 +330,20 @@ class FaceTracker(Node):
         distance = None
 
         #middle point
-        middle_point = np.array([face.right - face.left, face.bottom - face.top])
+        middle_point = np.array([x + w / 2, y + h / 2])
 
         closest_face: Face = None
         min_distance = None
 
-        for old_face in faces:
+        for face in faces:
             # TODO: use deepface to verify that faces are same?
             # Calculate distance to face
-            face_middle_point = np.array([old_face.right - old_face.left, old_face.bottom - old_face.top])
+            face_middle_point = np.array([face.left + (face.right - face.left) / 2,
+                                          face.top + (face.bottom - face.top) / 2])
             distance = np.linalg.norm(middle_point-face_middle_point)
             if not min_distance or distance < min_distance:
                 min_distance = distance
-                closest_face = old_face
+                closest_face = face
 
         return closest_face, min_distance
 
