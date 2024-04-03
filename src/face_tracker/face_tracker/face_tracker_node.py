@@ -38,9 +38,10 @@ class WebcamError(Exception):
 DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
 
 class FaceTracker(Node):
-    def __init__(self, lip_movement_detection=True, face_recognizer=True, face_db_path=DEFAULT_FACE_DB_PATH):
+    def __init__(self, lip_movement_detection=True, face_recognizer=True, correlation_tracker=True, face_db_path=DEFAULT_FACE_DB_PATH):
         super().__init__("face_tracker")
         self.lip_movement_detection = lip_movement_detection
+        self.correlation_tracker_enabled = correlation_tracker
         self.logger = self.get_logger()
 
         face_image_topic = (
@@ -95,7 +96,7 @@ class FaceTracker(Node):
         if face_recognizer:
             self.face_recognizer = FaceRecognizer(db_path=face_db_path,
                                                   logger=self.logger,
-                                                  model_name="ArcFace",
+                                                  model_name="SFace",
                                                   detector_backend="yunet",
                                                   distance_metric="cosine") # uses our own implemenation
         else:
@@ -219,16 +220,17 @@ class FaceTracker(Node):
                 face.speaking = self.lip_movement_detector.test_video_frame(cv2_gray_img, face.rect, i)
 
             # Draw information to frame
-            self.draw_face_info(frame, face, self.font)
+            self.draw_face_info(frame, face)
 
             msg_face = FaceMsg(top_left=Point2(x=face.left, y=face.top), bottom_right=Point2(x=face.right, y=face.bottom))
             msg_faces.append(msg_face)
 
-        self.frame += 1
-        # Set frame to zero for new detection every nth frame.
-        # Large values lead to drifting of the detected faces
-        n = 5
-        self.frame = self.frame % n
+        if self.correlation_tracker_enabled:
+            self.frame += 1
+            # Set frame to zero for new detection every nth frame.
+            # Large values lead to drifting of the detected faces
+            n = 5
+            self.frame = self.frame % n
 
         # publish faces
         # self.publish_face_location() largest face calculating not implemented yet
@@ -284,7 +286,8 @@ class FaceTracker(Node):
 
                 self.logger.info("new face found")
 
-            face.start_track(frame)
+            if self.correlation_tracker_enabled:
+                face.start_track(frame)
             faces.append(face)
         return faces
 
@@ -465,7 +468,7 @@ class FramesPerSecond:
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTracker(lip_movement_detection=False, face_recognizer=True)
+    tracker = FaceTracker(lip_movement_detection=True, face_recognizer=True, correlation_tracker=False)
 
     # Do work
     rclpy.spin(tracker)
