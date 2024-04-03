@@ -7,7 +7,7 @@ from collections import Counter
 
 # TODO: change to better name, plain face has conflict with Face class in face_tracker_msg
 class Face():
-    def __init__(self, left, right, top, bottom, image, representation):
+    def __init__(self, left, right, top, bottom, image, representation, identity, distance):
         self.left = left
         self.right = right
         self.top = top
@@ -20,9 +20,16 @@ class Face():
         self.correlation_tracker = None # dlib correlation tracker
 
         self.speaking = None
+
+        self.concurrent_validations = 0
+
+        self.identity_is_valid = False
         self.identity = None
         self.last_identity = None
+        self.last_identity_distance = None
         self.identity_deque: deque = deque(maxlen=100)
+
+        self.update_identity(identity, distance)
 
     def start_track(self, frame):
         """
@@ -45,9 +52,9 @@ class Face():
         self.top = int(pos.top())
         self.bottom = int(pos.bottom())
 
-    def update(self, left, right, top, bottom, image, representation):
+    def update(self, left, right, top, bottom, image, representation, identity, distance, matching_type):
         """
-        Update stored face image and face position
+        Update the face information
         """
         self.left = left
         self.right = right
@@ -55,22 +62,34 @@ class Face():
         self.bottom = bottom
         self.image = image
         self.representation = representation
+
+        face_verified = False
+        if matching_type == "representation":
+            face_verified = True
+        self.update_identity(identity, distance, face_verified)
     
-    def update_identity(self, identity, distance):
+    def update_identity(self, identity, distance, face_verified=False):
         """
         Update face identity deque with new identity value from face recognition result. 
         Doesn't add None to the deque.
         Calculate the face identity by calculating the most common identity in the deque.
         Update the resent identity value.
         """
-        # TODO: determine the face identity first time only after 5 calls?
-        if identity is not None:
-            self.identity_deque.append(identity)
-            
-            # Do not update unnecessarily
-            if identity != self.identity:
-                identity_counts = Counter(self.identity_deque)
-                self.identity = identity_counts.most_common(1)[0][0]
+        self.identity_deque.append(identity)
+
+        if face_verified:
+            self.concurrent_validations += 1
+            if self.concurrent_validations > 5:
+                self.identity_is_valid = True
+        else:
+            self.identity_is_valid = False
+
+        # if len(self.identity_deque) > 5:
+
+        # Do not update identity unnecessarily
+        if identity != self.identity:
+            identity_counts = Counter(self.identity_deque)
+            self.identity = identity_counts.most_common(1)[0][0]
 
         self.last_identity = identity
         self.last_identity_distance = distance
