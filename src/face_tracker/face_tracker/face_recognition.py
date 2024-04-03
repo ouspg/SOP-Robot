@@ -46,12 +46,13 @@ class FaceRecognizer(object):
 
         - "confidence" (float): The confidence score associated with the detected face.
         """
-        return DeepFace.extract_faces(
+        face_objs = DeepFace.extract_faces(
             img_path=img,
             target_size=self.target_size,
             detector_backend=self.detector_backend,
             enforce_detection=False,
         )
+        return [face_obj for face_obj in face_objs if face_obj["facial_area"]["w"] < 500]
     
     def represent(self, img):
         """
