@@ -30,16 +30,6 @@ class FaceRecognizer(object):
 
         logger.info(f"facial recognition model {model_name} is just built")
 
-        # # call a dummy find function for db_path once to create embeddings in the initialization
-        # DeepFace.find(
-        #     img_path=np.zeros([224, 224, 3]),
-        #     db_path=db_path,
-        #     model_name=model_name,
-        #     detector_backend=detector_backend,
-        #     distance_metric=distance_metric,
-        #     enforce_detection=False,
-        # )
-
         self.logger.info("FaceRecognizer initialized!")
     
     def extract_faces(self, img):
@@ -160,87 +150,3 @@ class FaceRecognizer(object):
         """
         v = vector.reshape(1, -1)
         return scipy.spatial.distance.cdist(matrix, v, 'euclidean').reshape(-1)
-
-    # @staticmethod
-    # def _crop_face_image(original_img, face_coords, padding=None, resize=True):
-    #     '''
-    #     Crop face image from original_img using face_coords.
-    #     if padding is not None, add padding to face coordinates to include more of the detected face
-    #     for better emotion recognition.
-    #     If no room for padding, return the original sized face image.
-    #     :return: 48x48 image or None
-    #     '''
-    #     # unpack face coordinates from a tuple
-    #     x, y, w, h = face_coords
-
-    #     if padding is not None and padding > 0:
-    #         # get array/image shape
-    #         y_max, x_max, *_ = original_img.shape
-
-    #         # check if padded coordinates are within bounds
-    #         if (0 <= y-padding and y+h+padding < y_max and
-    #         0 <= x-padding and x+w+padding < x_max): 
-    #             x -= padding
-    #             y -= padding
-    #             h += padding
-    #             w += padding
-
-    #     # crop face from the webcam image
-    #     face = original_img[y:y+h, x:x+w]
-
-    #     if resize:
-    #         face = cv2.resize(face, (124, 124), interpolation=cv2.INTER_NEAREST)
-    #     # return face
-    #     return face
-
-# def main(args=None):
-#     # Initialize
-
-#     import logging
-#     import sys
-#     import cv2
-#     import os
-#     import dlib
-#     # Set up the logger
-#     logger = logging.getLogger("")
-#     logger.setLevel(logging.DEBUG)
-
-#     # Create a stream handler (logs to stdout)
-#     console_handler = logging.StreamHandler(sys.stdout)
-#     logger.addHandler(console_handler)
-
-#     face_db_path = os.path.expanduser('~')+"/database"
-
-#     face_recognizer = FaceRecognizer(db_path=face_db_path,
-#                                      logger=logger,
-#                                      model_name="VGG-Face",
-#                                      detector_backend="opencv",
-#                                      distance_metric="cosine")
-    
-#     face_recognizer.test_deepface(logger)
-
-#     # Initialize video capture (0 for default webcam)
-#     cap = cv2.VideoCapture(0)
-    
-#     face_detector = dlib.get_frontal_face_detector()
-
-#     while True:
-#         # Read a frame from the video stream
-#         ret, frame = cap.read()
-
-#         # Process the frame (e.g., apply filters, resize, etc.)
-
-#         # Display the frame
-#         cv2.imshow("Video Stream", frame)
-
-#         # Press 'q' to exit the loop
-#         if cv2.waitKey(1) & 0xFF == ord('q'):
-#             break
-
-#     # Release the video capture object
-#     cap.release()
-#     cv2.destroyAllWindows()
-
-
-# if __name__ == "__main__":
-#     main()
