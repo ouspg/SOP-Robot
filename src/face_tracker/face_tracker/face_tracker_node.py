@@ -10,7 +10,6 @@ import time
 import sys
 import traceback
 from typing import List
-from deepface import DeepFace
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -225,6 +224,16 @@ class FaceTracker(Node):
             msg_face = FaceMsg(top_left=Point2(x=face.left, y=face.top), bottom_right=Point2(x=face.right, y=face.bottom))
             msg_faces.append(msg_face)
 
+        # For debugging
+        cv2.putText(frame,
+                    f"Faces in the database {len(self.face_representations)}",
+                    (100,10),
+                    self.font,
+                    0.3,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA)
+
         if self.correlation_tracker_enabled:
             self.frame += 1
             # Set frame to zero for new detection every nth frame.
@@ -238,7 +247,7 @@ class FaceTracker(Node):
     
     def analyze_frame(self, frame):
         """
-        Get face objects from frame. Detect faces and recognize them. Intialize dlib correlation trackers.
+        Get face objects from frame. Do face detection and recognition. Intialize dlib correlation trackers.
         """
         faces: List[Face] = []
 
@@ -260,12 +269,12 @@ class FaceTracker(Node):
             identity = None
             distance = None
 
-            # Compare face to the database
-            if self.face_recognizer:
-                if len(self.face_representations) != 0:
-                    matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
-                    if matching_index is not None:
-                        identity = self.face_ids[matching_index]
+            # # Compare face to the database
+            # if self.face_recognizer:
+            if len(self.face_representations) != 0:
+                matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
+                if matching_index is not None:
+                    identity = self.face_ids[matching_index]
             
             # Compare face to previously found faces using distance between them
             if len(self.faces) != 0:
@@ -303,7 +312,7 @@ class FaceTracker(Node):
         self.logger.info("Face added to the face database")
 
     # TODO: adjust distance_treshold
-    def find_matching_face(self, face_coords, representation, faces, distance_treshold=70):
+    def find_matching_face(self, face_coords, representation, faces, distance_treshold_multiplier=1):
         """
         Method for finding maching face in faces list.
 
@@ -328,7 +337,7 @@ class FaceTracker(Node):
 
         # Find closes face
         closest_face, distance = self.closest_face(x, y, w, h, faces)
-        if distance < distance_treshold:
+        if distance < (closest_face.right - closest_face.left) * distance_treshold_multiplier:
             return closest_face, "distance"
         
         return None, None
@@ -381,7 +390,6 @@ class FaceTracker(Node):
                         (255, 255, 255),
                         1,
                         cv2.LINE_AA)
-        
 
         if face.identity:
             cv2.putText(frame,
@@ -401,17 +409,6 @@ class FaceTracker(Node):
                         (255, 255, 255),
                         1,
                         cv2.LINE_AA)
-    
-        # For debugging
-        cv2.putText(frame,
-                    f"Faces in the database {len(self.face_representations)}",
-                    (100,10),
-                    self.font,
-                    0.3,
-                    (255, 255, 255),
-                    1,
-                    cv2.LINE_AA)
-        
 
     def publish_face_location(self):
         # Check that there is a location to publish
