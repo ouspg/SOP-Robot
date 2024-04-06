@@ -26,7 +26,7 @@
           ansible.builtin.git:
             repo: https://github.com/felixschurk/SOP-Robot.git
             dest: /home/{{ ansible_env.USER }}/SOP-Robot
-            version: ansible-bootstrap-script
+            version: upgrade-to-humble
             update: false
 
 
