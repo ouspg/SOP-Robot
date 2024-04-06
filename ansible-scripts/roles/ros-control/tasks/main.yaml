@@ -9,7 +9,7 @@
     mode: "0755"
 
 - name: Making custom repo file
-  ansible.builtin.shell: vcs import src < /home/{{ ansible_env.USER }}/SOP-Robot/vagrant-scripts/ros2_control_ws.repos.yml
+  ansible.builtin.shell: vcs import src < /home/{{ ansible_env.USER }}/SOP-Robot/ansible-scripts/ros2_control_ws.repos.yml
   args:
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws/
     creates: /home/{{ ansible_env.USER }}/ros2_control_ws/src/angles/
