@@ -234,6 +234,15 @@ class FaceTracker(Node):
                     1,
                     cv2.LINE_AA)
 
+        cv2.putText(frame,
+                    f"Faces in the faces list {len(self.faces)}",
+                    (100,30),
+                    self.font,
+                    0.3,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA)
+
         if self.correlation_tracker_enabled:
             self.frame += 1
             # Set frame to zero for new detection every nth frame.
@@ -275,7 +284,7 @@ class FaceTracker(Node):
                 matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
                 if matching_index is not None:
                     identity = self.face_ids[matching_index]
-            
+
             # Compare face to previously found faces using distance between them
             if len(self.faces) != 0:
 

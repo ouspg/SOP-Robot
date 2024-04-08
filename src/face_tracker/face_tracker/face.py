@@ -1,5 +1,4 @@
 import dlib
-import cv2
 from typing import List
 
 from collections import deque
@@ -83,6 +82,7 @@ class Face():
                 self.identity_is_valid = True
         else:
             self.identity_is_valid = False
+            self.concurrent_validations == 0
 
         # if len(self.identity_deque) > 5:
 
