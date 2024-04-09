@@ -24,6 +24,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from .lip_movement_net import LipMovementDetector
 from .face_recognition import FaceRecognizer
 from .face import Face
+from .face_analyzer import FaceAnalyzer
 
 bridge = CvBridge()
 
@@ -33,14 +34,12 @@ class WebcamError(Exception):
 
 # pr = cProfile.Profile()
 
-# TODO: Ask from Aapo, where to store the database
-DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
-
-class FaceTracker(Node):
-    def __init__(self, lip_movement_detection=True, face_recognizer=True, correlation_tracker=True, face_db_path=DEFAULT_FACE_DB_PATH):
-        super().__init__("face_tracker")
-        self.lip_movement_detection = lip_movement_detection
-        self.correlation_tracker_enabled = correlation_tracker
+class FaceTrackerNode(Node):
+    def __init__(self, lip_movement_detection=True, face_recognition=True, correlation_tracking=True):
+        super().__init__("face_tracker_node")
+        # self.lip_movement_detection = lip_movement_detection
+        # self.face_recognition = face_recognition
+        # self.correlation_tracker = correlation_tracking
         self.logger = self.get_logger()
 
         face_image_topic = (
@@ -57,33 +56,34 @@ class FaceTracker(Node):
             .get_parameter_value()
             .string_value
         )
-        predictor = (
-            self.declare_parameter("predictor", "shape_predictor_68_face_landmarks.dat")
-            .get_parameter_value()
-            .string_value
-        )
+        
 
-        self.face_detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(
-            os.path.join(
-                get_package_share_directory("face_tracker"),
-                "predictors",
-                predictor,
+        lip_movement_detector = None
+        if lip_movement_detection:
+            predictor = (
+                self.declare_parameter("predictor", "shape_predictor_68_face_landmarks.dat")
+                .get_parameter_value()
+                .string_value
             )
-        )
-        if self.lip_movement_detection:
-            lip_movement_detector = (
+            self.predictor = dlib.shape_predictor(
+                os.path.join(
+                    get_package_share_directory("face_tracker"),
+                    "predictors",
+                    predictor,
+                )
+            )
+            lip_movement_detector_model = (
                 self.declare_parameter("lip_movement_detector", "1_32_False_True_0.25_lip_motion_net_model.h5")
                 .get_parameter_value()
                 .string_value
             )
            # Initialize lip movement detector
             self.logger.info('Initializing lip movement detector...')
-            self.lip_movement_detector = LipMovementDetector(
+            lip_movement_detector = LipMovementDetector(
                 os.path.join(
                     get_package_share_directory("face_tracker"),
                     "models",
-                    lip_movement_detector,
+                    lip_movement_detector_model,
                 ),
                 self.predictor
             )
@@ -91,33 +91,17 @@ class FaceTracker(Node):
         else:
             self.logger.info('Lip movement detection disabled.')
 
-        # Face recognition
-        if face_recognizer:
-            self.face_recognizer = FaceRecognizer(db_path=face_db_path,
-                                                  logger=self.logger,
-                                                  model_name="SFace",
-                                                  detector_backend="yunet",
-                                                  distance_metric="cosine") # uses our own implemenation
-        else:
-            self.face_recognizer = None
-
-        # TODO: add faces to sql database and read faces from it
-        # self.face_ids, self.face_representations = self.face_recognizer.get_database_representations()
-        self.face_ids = []
-        self.face_representations = []
+        self.face_tracker = FaceAnalyzer(self.logger.get_child("Face_Analyzer"),
+                                        lip_movement_detector,
+                                        face_recognition,
+                                        correlation_tracking)
 
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
-        self.frame = 0
-        self.faces: List[Face] = []
-
         self.cap = None
         self.font = cv2.FONT_HERSHEY_SIMPLEX
-        
-        # self.timer = self.create_timer(2, self.profile_cycle)
-        # pr.enable()
 
         # Run face tracker
         self.webcam_loop()
@@ -185,247 +169,19 @@ class FaceTracker(Node):
 
         # TODO: Close webcam properly
         # self.close_webcam()
-            
+
     def on_frame_received(self, frame: cv2.typing.MatLike):
-        cv2_gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
+        pass
         msg_faces = []
-
-        # Get the face locations
-        if self.frame == 0:
-            faces_len_old = len(self.faces)
-            # Use face detection to get face locations
-            self.faces = self.analyze_frame(frame)
-
-            # Initialize new input sequences for lip movement detector if the number of detected faces change
-            if self.lip_movement_detection:
-                if faces_len_old != len(self.faces):
-                    #TODO: original implementation had speaking state clearing here
-                    self.lip_movement_detector.initialize_input_sequence(len(self.faces))
-
-            # self.logger.info(f"Face detection: faces={len(self.faces)}")
-            
-        else:
-            # Use dlib correlation tracker to update face locations
-            for face in self.faces:
-                face.update_location(frame)
-
-            # self.logger.info(f"correlation tracking: faces={len(self.faces)}")
-        
+        faces = self.face_tracker.on_frame_received(frame)
         # loop through all faces
-        for i, face in enumerate(self.faces):
-            if self.lip_movement_detection:
-                # Determine if the face is speaking or silent
-                face.speaking = self.lip_movement_detector.test_video_frame(cv2_gray_img, face.rect, i)
-
-            # Draw information to frame
-            self.draw_face_info(frame, face)
-
+        for i, face in enumerate(faces):
             msg_face = FaceMsg(top_left=Point2(x=face.left, y=face.top), bottom_right=Point2(x=face.right, y=face.bottom))
             msg_faces.append(msg_face)
-
-        # For debugging
-        cv2.putText(frame,
-                    f"Faces in the database {len(self.face_representations)}",
-                    (100,10),
-                    self.font,
-                    0.3,
-                    (255, 255, 255),
-                    1,
-                    cv2.LINE_AA)
-
-        cv2.putText(frame,
-                    f"Faces in the faces list {len(self.faces)}",
-                    (100,30),
-                    self.font,
-                    0.3,
-                    (255, 255, 255),
-                    1,
-                    cv2.LINE_AA)
-
-        if self.correlation_tracker_enabled:
-            self.frame += 1
-            # Set frame to zero for new detection every nth frame.
-            # Large values lead to drifting of the detected faces
-            n = 5
-            self.frame = self.frame % n
 
         # publish faces
         # self.publish_face_location() largest face calculating not implemented yet
         self.face_publisher.publish(Faces(faces=msg_faces))
-    
-    def analyze_frame(self, frame):
-        """
-        Get face objects from frame. Do face detection and recognition. Intialize dlib correlation trackers.
-        """
-        faces: List[Face] = []
-
-        # Uses deepface to extract face locations from frame
-        face_objs = self.face_recognizer.extract_faces(frame)
-        
-        for face_obj in face_objs:
-            
-            face_img = face_obj["face"]
-            face_region = face_obj["facial_area"]
-            x = face_region["x"]
-            y = face_region["y"]
-            w = face_region["w"]
-            h = face_region["h"]
-
-            face: Face = None
-            representation: List[float] = self.face_recognizer.represent(face_img)
-
-            identity = None
-            distance = None
-
-            # # Compare face to the database
-            # if self.face_recognizer:
-            if len(self.face_representations) != 0:
-                matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
-                if matching_index is not None:
-                    identity = self.face_ids[matching_index]
-
-            # Compare face to previously found faces using distance between them
-            if len(self.faces) != 0:
-
-                matched_face, matching_type = self.find_matching_face((x, y, w, h), representation, self.faces)
-
-                if matched_face is not None:
-                    matched_face.update(x, x + w, y, y + h, face_img, representation, identity, distance, matching_type)
-                    face = matched_face
-                    if face.identity_is_valid and face.identity == None:
-                        self.add_face_to_database(face)
-
-                    # self.logger.info("Same face found")
-
-            if face is None:
-                # Matching face not found, create new one
-                face = Face(x, x + w, y, y + h, face_img, representation, identity, distance)
-
-                self.logger.info("new face found")
-
-            if self.correlation_tracker_enabled:
-                face.start_track(frame)
-            faces.append(face)
-        return faces
-
-    def add_face_to_database(self, face: Face):
-        """
-        Method to add new face to the face database
-        """
-        # TODO Add face to sqlite database
-        identity = f"new_{len(self.face_representations)}"
-        self.face_representations.append(face.representation)
-        self.face_ids.append(identity)
-        face.identity = identity
-        self.logger.info("Face added to the face database")
-
-    # TODO: adjust distance_treshold
-    def find_matching_face(self, face_coords, representation, faces, distance_treshold_multiplier=1):
-        """
-        Method for finding maching face in faces list.
-
-        face_coords Tuple(x, y, w, h)
-
-        representation (List[float]): Multidimensional vector representing facial features.
-            The number of dimensions varies based on the reference model
-
-        faces List[Face]: List of Face object, where matching face are looked from.
-
-        return (Face, String): where Face is the maching Face object or None
-                               and String="representation", if match is done with face representaitons
-                               String="distance", if if match is done with face position.
-        """
-        # compare representations
-        representations = [face.representation for face in faces]
-        matching_index, distance = self.face_recognizer.match_face(representation, representations)
-        if matching_index is not None:
-            return faces[matching_index], "representation"
-        
-        (x, y, w, h) = face_coords
-
-        # Find closes face
-        closest_face, distance = self.closest_face(x, y, w, h, faces)
-        if distance < (closest_face.right - closest_face.left) * distance_treshold_multiplier:
-            return closest_face, "distance"
-        
-        return None, None
-
-    @staticmethod
-    def closest_face(x, y, w, h, faces):
-        """
-        Method to find closes face from list of faces.
-        Returns: tuple (closes face, distance) or None
-        """
-        if not faces:
-            return None
-
-        closest_face: Face = None
-        distance = None
-
-        #middle point
-        middle_point = np.array([x + w / 2, y + h / 2])
-
-        closest_face: Face = None
-        min_distance = None
-
-        for face in faces:
-            # TODO: use deepface to verify that faces are same?
-            # Calculate distance to face
-            face_middle_point = np.array([face.left + (face.right - face.left) / 2,
-                                          face.top + (face.bottom - face.top) / 2])
-            distance = np.linalg.norm(middle_point-face_middle_point)
-            if not min_distance or distance < min_distance:
-                min_distance = distance
-                closest_face = face
-
-        return closest_face, min_distance
-
-    def draw_face_info(self, frame, face:Face):
-        """
-        Draws rectangle around face and other information to display 
-        """
-        green = (0, 255, 0)
-
-        # Draw rectangle around the face
-        cv2.rectangle(frame, (face.left, face.top), (face.right, face.bottom), green, 1)
-
-        if face.speaking is not None:
-            cv2.putText(frame,
-                        face.speaking,
-                        (face.left + 2, face.bottom + 10 - 3),
-                        self.font,
-                        0.3,
-                        (255, 255, 255),
-                        1,
-                        cv2.LINE_AA)
-
-        if face.identity:
-            cv2.putText(frame,
-                        f"Identity: {face.identity}",
-                        (face.left + 2, face.top + 10),
-                        self.font,
-                        0.3,
-                        (255, 255, 255),
-                        1,
-                        cv2.LINE_AA)  
-               
-            cv2.putText(frame,
-                        f"Last result: {face.last_identity}, {face.last_identity_distance}",
-                        (face.left + 2, face.top + 20),
-                        self.font,
-                        0.3,
-                        (255, 255, 255),
-                        1,
-                        cv2.LINE_AA)
-
-    def publish_face_location(self):
-        # Check that there is a location to publish
-        if self.face_location:
-            # Publish face location
-            self.face_location_publisher.publish(self.face_location)
-            # Set location back to None to prevent publishing same location multiple times
-            self.face_location = None
 
     def open_webcam(self):
         '''
@@ -474,7 +230,7 @@ class FramesPerSecond:
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTracker(lip_movement_detection=True, face_recognizer=True, correlation_tracker=False)
+    tracker = FaceTrackerNode(lip_movement_detection=True, face_recognition=True, correlation_tracking=False)
 
     # Do work
     rclpy.spin(tracker)
