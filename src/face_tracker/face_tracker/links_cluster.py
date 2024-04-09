@@ -13,12 +13,13 @@ from scipy.spatial.distance import cosine
 
 class Subcluster:
     """Class for subclusters and edges between subclusters."""
-    def __init__(self, initial_vector: np.ndarray, store_vectors: bool = False):
+    def __init__(self, initial_vector: np.ndarray, store_vectors: bool = False, logger=logging.getLogger()):
         self.input_vectors = [initial_vector]
         self.centroid = initial_vector
         self.n_vectors = 1
         self.store_vectors = store_vectors
         self.connected_subclusters = set()
+        self.logger = logger
 
     def add(self, vector: np.ndarray):
         """Add a new vector to the subcluster, update the centroid."""
@@ -49,7 +50,7 @@ class Subcluster:
             subcluster_merge.connected_subclusters.remove(self)
             self.connected_subclusters.remove(subcluster_merge)
         except KeyError:
-            logging.warning("Attempted to merge unconnected subclusters. "
+            self.logger.warning("Attempted to merge unconnected subclusters. "
                             "Merging anyway.")
         for sc in subcluster_merge.connected_subclusters:
             sc.connected_subclusters.remove(subcluster_merge)
@@ -66,13 +67,16 @@ class LinksCluster:
                  cluster_similarity_threshold: float,
                  subcluster_similarity_threshold: float,
                  pair_similarity_maximum: float,
-                 store_vectors=False
+                 store_vectors=False,
+                 logger=logging.getLogger()
                  ):
         self.clusters = []
         self.cluster_similarity_threshold = cluster_similarity_threshold
         self.subcluster_similarity_threshold = subcluster_similarity_threshold
         self.pair_similarity_maximum = pair_similarity_maximum
         self.store_vectors = store_vectors
+
+        self.logger=logger
 
     def predict(self, new_vector: np.ndarray) -> int:
         """Predict a cluster id for new_vector."""
@@ -98,6 +102,7 @@ class LinksCluster:
             best_subcluster.add(new_vector)
             self.update_cluster(best_subcluster_cluster_id, best_subcluster_id)
             assigned_cluster = best_subcluster_cluster_id
+            self.logger.info("Vector added to excisting sub cluster")
         else:
             # Create new subcluster
             new_subcluster = Subcluster(new_vector, store_vectors=self.store_vectors)
@@ -107,10 +112,12 @@ class LinksCluster:
                 self.add_edge(best_subcluster, new_subcluster)
                 self.clusters[best_subcluster_cluster_id].append(new_subcluster)
                 assigned_cluster = best_subcluster_cluster_id
+                self.logger.info("New subcluster created as part of existing cluster")
             else:
                 # New subcluster is a new cluster
                 self.clusters.append([new_subcluster])
                 assigned_cluster = len(self.clusters) - 1
+                self.logger.info("New subcluster created as  a new cluster")
         return assigned_cluster
 
     @staticmethod
@@ -140,7 +147,7 @@ class LinksCluster:
                 sc1.connected_subclusters.remove(sc2)
                 sc2.connected_subclusters.remove(sc1)
             except KeyError:
-                logging.warning("Attempted to update an invalid edge that didn't exist. "
+                self.logger.warning("Attempted to update an invalid edge that didn't exist. "
                                 "Edge remains nonexistant.")
             return False
         else:
