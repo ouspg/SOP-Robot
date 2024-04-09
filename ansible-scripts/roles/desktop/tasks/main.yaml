@@ -1,0 +1,37 @@
+---
+- name: Enable X11 Forwarding
+  become: true
+  block:
+    - name: Install X11 server
+      ansible.builtin.apt:
+        name:
+          - openssh-server
+
+    - name: Make sure forwarding is present in sshd_config
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        line: X11Forwarding yes
+        state: present
+
+- name: Install GNOME desktop
+  become: true
+  ansible.builtin.apt:
+    name:
+      - ubuntu-desktop
+      - virtualbox-guest-dkms
+      - virtualbox-guest-utils
+      - virtualbox-guest-x11
+    state: present
+    update_cache: true
+
+- name: Timezone and systemservice
+  become: true
+  block:
+    - name: Set timezone to Europe/Helsinki
+      community.general.timezone:
+        name: Europe/Helsinki
+
+    - name: Enable timezone
+      ansible.builtin.service:
+        name: systemd-timesyncd
+        enabled: true

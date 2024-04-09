@@ -25,7 +25,7 @@ At the end of the project, create light documentation for your ROS package in en
 Install [Vagrant](https://www.vagrantup.com/)
 
 Vagrantfile is provided for setting up the ROS development environment. Do not store anything important in the guest. The guest is only meant for building and testing the ROS nodes.
-The vagrant syncs the repository (workspace) directory to `/workspace` directory in the guest.
+The vagrant syncs the repository (workspace) directory to `~/SOP-Robot` directory in the guest.
 
 To provision the guest (you may have to set the provider manually):
 
@@ -33,13 +33,13 @@ To provision the guest (you may have to set the provider manually):
 vagrant up --provider=virtualbox
 ```
 
-Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [bootstrap.sh](../vagrant-scripts/bootstrap.sh). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
+Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [ansible-scripts/playbook.yml](../ansible-scripts/playbook.yml). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares.
 
 Now test that the provision succeeded, so `vagrant ssh` into the guest and run `ls`, you should be see the following output:
 
 ```console
 PS C:\projects\SOP-Robot> vagrant ssh
-vagrant@vagrant-ros:/workspace$ ls
+vagrant@vagrant-ros:~/SOP-Robot $ ls
 2  config  docs  img  launch  Makefile  README.md  scripts  sop-robot.code-workspace  src  vagrant  Vagrantfile  vagrant-scripts
 ```
 
@@ -49,12 +49,13 @@ feature](https://code.visualstudio.com/docs/remote/ssh) in [Visual Studio Code](
 Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup the remote development on your host machine and the instructions below to setup the remote connection to your vagrant guest machine:
 
 1. Use `vagrant up` to bring up the guest machine
+    If something would fail on the way run `vagrant provision` until it runs thru sucessfully
 2. Use `vagrant ssh-config >> ~/.ssh/config` to export the ssh-config
    * **IMPORTANT! Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner. Convert the encoding if necessary.**
 3. Open `Remote-SSH: Connect to Host` in VSCode
 4. Select `vagrant-ros`
 5. Select `Linux`
-6. Open the `/workspace` directory
+6. Open the `~/SOP-Robot` directory (you will enter this folder automatically when you run `vagrant ssh`)
 7. Install whatever extensions you want to use on the guest
    1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
    2. For C++ development, install C++ extension (confirm that `includePath` is set correctly). [This](https://code.visualstudio.com/docs/languages/cpp) and [this](https://code.visualstudio.com/docs/cpp/config-linux) tutorials may help.
