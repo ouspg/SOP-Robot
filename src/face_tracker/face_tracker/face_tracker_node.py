@@ -37,11 +37,13 @@ class WebcamError(Exception):
 class FaceTrackerNode(Node):
     def __init__(self, lip_movement_detection=True, face_recognition=True, correlation_tracking=True):
         super().__init__("face_tracker_node")
-        # self.lip_movement_detection = lip_movement_detection
-        # self.face_recognition = face_recognition
-        # self.correlation_tracker = correlation_tracking
         self.logger = self.get_logger()
 
+        image_topic = (
+            self.declare_parameter("image_topic", "/image_raw")
+            .get_parameter_value()
+            .string_value
+        )
         face_image_topic = (
             self.declare_parameter(
                 "face_image_topic", "image_face"
@@ -56,15 +58,14 @@ class FaceTrackerNode(Node):
             .get_parameter_value()
             .string_value
         )
-        
+        predictor = (
+            self.declare_parameter("predictor", "shape_predictor_68_face_landmarks.dat")
+            .get_parameter_value()
+            .string_value
+        )
 
         lip_movement_detector = None
         if lip_movement_detection:
-            predictor = (
-                self.declare_parameter("predictor", "shape_predictor_68_face_landmarks.dat")
-                .get_parameter_value()
-                .string_value
-            )
             self.predictor = dlib.shape_predictor(
                 os.path.join(
                     get_package_share_directory("face_tracker"),
@@ -95,16 +96,21 @@ class FaceTrackerNode(Node):
                                         lip_movement_detector,
                                         face_recognition,
                                         correlation_tracking)
-
+        # Create subscription, that receives camera frames
+        self.subscriber = self.create_subscription(
+            Image,
+            image_topic,
+            self.on_frame_received,
+            1,
+        )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
         self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
-        self.cap = None
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
-        # Run face tracker
-        self.webcam_loop()
+        self.fps = FramesPerSecond()
+        self.fps.start()
 
     # def profile_cycle(self):
     #     global pr
@@ -118,88 +124,38 @@ class FaceTrackerNode(Node):
 
     #     pr = cProfile.Profile()
     #     pr.enable()
-    
-    def webcam_loop(self):
-        fps = FramesPerSecond()
-        fps.start()
-        frames = 0
 
-        self.open_webcam()
-        while True:
-            # Read a frame from the video stream
-            try:
-                # Capture a frame from webcam
-                ret, frame = self.cap.read()
-                if not ret:
-                    raise WebcamError
+    def on_frame_received(self, img: Image):
+        # convert ros img to opencv image
+        cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
 
-            except WebcamError:
-                self.logger.error("[*] something went wrong, restarting webcam..")
-                # close and try reopening webcam 
-                self.close_webcam()
-                self.open_webcam()
-
-            try:
-                # Process the frame
-                self.on_frame_received(frame=frame)
-            except Exception as e:
-                self.logger.error(traceback.format_exc())
-
-            # Draw fps to the frame
-            cv2.putText(frame,
-                        '%.2f' % fps.fps,
-                        (10, 20),
-                        self.font,
-                        0.5,
-                        (255, 255, 255),
-                        1,
-                        cv2.LINE_AA) 
-
-            try:
-                # Publish modified frame image
-                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(frame, "bgr8"))
-            except CvBridgeError as e:
-                self.logger.warn("Could not convert ros img to opencv image: ", e)
-
-            fps.update_fps()
-            frames += 1
-            frames = frames % 10
-            # if frames == 0:
-            #     self.profile_cycle()
-
-        # TODO: Close webcam properly
-        # self.close_webcam()
-
-    def on_frame_received(self, frame: cv2.typing.MatLike):
-        pass
         msg_faces = []
-        faces = self.face_tracker.on_frame_received(frame)
+        faces = self.face_tracker.on_frame_received(cv2_bgr_img)
         # loop through all faces
         for i, face in enumerate(faces):
             msg_face = FaceMsg(top_left=Point2(x=face.left, y=face.top), bottom_right=Point2(x=face.right, y=face.bottom))
             msg_faces.append(msg_face)
 
+        # Draw fps to the frame
+        cv2.putText(cv2_bgr_img,
+                    '%.2f' % self.fps.fps,
+                    (10, 20),
+                    self.font,
+                    0.5,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA)
+
         # publish faces
+        try:
+            # Publish modified frame image
+            self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
+        except CvBridgeError as e:
+            self.logger.warn("Could not convert ros img to opencv image: ", e)
         # self.publish_face_location() largest face calculating not implemented yet
         self.face_publisher.publish(Faces(faces=msg_faces))
 
-    def open_webcam(self):
-        '''
-        Open webcam handle
-        '''
-        self.cap = cv2.VideoCapture(0)
-        if not self.cap.isOpened():
-            self.logger.fatal("[*] Cannot open a webcam!")
-            sys.exit(1)
-
-
-    def close_webcam(self):
-        '''
-        Destroy webcam handle and close all windows
-        '''
-        self.logger.info("closing webcam handle...")
-        self.cap.release()
-        cv2.destroyAllWindows()
+        self.fps.update_fps()
 
 class FramesPerSecond:
     """

@@ -27,6 +27,7 @@ setup(
         'console_scripts': [
             'face_tracker_node = face_tracker.face_tracker_node:main',
             'mock_face_tracker_node = face_tracker.mock_face_tracker_node:main',
+            'webcam_node = ' + package_name + '.webcam_node:main',
         ],
     },
 )

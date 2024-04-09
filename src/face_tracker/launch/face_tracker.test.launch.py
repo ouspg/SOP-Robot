@@ -23,4 +23,20 @@ def generate_launch_description():
         ],
     )
 
-    return LaunchDescription([tracker_node])
+    webcam_node = Node(
+        package="face_tracker",
+        executable="webcam_node",
+        # namespace="face_tracker",
+        parameters=[
+            {
+                "raw_image": "/image_raw",
+                "index": 0,
+                "width": 0,
+                "height": 0,
+                "fps": 0,
+                "mjpg": False,
+            }
+        ],
+    )
+
+    return LaunchDescription([tracker_node, webcam_node])
