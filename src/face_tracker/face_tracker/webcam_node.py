@@ -15,7 +15,7 @@ class WebcamError(Exception):
     pass
 
 class WebCamNode(Node):
-    def __init__(self, lip_movement_detection=True, face_recognition=True, correlation_tracking=True):
+    def __init__(self):
         super().__init__("webcam")
 
         self.logger = self.get_logger()
