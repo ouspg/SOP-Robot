@@ -6,6 +6,8 @@ Links online clustering algorithm.
 Reference: https://arxiv.org/abs/1801.10123
 """
 import logging
+import time
+from typing import List, Dict
 
 import numpy as np
 from scipy.spatial.distance import cosine
@@ -21,6 +23,18 @@ class Subcluster:
         self.connected_subclusters = set()
         self.logger = logger
 
+        # information, when this identity is seen
+        now = time.time()
+        self.last_seen = now
+        self.current_conversation = {
+            "start_time": now,
+            "end_time": now,
+            "duration": 0,
+        }
+        self.conversations: List[Dict] = []
+        self.total_time_on_camera = 0
+
+
     def add(self, vector: np.ndarray):
         """Add a new vector to the subcluster, update the centroid."""
         if self.store_vectors:
@@ -32,6 +46,26 @@ class Subcluster:
             self.centroid = (self.n_vectors - 1) / \
                             self.n_vectors * self.centroid \
                             + vector / self.n_vectors
+        
+        # Update time, when seen
+        now = time.time()
+        if now - self.last_seen <= 30:
+            # Determine, that conversation is still going
+            self.current_conversation["end_time"] = now 
+            self.current_conversation["duration"] = self.current_conversation["end_time"] - self.current_conversation["start_time"]
+            self.total_time_on_camera += now - self.last_seen
+        else:
+            # last conversation is ended -> start new one
+            if self.current_conversation["duration"] > 5:
+                # Save prevous conversation
+                self.conversations.append(self.current_conversation)
+            self.current_conversation = {
+                "start_time": now,
+                "end_time": now,
+                "duration": 0,
+            }
+
+        self.last_seen = now
 
     def merge(self,
               subcluster_merge: 'Subcluster',
@@ -57,6 +91,8 @@ class Subcluster:
             if self not in sc.connected_subclusters and sc != self:
                 sc.connected_subclusters.update({self})
         self.connected_subclusters.update(subcluster_merge.connected_subclusters)
+        # TODO: merge conversations list and current_conversation
+
         if delete_merged:
             del subcluster_merge
 
