@@ -22,8 +22,6 @@ from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2
 from cv_bridge import CvBridge, CvBridgeError
 
 from .lip_movement_net import LipMovementDetector
-from .face_recognition import FaceRecognizer
-from .face import Face
 from .face_analyzer import FaceAnalyzer
 
 bridge = CvBridge()
@@ -35,9 +33,27 @@ class WebcamError(Exception):
 # pr = cProfile.Profile()
 
 class FaceTrackerNode(Node):
-    def __init__(self, lip_movement_detection=True, face_recognition=True, correlation_tracking=True):
+    def __init__(self):
         super().__init__("face_tracker_node")
         self.logger = self.get_logger()
+
+        lip_movement_detection = (
+            self.declare_parameter("lip_movement_detection", True)
+            .get_parameter_value()
+            ._bool_value
+        )
+
+        face_recognition = (
+            self.declare_parameter("face_recognition", True)
+            .get_parameter_value()
+            ._bool_value
+        )
+
+        correlation_tracking = (
+            self.declare_parameter("correlation_tracking", True)
+            .get_parameter_value()
+            ._bool_value
+        )
 
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
@@ -186,7 +202,7 @@ class FramesPerSecond:
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTrackerNode(lip_movement_detection=True, face_recognition=True, correlation_tracking=False)
+    tracker = FaceTrackerNode()
 
     # Do work
     rclpy.spin(tracker)
