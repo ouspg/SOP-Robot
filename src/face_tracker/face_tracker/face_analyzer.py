@@ -11,6 +11,7 @@ from pathlib import Path
 from .lip_movement_net import LipMovementDetector
 from .face_recognition import FaceRecognizer
 from .face import Face
+from .links_cluster import LinksCluster, Subcluster
 
 DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
 
@@ -35,6 +36,15 @@ class FaceAnalyzer:
         # self.face_ids, self.face_representations = self.face_recognizer.get_database_representations()
         self.face_ids = []
         self.face_representations = []
+
+        self.cluster_similarity_threshold = 0.3
+        self.subcluster_similarity_threshold = 0.2
+        self.pair_similarity_maximum = 1.0
+        self.cluster = LinksCluster(self.cluster_similarity_threshold,
+                                    self.subcluster_similarity_threshold,
+                                    self.pair_similarity_maximum,
+                                    store_vectors=True,
+                                    logger=self.logger)
 
         self.frame = 0
         self.faces: List[Face] = []
@@ -78,20 +88,29 @@ class FaceAnalyzer:
             self.draw_face_info(frame, face)
 
         # For debugging
+        # cv2.putText(frame,
+        #             f"Faces in the database {len(self.face_representations)}",
+        #             (100,10),
+        #             self.font,
+        #             0.3,
+        #             (255, 255, 255),
+        #             1,
+        #             cv2.LINE_AA)
+
         cv2.putText(frame,
-                    f"Faces in the database {len(self.face_representations)}",
+                    f"Faces in the faces list {len(self.faces)}",
                     (100,10),
                     self.font,
-                    0.3,
+                    0.5,
                     (255, 255, 255),
                     1,
                     cv2.LINE_AA)
 
         cv2.putText(frame,
-                    f"Faces in the faces list {len(self.faces)}",
+                    f"Subclusters {len(self.cluster.clusters)}",
                     (100,30),
                     self.font,
-                    0.3,
+                    0.5,
                     (255, 255, 255),
                     1,
                     cv2.LINE_AA)
@@ -130,24 +149,29 @@ class FaceAnalyzer:
             distance = None
 
             # # Compare face to the database
+
+            predictation = self.cluster.predict(np.array(representation))
+            identity = predictation
+            self.logger.info(f"cluster identity = {identity}")
+
             # if self.face_recognizer:
-            if len(self.face_representations) != 0:
-                matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
-                if matching_index is not None:
-                    identity = self.face_ids[matching_index]
+            # if len(self.face_representations) != 0:
+            #     matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
+            #     if matching_index is not None:
+            #         identity = self.face_ids[matching_index]
 
-            # Compare face to previously found faces using distance between them
-            if len(self.faces) != 0:
+            # # Compare face to previously found faces using distance between them
+            # if len(self.faces) != 0:
 
-                matched_face, matching_type = self.find_matching_face((x, y, w, h), representation, self.faces)
+            #     matched_face, matching_type = self.find_matching_face((x, y, w, h), representation, self.faces)
 
-                if matched_face is not None:
-                    matched_face.update(x, x + w, y, y + h, face_img, representation, identity, distance, matching_type)
-                    face = matched_face
-                    if face.identity_is_valid and face.identity == None:
-                        self.add_face_to_database(face)
+            #     if matched_face is not None:
+            #         matched_face.update(x, x + w, y, y + h, face_img, representation, identity, distance, matching_type)
+            #         face = matched_face
+            #         if face.identity_is_valid and face.identity == None:
+            #             self.add_face_to_database(face)
 
-                    # self.logger.info("Same face found")
+            #         # self.logger.info("Same face found")
 
             if face is None:
                 # Matching face not found, create new one
@@ -251,24 +275,24 @@ class FaceAnalyzer:
                         1,
                         cv2.LINE_AA)
 
-        if face.identity:
-            cv2.putText(frame,
-                        f"Identity: {face.identity}",
-                        (face.left + 2, face.top + 10),
-                        self.font,
-                        0.3,
-                        (255, 255, 255),
-                        1,
-                        cv2.LINE_AA)  
+        # if face.identity:
+        cv2.putText(frame,
+                    f"Identity: {face.identity}",
+                    (face.left + 2, face.top + 10),
+                    self.font,
+                    0.3,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA)  
                
-            cv2.putText(frame,
-                        f"Last result: {face.last_identity}, {face.last_identity_distance}",
-                        (face.left + 2, face.top + 20),
-                        self.font,
-                        0.3,
-                        (255, 255, 255),
-                        1,
-                        cv2.LINE_AA)
+            # cv2.putText(frame,
+            #             f"Last result: {face.last_identity}, {face.last_identity_distance}",
+            #             (face.left + 2, face.top + 20),
+            #             self.font,
+            #             0.3,
+            #             (255, 255, 255),
+            #             1,
+            #             cv2.LINE_AA)
 
     def publish_face_location(self):
         # Check that there is a location to publish

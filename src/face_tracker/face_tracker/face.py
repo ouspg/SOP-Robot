@@ -23,12 +23,13 @@ class Face():
         self.concurrent_validations = 0
 
         self.identity_is_valid = False
-        self.identity = None
-        self.last_identity = None
-        self.last_identity_distance = None
-        self.identity_deque: deque = deque(maxlen=100)
+        self.identity = identity
+        # self.identity = None
+        # self.last_identity = None
+        # self.last_identity_distance = None
+        # self.identity_deque: deque = deque(maxlen=100)
 
-        self.update_identity(identity, distance)
+        # self.update_identity(identity, distance)
 
     def start_track(self, frame):
         """
