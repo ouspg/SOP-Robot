@@ -98,7 +98,7 @@ class FaceAnalyzer:
         #             cv2.LINE_AA)
 
         cv2.putText(frame,
-                    f"Faces in the faces list {len(self.faces)}",
+                    f"Faces in current frame{len(self.faces)}",
                     (100,10),
                     self.font,
                     0.5,
@@ -152,7 +152,6 @@ class FaceAnalyzer:
 
             predictation = self.cluster.predict(np.array(representation))
             identity = predictation
-            self.logger.info(f"cluster identity = {identity}")
 
             # if self.face_recognizer:
             # if len(self.face_representations) != 0:
@@ -177,7 +176,7 @@ class FaceAnalyzer:
                 # Matching face not found, create new one
                 face = Face(x, x + w, y, y + h, face_img, representation, identity, distance)
 
-                self.logger.info("new face found")
+                # self.logger.info("new face found")
 
             if self.correlation_tracker_enabled:
                 face.start_track(frame)
