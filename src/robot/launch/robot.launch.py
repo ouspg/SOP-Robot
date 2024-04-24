@@ -90,7 +90,7 @@ def generate_launch_description():
     controller_spawners = [
         Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=[controller_name]
         ) for controller_name in controllers_to_start
     ]

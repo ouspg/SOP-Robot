@@ -120,7 +120,7 @@ def generate_launch_description():
 
     spawn_jsb_controller = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["joint_state_broadcaster"],
         output="screen",
     )
@@ -146,36 +146,36 @@ def generate_launch_description():
 
     head_fake_controller_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["head_controller", "-c", "/controller_manager"],
     )
 
     eyes_fake_controller_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["eyes_controller", "-c", "/controller_manager"],
     )
 
     jaw_fake_controller_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["jaw_controller", "-c", "/controller_manager"],
     )
 
     r_shoulder_fake_controller_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["r_shoulder_controller", "-c", "/controller_manager"],
     )
 
     r_hand_fake_controller_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["r_hand_controller", "-c", "/controller_manager"],
     )
     l_hand_fake_controller_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["l_hand_controller", "-c", "/controller_manager"],
     )
 
