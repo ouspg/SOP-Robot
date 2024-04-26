@@ -193,6 +193,7 @@ class LinksCluster:
 
     def merge_subclusters(self, cl_idx, sc_idx1, sc_idx2):
         """Merge subclusters with id's sc_idx1 and sc_idx2 of cluster with id cl_idx."""
+        self.logger.info(f"Merge subclusters {sc_idx1} and {sc_idx2} in cluster {cl_idx}")
         sc2 = self.clusters[cl_idx][sc_idx2]
         self.clusters[cl_idx][sc_idx1].merge(sc2)
         self.update_cluster(cl_idx, sc_idx1)
@@ -219,6 +220,7 @@ class LinksCluster:
             None
 
         """
+        self.logger.info(f"Update cluster {cl_idx}: subcluster {sc_idx} has changed")
         updated_sc = self.clusters[cl_idx][sc_idx]
         severed_subclusters = []
         connected_scs = set(updated_sc.connected_subclusters)
