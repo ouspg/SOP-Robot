@@ -112,7 +112,7 @@ class FaceAnalyzer:
             n = 5
             self.frame = self.frame % n
         
-        return self.faces
+        return [face.as_dict() for face in self.faces]
     
     def analyze_frame(self, frame):
         """
@@ -135,39 +135,13 @@ class FaceAnalyzer:
             face: Face = None
             representation: List[float] = self.face_recognizer.represent(face_img)
 
-            identity = None
-            distance = None
-
-            # # Compare face to the database
+            # Compare face to the database
 
             cluster_predictation = self.cluster.predict(np.array(representation))
-            # if cluster_predictation is None:
-            #     identity = None
-            # else:
-            #     identity = cluster_predictation["id"]
-
-            # if self.face_recognizer:
-            # if len(self.face_representations) != 0:
-            #     matching_index, distance = self.face_recognizer.match_face(representation, self.face_representations)
-            #     if matching_index is not None:
-            #         identity = self.face_ids[matching_index]
-
-            # # Compare face to previously found faces using distance between them
-            # if len(self.faces) != 0:
-
-            #     matched_face, matching_type = self.find_matching_face((x, y, w, h), representation, self.faces)
-
-            #     if matched_face is not None:
-            #         matched_face.update(x, x + w, y, y + h, face_img, representation, identity, distance, matching_type)
-            #         face = matched_face
-            #         if face.identity_is_valid and face.identity == None:
-            #             self.add_face_to_database(face)
-
-            #         # self.logger.info("Same face found")
 
             if face is None:
                 # Matching face not found, create new one
-                face = Face(x, x + w, y, y + h, face_img, representation, cluster_predictation, distance)
+                face = Face(x, x + w, y, y + h, face_img, representation, cluster_predictation)
 
                 # self.logger.info("new face found")
 
@@ -175,78 +149,6 @@ class FaceAnalyzer:
                 face.start_track(frame)
             faces.append(face)
         return faces
-
-    def add_face_to_database(self, face: Face):
-        """
-        Method to add new face to the face database
-        """
-        # TODO Add face to sqlite database
-        identity = f"new_{len(self.face_representations)}"
-        self.face_representations.append(face.representation)
-        self.face_ids.append(identity)
-        face.cluster_dict = identity
-        self.logger.info("Face added to the face database")
-
-    # TODO: adjust distance_treshold
-    def find_matching_face(self, face_coords, representation, faces, distance_treshold_multiplier=1):
-        """
-        Method for finding maching face in faces list.
-
-        face_coords Tuple(x, y, w, h)
-
-        representation (List[float]): Multidimensional vector representing facial features.
-            The number of dimensions varies based on the reference model
-
-        faces List[Face]: List of Face object, where matching face are looked from.
-
-        return (Face, String): where Face is the maching Face object or None
-                               and String="representation", if match is done with face representaitons
-                               String="distance", if if match is done with face position.
-        """
-        # compare representations
-        representations = [face.representation for face in faces]
-        matching_index, distance = self.face_recognizer.match_face(representation, representations)
-        if matching_index is not None:
-            return faces[matching_index], "representation"
-        
-        (x, y, w, h) = face_coords
-
-        # Find closes face
-        closest_face, distance = self.closest_face(x, y, w, h, faces)
-        if distance < (closest_face.right - closest_face.left) * distance_treshold_multiplier:
-            return closest_face, "distance"
-        
-        return None, None
-
-    @staticmethod
-    def closest_face(x, y, w, h, faces):
-        """
-        Method to find closes face from list of faces.
-        Returns: tuple (closes face, distance) or None
-        """
-        if not faces:
-            return None
-
-        closest_face: Face = None
-        distance = None
-
-        #middle point
-        middle_point = np.array([x + w / 2, y + h / 2])
-
-        closest_face: Face = None
-        min_distance = None
-
-        for face in faces:
-            # TODO: use deepface to verify that faces are same?
-            # Calculate distance to face
-            face_middle_point = np.array([face.left + (face.right - face.left) / 2,
-                                          face.top + (face.bottom - face.top) / 2])
-            distance = np.linalg.norm(middle_point-face_middle_point)
-            if not min_distance or distance < min_distance:
-                min_distance = distance
-                closest_face = face
-
-        return closest_face, min_distance
 
     def draw_face_info(self, frame, face:Face):
         """
@@ -276,20 +178,3 @@ class FaceAnalyzer:
                         (255, 255, 255),
                         1,
                         cv2.LINE_AA)
-               
-            # cv2.putText(frame,
-            #             f"Last result: {face.last_identity}, {face.last_identity_distance}",
-            #             (face.left + 2, face.top + 20),
-            #             self.font,
-            #             0.3,
-            #             (255, 255, 255),
-            #             1,
-            #             cv2.LINE_AA)
-
-    def publish_face_location(self):
-        # Check that there is a location to publish
-        if self.face_location:
-            # Publish face location
-            self.face_location_publisher.publish(self.face_location)
-            # Set location back to None to prevent publishing same location multiple times
-            self.face_location = None

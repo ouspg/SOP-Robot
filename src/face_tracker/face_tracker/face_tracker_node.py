@@ -121,12 +121,14 @@ class FaceTrackerNode(Node):
         )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
         self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
-        self.face_location_publisher = self.create_publisher(Point2, 'face_location_topic', 1)
 
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
         self.fps = FramesPerSecond()
         self.fps.start()
+
+    #     self.timer = self.create_timer(2, self.profile_cycle)
+    #     pr.enable()
 
     # def profile_cycle(self):
     #     global pr
@@ -137,6 +139,10 @@ class FaceTrackerNode(Node):
     #     self.logger.info("Profiler: -----------------------------")
     #     self.logger.info(s.getvalue())
     #     self.logger.info("Profiler: -----------------------------")
+    #     # Save result to file
+    #     pr.create_stats()
+    #     filename = f"profiler.prof"
+    #     pr.dump_stats(filename)
 
     #     pr = cProfile.Profile()
     #     pr.enable()
@@ -148,8 +154,14 @@ class FaceTrackerNode(Node):
         msg_faces = []
         faces = self.face_tracker.on_frame_received(cv2_bgr_img)
         # loop through all faces
-        for i, face in enumerate(faces):
-            msg_face = FaceMsg(top_left=Point2(x=face.left, y=face.top), bottom_right=Point2(x=face.right, y=face.bottom))
+        for face in faces:
+            # TODO: use commented, when new face_tracker_msg is working
+            # msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
+            #                    bottom_right=Point2(x=face["right"], y=face["bottom"]),
+            #                    face_id=face["face_id"],
+            #                    occurances=face["previous_occurances"])
+            msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
+                               bottom_right=Point2(x=face["right"], y=face["bottom"]))
             msg_faces.append(msg_face)
 
         # Draw fps to the frame
@@ -168,7 +180,7 @@ class FaceTrackerNode(Node):
             self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
         except CvBridgeError as e:
             self.logger.warn("Could not convert ros img to opencv image: ", e)
-        # self.publish_face_location() largest face calculating not implemented yet
+        # Publish faces info
         self.face_publisher.publish(Faces(faces=msg_faces))
 
         self.fps.update_fps()
