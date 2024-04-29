@@ -23,3 +23,5 @@ temp_dynamixel_for_launch.yaml
 .goutputstream-FI3LZ1
 .goutputstream-GS9RZ1
 4913
+*.db
+*.prof
