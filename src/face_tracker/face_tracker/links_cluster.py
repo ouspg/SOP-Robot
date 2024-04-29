@@ -7,21 +7,26 @@ Reference: https://arxiv.org/abs/1801.10123
 """
 import logging
 import time
+import uuid
 from typing import List, Dict
 
 import numpy as np
 from scipy.spatial.distance import cosine
 
+CONVERSATION_TRESHOLD = 30  # Threshold value to determine that two conversations is same (s)
+CONVERSATION_MINIMUM_LENGTH = 1  # Minimum lenght of conversation
 
 class Subcluster:
     """Class for subclusters and edges between subclusters."""
-    def __init__(self, initial_vector: np.ndarray, store_vectors: bool = False, logger=logging.getLogger()):
-        self.input_vectors = [initial_vector]
+
+    def __init__(self, initial_vector: np.ndarray, store_vectors: bool=False, logger=logging.getLogger()):
+        self.logger = logger
+
+        self.vectors = [initial_vector]
         self.centroid = initial_vector
-        self.n_vectors = 1
+        self.vector_count = 1
         self.store_vectors = store_vectors
         self.connected_subclusters = set()
-        self.logger = logger
 
         # information, when this identity is seen
         now = time.time()
@@ -34,29 +39,28 @@ class Subcluster:
         self.conversations: List[Dict] = []
         self.total_time_on_camera = 0
 
-
     def add(self, vector: np.ndarray):
         """Add a new vector to the subcluster, update the centroid."""
         if self.store_vectors:
-            self.input_vectors.append(vector)
-        self.n_vectors += 1
+            self.vectors.append(vector)
+        self.vector_count += 1
         if self.centroid is None:
             self.centroid = vector
         else:
-            self.centroid = (self.n_vectors - 1) / \
-                            self.n_vectors * self.centroid \
-                            + vector / self.n_vectors
-        
+            self.centroid = (self.vector_count - 1) / \
+                            self.vector_count * self.centroid \
+                            + vector / self.vector_count
+
         # Update time, when seen
         now = time.time()
-        if now - self.last_seen <= 30:
+        if now - self.last_seen <= CONVERSATION_TRESHOLD:
             # Determine, that conversation is still going
             self.current_conversation["end_time"] = now 
             self.current_conversation["duration"] = self.current_conversation["end_time"] - self.current_conversation["start_time"]
             self.total_time_on_camera += now - self.last_seen
         else:
             # last conversation is ended -> start new one
-            if self.current_conversation["duration"] > 5:
+            if self.current_conversation["duration"] >= CONVERSATION_MINIMUM_LENGTH:
                 # Save prevous conversation
                 self.conversations.append(self.current_conversation)
             self.current_conversation = {
@@ -67,35 +71,112 @@ class Subcluster:
 
         self.last_seen = now
 
-    def merge(self,
-              subcluster_merge: 'Subcluster',
-              delete_merged: bool = True):
-        """Merge subcluster_merge into self. Update centroids."""
-        if self.store_vectors:
-            self.input_vectors += subcluster_merge.input_vectors
+class Cluster:
+    """Class for clusters"""
+    def __init__(self, subcluster: Subcluster, logger=logging.getLogger()):
+        self.subclusters = [subcluster]
+        self.logger = logger
 
-        # Update centroid and n_vectors
-        self.centroid = self.n_vectors * self.centroid \
-            + subcluster_merge.n_vectors \
-            * subcluster_merge.centroid
-        self.centroid /= self.n_vectors + subcluster_merge.n_vectors
-        self.n_vectors += subcluster_merge.n_vectors
+        self.id = str(uuid.uuid4())
+
+    @classmethod
+    def from_dict(cls, dict, logger=logging.getLogger()):
+        cluster = cls(subcluster=None, logger=logger)
+        cluster.id = dict["id"]
+        cluster.subclusters = [Subcluster.from_dict(subcluster_dict) for subcluster_dict in dict["subclusters"]]
+        return cluster
+
+    def add_subcluster(self, subcluster: Subcluster):
+        self.subclusters.append(subcluster)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "conversations": self.calculate_conversation_list(),
+        }
+
+    def merge_subclusters(self, sc_idx1, sc_idx2, delete_merged: bool = True):
+        """Merge subcluster_merge into self. Update centroids."""
+        sc_1 = self.subclusters[sc_idx1]
+        sc_2 = self.subclusters[sc_idx2]
+        if sc_1.store_vectors:
+            sc_1.vectors += sc_2.vectors
+
+        # Update centroid and vector_count
+        sc_1.centroid = sc_1.vector_count * sc_1.centroid \
+            + sc_2.vector_count \
+            * sc_2.centroid
+        sc_1.centroid /= sc_1.vector_count + sc_2.vector_count
+        sc_1.vector_count += sc_2.vector_count
         try:
-            subcluster_merge.connected_subclusters.remove(self)
-            self.connected_subclusters.remove(subcluster_merge)
+            sc_2.connected_subclusters.remove(sc_1)
+            sc_1.connected_subclusters.remove(sc_2)
         except KeyError:
-            self.logger.warning("Attempted to merge unconnected subclusters. "
+            sc_1.logger.warning("Attempted to merge unconnected subclusters. "
                             "Merging anyway.")
-        for sc in subcluster_merge.connected_subclusters:
-            sc.connected_subclusters.remove(subcluster_merge)
-            if self not in sc.connected_subclusters and sc != self:
-                sc.connected_subclusters.update({self})
-        self.connected_subclusters.update(subcluster_merge.connected_subclusters)
-        # TODO: merge conversations list and current_conversation
+        for sc in sc_2.connected_subclusters:
+            sc.connected_subclusters.remove(sc_2)
+            if sc_1 not in sc.connected_subclusters and sc != sc_1:
+                sc.connected_subclusters.update({sc_1})
+        sc_1.connected_subclusters.update(sc_2.connected_subclusters)
+
+        # Merge time info
+        sc_1.conversations = self.__combine_conversation_lists([sc_1.conversations, sc_2.conversations])
+        
+        if (sc_1.current_conversation["end_time"] >= sc_2.current_conversation["start_time"]
+                and sc_1.current_conversation["start_time"] <= sc_2.current_conversation["end_time"]):
+            # Conversations overlap -> combine them
+            sc_1.current_conversation["start_time"] = min(sc_1.current_conversation["start_time"], 
+                                                        sc_2.current_conversation["start_time"])
+            sc_1.current_conversation["end_time"] = max(sc_1.current_conversation["end_time"], 
+                                                        sc_2.current_conversation["end_time"])
+            sc_1.current_conversation["duration"] = sc_1.current_conversation["end_time"] - sc_1.current_conversation["start_time"]
+        else:
+            if sc_1.current_conversation["start_time"] < sc_2.current_conversation["start_time"]:
+                conv_latest = sc_2.current_conversation
+                conv_older = sc_1.current_conversation
+            else:
+                conv_latest = sc_1.current_conversation
+                conv_older = sc_2.current_conversation
+
+            # Conversations do not overlap -> choose latest conversation
+            sc_1.current_conversation = conv_latest
+            # Add older conversation to conversations list
+            if conv_older["duration"] >= CONVERSATION_MINIMUM_LENGTH:
+                sc_1.conversations.append(conv_older)
 
         if delete_merged:
-            del subcluster_merge
+            self.subclusters = self.subclusters[:sc_idx2] \
+                + self.subclusters[sc_idx2 + 1:]
+            for sc in self.subclusters:
+                if sc_2 in sc.connected_subclusters:
+                    sc.connected_subclusters.remove(sc_2)
 
+    def calculate_conversation_list(self):
+        """
+        Calculate conversation times from subclusters conversation info!
+        """
+        return self.__combine_conversation_lists([sc.conversations for sc in self.subclusters])
+
+    @staticmethod
+    def __combine_conversation_lists(conversation_lists: list):
+        conversations = []
+        # current_conversations = []
+        for conversation_list in conversation_lists:
+            conversations.extend(conversation_list)
+            # current_conversations.append(sc.current_conversation)
+        conversations = sorted(conversations, key=lambda x: x["start_time"])
+    
+        merged = []
+        for conv in conversations:
+            if not merged or conv["start_time"] >= merged[-1]["end_time"] + CONVERSATION_TRESHOLD:
+                # No overlap, add directly
+                merged.append(conv)
+            else:
+                # Overlap, update end time
+                merged[-1]["end_time"] = max(merged[-1]["end_time"], conv["end_time"])
+                merged[-1]["duration"] = merged[-1]["end_time"] - merged[-1]["start_time"]
+        return merged
 
 class LinksCluster:
     """An online clustering algorithm."""
@@ -106,7 +187,7 @@ class LinksCluster:
                  store_vectors=False,
                  logger=logging.getLogger()
                  ):
-        self.clusters = []
+        self.clusters: List[Cluster] = []
         self.cluster_similarity_threshold = cluster_similarity_threshold
         self.subcluster_similarity_threshold = subcluster_similarity_threshold
         self.pair_similarity_maximum = pair_similarity_maximum
@@ -114,19 +195,19 @@ class LinksCluster:
 
         self.logger=logger
 
-    def predict(self, new_vector: np.ndarray) -> int:
+    def predict(self, new_vector: np.ndarray) -> dict:
         """Predict a cluster id for new_vector."""
         if len(self.clusters) == 0:
             # Handle first vector
-            self.clusters.append([Subcluster(new_vector, store_vectors=self.store_vectors)])
-            return 0
+            self.clusters.append(Cluster(Subcluster(new_vector, store_vectors=self.store_vectors)))
+            return None
 
         best_subcluster = None
         best_similarity = -np.inf
         best_subcluster_cluster_id = None
         best_subcluster_id = None
         for cl_idx, cl in enumerate(self.clusters):
-            for sc_idx, sc in enumerate(cl):
+            for sc_idx, sc in enumerate(cl.subclusters):
                 cossim = 1.0 - cosine(new_vector, sc.centroid)
                 if cossim > best_similarity:
                     best_subcluster = sc
@@ -136,25 +217,26 @@ class LinksCluster:
         if best_similarity >= self.subcluster_similarity_threshold:  # eq. (20)
             # Add to existing subcluster
             best_subcluster.add(new_vector)
+            assigned_cluster = self.clusters[best_subcluster_cluster_id]
             self.update_cluster(best_subcluster_cluster_id, best_subcluster_id)
-            assigned_cluster = best_subcluster_cluster_id
+            # assigned_cluster.update(best_subcluster_id)
             self.logger.info("Vector added to excisting sub cluster")
         else:
             # Create new subcluster
             new_subcluster = Subcluster(new_vector, store_vectors=self.store_vectors)
             cossim = 1.0 - cosine(new_subcluster.centroid, best_subcluster.centroid)
-            if cossim >= self.sim_threshold(best_subcluster.n_vectors, 1):  # eq. (21)
+            if cossim >= self.sim_threshold(best_subcluster.vector_count, 1):  # eq. (21)
                 # New subcluster is part of existing cluster
                 self.add_edge(best_subcluster, new_subcluster)
-                self.clusters[best_subcluster_cluster_id].append(new_subcluster)
-                assigned_cluster = best_subcluster_cluster_id
+                self.clusters[best_subcluster_cluster_id].add_subcluster(new_subcluster)
+                assigned_cluster = self.clusters[best_subcluster_cluster_id]
                 self.logger.info("New subcluster created as part of existing cluster")
             else:
                 # New subcluster is a new cluster
-                self.clusters.append([new_subcluster])
-                assigned_cluster = len(self.clusters) - 1
-                self.logger.info("New subcluster created as  a new cluster")
-        return assigned_cluster
+                assigned_cluster = Cluster(new_subcluster)
+                self.clusters.append(assigned_cluster)
+                self.logger.info("New subcluster created as a new cluster")
+        return assigned_cluster.as_dict()
 
     @staticmethod
     def add_edge(sc1: Subcluster, sc2: Subcluster):
@@ -177,7 +259,7 @@ class LinksCluster:
                 False if the edge is not valid
         """
         cossim = 1.0 - cosine(sc1.centroid, sc2.centroid)
-        threshold = self.sim_threshold(sc1.n_vectors, sc2.n_vectors)
+        threshold = self.sim_threshold(sc1.vector_count, sc2.vector_count)
         if cossim < threshold:
             try:
                 sc1.connected_subclusters.remove(sc2)
@@ -193,15 +275,15 @@ class LinksCluster:
 
     def merge_subclusters(self, cl_idx, sc_idx1, sc_idx2):
         """Merge subclusters with id's sc_idx1 and sc_idx2 of cluster with id cl_idx."""
-        self.logger.info(f"Merge subclusters {sc_idx1} and {sc_idx2} in cluster {cl_idx}")
-        sc2 = self.clusters[cl_idx][sc_idx2]
-        self.clusters[cl_idx][sc_idx1].merge(sc2)
+        sc2 = self.clusters[cl_idx].subclusters[sc_idx2]
+
+        self.clusters[cl_idx].merge_subclusters(sc_idx1, sc_idx2)
         self.update_cluster(cl_idx, sc_idx1)
-        self.clusters[cl_idx] = self.clusters[cl_idx][:sc_idx2] \
-            + self.clusters[cl_idx][sc_idx2 + 1:]
-        for sc in self.clusters[cl_idx]:
-            if sc2 in sc.connected_subclusters:
-                sc.connected_subclusters.remove(sc2)
+        # self.clusters[cl_idx].subclusters = self.clusters[cl_idx].subclusters[:sc_idx2] \
+        #     + self.clusters[cl_idx].subclusters[sc_idx2 + 1:]
+        # for sc in self.clusters[cl_idx].subclusters:
+        #     if sc2 in sc.connected_subclusters:
+        #         sc.connected_subclusters.remove(sc2)
 
     def update_cluster(self, cl_idx: int, sc_idx: int):
         """Update cluster
@@ -220,13 +302,12 @@ class LinksCluster:
             None
 
         """
-        self.logger.info(f"Update cluster {cl_idx}: subcluster {sc_idx} has changed")
-        updated_sc = self.clusters[cl_idx][sc_idx]
+        updated_sc = self.clusters[cl_idx].subclusters[sc_idx]
         severed_subclusters = []
         connected_scs = set(updated_sc.connected_subclusters)
         for connected_sc in connected_scs:
             connected_sc_idx = None
-            for c_sc_idx, sc in enumerate(self.clusters[cl_idx]):
+            for c_sc_idx, sc in enumerate(self.clusters[cl_idx].subclusters):
                 if sc == connected_sc:
                     connected_sc_idx = c_sc_idx
             if connected_sc_idx is None:
@@ -240,19 +321,19 @@ class LinksCluster:
                 if not are_connected:
                     severed_subclusters.append(connected_sc_idx)
         for severed_sc_id in severed_subclusters:
-            severed_sc = self.clusters[cl_idx][severed_sc_id]
+            severed_sc = self.clusters[cl_idx].subclusters[severed_sc_id]
             if len(severed_sc.connected_subclusters) == 0:
-                for cluster_sc in self.clusters[cl_idx]:
+                for cluster_sc in self.clusters[cl_idx].subclusters:
                     if cluster_sc != severed_sc:
                         cossim = 1.0 - cosine(cluster_sc.centroid,
                                               severed_sc.centroid)
-                        if cossim >= self.sim_threshold(cluster_sc.n_vectors,
-                                                        severed_sc.n_vectors):
+                        if cossim >= self.sim_threshold(cluster_sc.vector_count,
+                                                        severed_sc.vector_count):
                             self.add_edge(cluster_sc, severed_sc)
             if len(severed_sc.connected_subclusters) == 0:
-                self.clusters[cl_idx] = self.clusters[cl_idx][:severed_sc_id] \
-                    + self.clusters[cl_idx][severed_sc_id + 1:]
-                self.clusters.append([severed_sc])
+                self.clusters[cl_idx].subclusters = self.clusters[cl_idx].subclusters[:severed_sc_id] \
+                    + self.clusters[cl_idx].subclusters[severed_sc_id + 1:]
+                self.clusters.append(Cluster(severed_sc))
 
     def get_all_vectors(self):
         """Return all stored vectors from entire history.
@@ -269,8 +350,8 @@ class LinksCluster:
             raise RuntimeError("Vectors were not stored, so can't be collected")
         all_vectors = []
         for cl in self.clusters:
-            for scl in cl:
-                all_vectors += scl.input_vectors
+            for scl in cl.subclusters:
+                all_vectors += scl.vectors
         return all_vectors
 
     def sim_threshold(self, k: int, kp: int) -> float:

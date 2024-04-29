@@ -87,16 +87,6 @@ class FaceAnalyzer:
             # Draw information to frame
             self.draw_face_info(frame, face)
 
-        # For debugging
-        # cv2.putText(frame,
-        #             f"Faces in the database {len(self.face_representations)}",
-        #             (100,10),
-        #             self.font,
-        #             0.3,
-        #             (255, 255, 255),
-        #             1,
-        #             cv2.LINE_AA)
-
         cv2.putText(frame,
                     f"Faces in current frame{len(self.faces)}",
                     (100,10),
@@ -107,7 +97,7 @@ class FaceAnalyzer:
                     cv2.LINE_AA)
 
         cv2.putText(frame,
-                    f"Subclusters {len(self.cluster.clusters)}",
+                    f"Clusters in database {len(self.cluster.clusters)}",
                     (100,30),
                     self.font,
                     0.5,
@@ -150,8 +140,11 @@ class FaceAnalyzer:
 
             # # Compare face to the database
 
-            predictation = self.cluster.predict(np.array(representation))
-            identity = predictation
+            cluster_predictation = self.cluster.predict(np.array(representation))
+            # if cluster_predictation is None:
+            #     identity = None
+            # else:
+            #     identity = cluster_predictation["id"]
 
             # if self.face_recognizer:
             # if len(self.face_representations) != 0:
@@ -174,7 +167,7 @@ class FaceAnalyzer:
 
             if face is None:
                 # Matching face not found, create new one
-                face = Face(x, x + w, y, y + h, face_img, representation, identity, distance)
+                face = Face(x, x + w, y, y + h, face_img, representation, cluster_predictation, distance)
 
                 # self.logger.info("new face found")
 
@@ -191,7 +184,7 @@ class FaceAnalyzer:
         identity = f"new_{len(self.face_representations)}"
         self.face_representations.append(face.representation)
         self.face_ids.append(identity)
-        face.identity = identity
+        face.cluster_dict = identity
         self.logger.info("Face added to the face database")
 
     # TODO: adjust distance_treshold
@@ -274,15 +267,15 @@ class FaceAnalyzer:
                         1,
                         cv2.LINE_AA)
 
-        # if face.identity:
-        cv2.putText(frame,
-                    f"Identity: {face.identity}",
-                    (face.left + 2, face.top + 10),
-                    self.font,
-                    0.3,
-                    (255, 255, 255),
-                    1,
-                    cv2.LINE_AA)  
+        if face.cluster_dict:
+            cv2.putText(frame,
+                        f"Matching cluster: {face.cluster_dict['id']}",
+                        (face.left + 2, face.top + 10),
+                        self.font,
+                        0.3,
+                        (255, 255, 255),
+                        1,
+                        cv2.LINE_AA)
                
             # cv2.putText(frame,
             #             f"Last result: {face.last_identity}, {face.last_identity_distance}",

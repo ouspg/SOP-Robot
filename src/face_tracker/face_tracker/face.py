@@ -6,7 +6,7 @@ from collections import Counter
 
 # TODO: change to better name, plain face has conflict with Face class in face_tracker_msg
 class Face():
-    def __init__(self, left, right, top, bottom, image, representation, identity, distance):
+    def __init__(self, left, right, top, bottom, image, representation, cluster_dict, distance):
         self.left = left
         self.right = right
         self.top = top
@@ -23,7 +23,7 @@ class Face():
         self.concurrent_validations = 0
 
         self.identity_is_valid = False
-        self.identity = identity
+        self.cluster_dict = cluster_dict
         # self.identity = None
         # self.last_identity = None
         # self.last_identity_distance = None
@@ -88,9 +88,9 @@ class Face():
         # if len(self.identity_deque) > 5:
 
         # Do not update identity unnecessarily
-        if identity != self.identity:
+        if identity != self.cluster_dict:
             identity_counts = Counter(self.identity_deque)
-            self.identity = identity_counts.most_common(1)[0][0]
+            self.cluster_dict = identity_counts.most_common(1)[0][0]
 
         self.last_identity = identity
         self.last_identity_distance = distance
