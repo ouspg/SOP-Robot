@@ -60,8 +60,8 @@ class Face():
                                    Dict  includes keys "start_time", "stop_time" and "duration".
         """
         if self.cluster_dict is None:
-            face_id = None
-            previous_occurances = None
+            face_id = ""
+            previous_occurances = []
         else:
             face_id = self.cluster_dict["id"]
             previous_occurances = self.cluster_dict["conversations"]
