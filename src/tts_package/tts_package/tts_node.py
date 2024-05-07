@@ -17,7 +17,7 @@ class TTSService(Node):
         self.can_listen = Bool(data = True)
         self.cant_listen = Bool(data = False)
         self.synthetizer = TTS(
-            model_path="./src/tts_package/resource/model151k.pth",
+            model_path="./src/tts_package/resource/model.pth",
             config_path="./src/tts_package/resource/config.json").synthesizer
         self.output = "./src/tts_package/resource/output.wav"
 
@@ -38,7 +38,7 @@ class TTSService(Node):
         wave_obj = sa.WaveObject.from_wave_file(self.output)
         self.jaw.publish(msg)
         play_obj = wave_obj.play()
-        play_obj.wait_done()     
+        play_obj.wait_done()
         self.publisher.publish(self.can_listen) 
     
 
