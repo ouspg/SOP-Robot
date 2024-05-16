@@ -16,6 +16,10 @@
 #include <hardware_interface/system_interface.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 
+#include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
+#include "rclcpp/rclcpp.hpp"
+
 using hardware_interface::CallbackReturn;
 using hardware_interface::return_type;
 
@@ -56,6 +60,7 @@ namespace robot_hardware
   class RobotHardware : public hardware_interface::SystemInterface
   {
   public:
+    RobotHardware();
     RCLCPP_SHARED_PTR_DEFINITIONS(RobotHardware)
 
     ROS2_CONTROL_DEMO_HARDWARE_PUBLIC
@@ -85,6 +90,7 @@ namespace robot_hardware
     std::vector<double> hw_commands_velocity_;
     std::vector<double> hw_states_;
     std::vector<double> hw_states_velocity_;
+    std::vector<uint8_t> servo_ids_;
 
     const rclcpp::Logger logger_;
 
@@ -102,6 +108,7 @@ namespace robot_hardware
     // std::map<std::string, uint32_t> dynamixel_;
 
     std::vector<std::pair<std::string, ItemValue>> dynamixel_info_;
+    bool use_fake_{false};
 
     bool set_default_servo_positions();
     bool read_servo_values();

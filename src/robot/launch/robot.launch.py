@@ -67,6 +67,30 @@ def generate_launch_description():
         'controllers',
         'robot.yaml'
         )
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("inmoov_description"), "config", "inmoov.rviz"]
+    )
+
+    node_robot_state_publisher = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="screen",
+        parameters=[robot_description],
+    )
+    spawn_jsb_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+        output="screen",
+    )
+
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        arguments=["-d", rviz_config_file],
+        output="screen",
+    )
 
     ros2_control_node = Node(
         package='controller_manager',
@@ -91,13 +115,16 @@ def generate_launch_description():
         Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[controller_name]
+        arguments=[controller_name, "-c", "/controller_manager"]
         ) for controller_name in controllers_to_start
     ]
 
     nodes = [
         ros2_control_node,
-        *controller_spawners
+        spawn_jsb_controller,
+        *controller_spawners,
+        node_robot_state_publisher,
+        rviz_node
     ]
 
     return LaunchDescription(nodes)

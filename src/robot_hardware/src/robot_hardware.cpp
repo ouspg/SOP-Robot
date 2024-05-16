@@ -18,33 +18,48 @@ namespace robot_hardware
     {
       return CallbackReturn::ERROR;
     }
-
+    servo_ids_.resize(info_.joints.size(), 0);
     hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_states_velocity_.resize(info_.joints.size(), 0.0f);
     hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_commands_velocity_.resize(info_.joints.size(), 0.0f);
+    int idx = 0;
 
+    for (const hardware_interface::ComponentInfo &joint : info_.joints)
+    {
+
+      joint_indices_[joint.name] = idx++;
+    }
     RCLCPP_INFO(logger_, "Velocity control is not supported yet, so the trajectory is coarse");
 
     RCLCPP_INFO(
         logger_,
         "Starting ...please wait...");
-
-    // Init dynamixel workbench
-    // Todo: add port_name and baud_rate params
-    if (!dxl_wb_.init())
-    {
-      RCLCPP_ERROR(logger_, "Could not initialize dynamixel workbench");
-      return CallbackReturn::ERROR;
-    }
-
-    RCLCPP_INFO(logger_, "Loading dynamixel config...");
     auto cfg_file = info_.hardware_parameters["dynamixel_info"];
     if (!load_dynamixel_config(cfg_file))
     {
       RCLCPP_ERROR(logger_, "Could not load dynamixel config from path: %s", cfg_file);
       return CallbackReturn::ERROR;
     }
+    // Init dynamixel workbench
+    if (
+        info_.hardware_parameters.find("use_fake") != info_.hardware_parameters.end() &&
+        info_.hardware_parameters.at("use_fake") == "true")
+    {
+      use_fake_ = true;
+      RCLCPP_INFO(logger_, "fake mode");
+      return CallbackReturn::SUCCESS;
+    }
+    auto usb_port = info_.hardware_parameters.at("usb_port");
+    auto baud_rate = std::stoi(info_.hardware_parameters.at("baud_rate"));
+    const char *log = nullptr;
+    if (!dxl_wb_.init(usb_port.c_str(), baud_rate, &log))
+    {
+      RCLCPP_ERROR(logger_, "%s", log);
+      return CallbackReturn::ERROR;
+    }
+
+    // RCLCPP_INFO(logger_, "Loading dynamixel config...");
 
     RCLCPP_INFO(logger_, "Configuring dynamixels...");
     if (!configure_dynamixels())
@@ -66,18 +81,6 @@ namespace robot_hardware
     if (!init_dynamixel_sdk_handlers())
     {
       return CallbackReturn::ERROR;
-    }
-
-    if (!set_default_servo_positions())
-    {
-      RCLCPP_ERROR(logger_, "Could not set default servo positions!");
-      return CallbackReturn::ERROR;
-    }
-
-    RCLCPP_INFO(logger_, "Arming servos...");
-    if (!arm_servos())
-    {
-      RCLCPP_ERROR(logger_, "Could not arm some servos");
     }
 
     RCLCPP_INFO(
@@ -125,7 +128,7 @@ namespace robot_hardware
   bool RobotHardware::load_dynamixel_config(const std::string yaml_file)
   {
     YAML::Node cfg = YAML::LoadFile(yaml_file.c_str());
-    if (cfg == NULL)
+    if (cfg.IsNull())
     {
       return false;
     }
@@ -151,7 +154,8 @@ namespace robot_hardware
 
         ItemValue item_value = {item_name, value};
         std::pair<std::string, ItemValue> info(name, item_value);
-
+        RCLCPP_INFO(logger_,
+                    "Name : %s, ID : %d", name.c_str(), value);
         dynamixel_info_.push_back(info);
       }
     }
@@ -413,74 +417,45 @@ namespace robot_hardware
     return result;
   }
 
-  return_type RobotHardware::start()
+  CallbackReturn RobotHardware::on_activate(const rclcpp_lifecycle::State & /* previous_state */)
   {
     RCLCPP_INFO(logger_, "Velocity control is not supported yet, so the trajectory is coarse");
-
+    for (uint i = 0; i < info_.joints.size(); i++)
+    {
+      if (use_fake_ && std::isnan(hw_states_[i]))
+      {
+        hw_states_[i] = 0.0;
+        hw_states_velocity_[i] = 0.0;
+      }
+    }
     RCLCPP_INFO(
         logger_,
         "Starting ...please wait...");
 
-    // Init dynamixel workbench
-    // Todo: add port_name and baud_rate params
-    if (!dxl_wb_.init())
-    {
-      RCLCPP_ERROR(logger_, "Could not initialize dynamixel workbench");
-      return return_type::ERROR;
-    }
-
-    RCLCPP_INFO(logger_, "Loading dynamixel config...");
-    auto cfg_file = info_.hardware_parameters["dynamixel_info"];
-    if (!load_dynamixel_config(cfg_file))
-    {
-      RCLCPP_ERROR(logger_, "Could not load dynamixel config from path: %s", cfg_file);
-      return return_type::ERROR;
-    }
-
-    RCLCPP_INFO(logger_, "Configuring dynamixels...");
-    if (!configure_dynamixels())
-    {
-      return return_type::ERROR;
-    }
-
-    if (dxl_wb_.getProtocolVersion() != 2.0f)
-    {
-      RCLCPP_ERROR(logger_, "This hardware interface supports only Dynamixel protocol 2.0");
-      return return_type::ERROR;
-    }
-
-    if (!init_dynamixel_control_items())
-    {
-      return return_type::ERROR;
-    }
-
-    if (!init_dynamixel_sdk_handlers())
-    {
-      return return_type::ERROR;
-    }
-
     if (!set_default_servo_positions())
     {
       RCLCPP_ERROR(logger_, "Could not set default servo positions!");
-      return return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
-
+    if (use_fake_)
+    {
+      return CallbackReturn::SUCCESS;
+    }
     RCLCPP_INFO(logger_, "Arming servos...");
     if (!arm_servos())
     {
       RCLCPP_ERROR(logger_, "Could not arm some servos");
     }
 
-    status_ = hardware_interface::status::STARTED;
-
     RCLCPP_INFO(
         logger_,
         "System Sucessfully started!");
 
-    return return_type::OK;
+    return CallbackReturn::SUCCESS;
   }
 
-  return_type RobotHardware::stop()
+  CallbackReturn RobotHardware::on_deactivate(
+      const rclcpp_lifecycle::State & /* previous_state */)
   {
     RCLCPP_INFO(
         logger_,
@@ -489,16 +464,14 @@ namespace robot_hardware
     if (!disarm_servos())
     {
       RCLCPP_ERROR(logger_, "Could not disarm servos!");
-      return return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
-
-    status_ = hardware_interface::status::STOPPED;
 
     RCLCPP_INFO(
         logger_,
         "System sucessfully stopped!");
 
-    return return_type::OK;
+    return CallbackReturn::SUCCESS;
   }
 
   bool RobotHardware::read_servo_group_values(const DynamixelGroup &group)
@@ -600,6 +573,11 @@ namespace robot_hardware
   {
     bool all_success = true;
 
+    if (use_fake_)
+    {
+      return true;
+    }
+
     for (auto const &group : dynamixel_groups_)
     {
       if (!read_servo_group_values(group))
@@ -626,7 +604,8 @@ namespace robot_hardware
     return true;
   }
 
-  hardware_interface::return_type RobotHardware::read()
+  return_type RobotHardware::read(const rclcpp::Time & /* time */,
+                                  const rclcpp::Duration & /* period */)
   {
     return read_servo_values() ? return_type::OK : return_type::ERROR;
   }
@@ -712,9 +691,19 @@ namespace robot_hardware
     return true;
   }
 
-  hardware_interface::return_type RobotHardware::write()
+  return_type RobotHardware::write(const rclcpp::Time & /* time */,
+                                   const rclcpp::Duration & /* period */)
   {
     bool all_success = true;
+
+    if (use_fake_)
+    {
+      for (uint i = 0; i < hw_commands_.size(); i++)
+      {
+        hw_states_[i] = hw_commands_[i];
+      }
+      return return_type::OK;
+    }
 
     for (auto const &group : dynamixel_groups_)
     {
