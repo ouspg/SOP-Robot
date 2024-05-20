@@ -90,7 +90,6 @@ namespace robot_hardware
     std::vector<double> hw_commands_velocity_;
     std::vector<double> hw_states_;
     std::vector<double> hw_states_velocity_;
-    std::vector<uint8_t> servo_ids_;
 
     const rclcpp::Logger logger_;
 

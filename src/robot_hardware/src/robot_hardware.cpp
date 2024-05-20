@@ -18,7 +18,6 @@ namespace robot_hardware
     {
       return CallbackReturn::ERROR;
     }
-    servo_ids_.resize(info_.joints.size(), 0);
     hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_states_velocity_.resize(info_.joints.size(), 0.0f);
     hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -27,7 +26,6 @@ namespace robot_hardware
 
     for (const hardware_interface::ComponentInfo &joint : info_.joints)
     {
-
       joint_indices_[joint.name] = idx++;
     }
     RCLCPP_INFO(logger_, "Velocity control is not supported yet, so the trajectory is coarse");
@@ -35,13 +33,12 @@ namespace robot_hardware
     RCLCPP_INFO(
         logger_,
         "Starting ...please wait...");
-    auto cfg_file = info_.hardware_parameters["dynamixel_info"];
-    if (!load_dynamixel_config(cfg_file))
-    {
-      RCLCPP_ERROR(logger_, "Could not load dynamixel config from path: %s", cfg_file);
-      return CallbackReturn::ERROR;
-    }
     // Init dynamixel workbench
+
+
+    RCLCPP_INFO(
+        logger_,
+        "%s", info_.hardware_parameters.at("use_fake") );
     if (
         info_.hardware_parameters.find("use_fake") != info_.hardware_parameters.end() &&
         info_.hardware_parameters.at("use_fake") == "true")
@@ -59,7 +56,13 @@ namespace robot_hardware
       return CallbackReturn::ERROR;
     }
 
-    // RCLCPP_INFO(logger_, "Loading dynamixel config...");
+    RCLCPP_INFO(logger_, "Loading dynamixel config...");
+    auto cfg_file = info_.hardware_parameters["dynamixel_info"];
+    if (!load_dynamixel_config(cfg_file))
+    {
+      RCLCPP_ERROR(logger_, "Could not load dynamixel config from path: %s", cfg_file);
+      return CallbackReturn::ERROR;
+    }
 
     RCLCPP_INFO(logger_, "Configuring dynamixels...");
     if (!configure_dynamixels())
