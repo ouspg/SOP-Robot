@@ -104,10 +104,10 @@ def generate_launch_description():
     
     controllers_to_start = [
         "head_controller",
-        "eyes_controller",
-        "jaw_controller",
+        #"eyes_controller",
+        #"jaw_controller",
         "r_hand_controller",
-        "r_shoulder_controller",
+        #"r_shoulder_controller",
         "l_hand_controller"
     ]
     
