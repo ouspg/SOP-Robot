@@ -15,13 +15,13 @@ head_tilt_left_joint:
 
 head_pan_joint:
  ID: 4
- Drive_Mode: 0 # Velocity-based Profile, default actually
+ #Drive_Mode: 0 # Velocity-based Profile, default actually
 
 eyes_shift_horizontal_joint:
-  ID: 9 #Change from 10 to 9 because of physical servo change
+ ID: 9 #Change from 10 to 9 because of physical servo change
 
 eyes_shift_vertical_joint:
-  ID: 11
+ ID: 11
 
 head_jaw_joint:
  ID: 12

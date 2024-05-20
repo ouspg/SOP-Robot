@@ -22,16 +22,13 @@
   <!--<xacro:rrbot parent="world" prefix="$(arg prefix)">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:rrbot>-->
-  
+    
   <xacro:arg name="fake_sensor_commands" default="true" />
   <xacro:arg name="use_fake_hardware" default="true" />
-  <!--
-    
-  -->
   <xacro:arg name="prefix" default="" />
   <xacro:arg name="slowdown" default="2.0" />
   <xacro:arg name="dynamixel_config_file" default="NOT_SET_2" />
-
+  
 
 
   <link name="world">

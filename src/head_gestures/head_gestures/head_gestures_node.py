@@ -39,7 +39,7 @@ class HeadGesturesNode(Node):
         self.head_action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
         self.eye_action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/state', self.head_state_callback, 5)
-        self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/state', self.eyes_state_callback, 5)
+        #self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/state', self.eyes_state_callback, 5)
         self.head_gesture_subscription = self.create_subscription(String, '/head_gestures/head_gesture_topic', self.head_gesture_callback, 10)
 
         self.head_gesture_length_publisher = self.create_publisher(Float32, '/head_gestures/length', 1)
@@ -109,43 +109,43 @@ class HeadGesturesNode(Node):
         """
         duration = Duration(sec=0, nanosec=int(duration * 100000000))
         pan, _, _, verticalTilt = self.head_state
-        eye_x, eye_y = self.eye_state
+        #eye_x, eye_y = self.eye_state
 
         if direction == 'left':
             if pan + magnitude > self.head_pan_upper_limit:
                 magnitude = self.head_pan_upper_limit - pan
-            if eye_x - magnitude < self.eye_horizontal_lower_limit:
-                magnitude = self.eye_horizontal_lower_limit - eye_x
+            #if eye_x - magnitude < self.eye_horizontal_lower_limit:
+             #   magnitude = self.eye_horizontal_lower_limit - eye_x
 
             self.send_pan_and_vertical_tilt_goal(pan + magnitude, verticalTilt, duration)
-            self.send_eye_goal(eye_x - magnitude, eye_y, duration)
+            #self.send_eye_goal(eye_x - magnitude, eye_y, duration)
         
         elif direction == 'right':
             if pan - magnitude < self.head_pan_lower_limit:
                 magnitude = pan - self.head_pan_lower_limit
-            if eye_x + magnitude > self.eye_horizontal_upper_limit:
-                magnitude = self.eye_horizontal_upper_limit - eye_x
+            #if eye_x + magnitude > self.eye_horizontal_upper_limit:
+             #   magnitude = self.eye_horizontal_upper_limit - eye_x
 
             self.send_pan_and_vertical_tilt_goal(pan - magnitude, verticalTilt, duration)
-            self.send_eye_goal(eye_x + magnitude, eye_y, duration)
+            #self.send_eye_goal(eye_x + magnitude, eye_y, duration)
         
         elif direction == 'up':
             if verticalTilt - magnitude < self.head_vertical_lower_limit:
                 magnitude = verticalTilt - self.head_vertical_lower_limit
-            if eye_y + magnitude > self.eye_vertical_upper_limit:
-                magnitude = self.eye_vertical_upper_limit - eye_y
+            #if eye_y + magnitude > self.eye_vertical_upper_limit:
+             #   magnitude = self.eye_vertical_upper_limit - eye_y
 
             self.send_pan_and_vertical_tilt_goal(pan, verticalTilt - magnitude, duration)
-            self.send_eye_goal(eye_x, eye_y + magnitude)
+            #self.send_eye_goal(eye_x, eye_y + magnitude)
         
         elif direction == 'down':
             if verticalTilt + magnitude > self.head_vertical_upper_limit:
                 magnitude = self.head_vertical_upper_limit - verticalTilt
-            if eye_y - magnitude < self.eye_vertical_lower_limit:
-                magnitude = eye_y - self.eye_vertical_lower_limit
+            #if eye_y - magnitude < self.eye_vertical_lower_limit:
+             #   magnitude = eye_y - self.eye_vertical_lower_limit
 
             self.send_pan_and_vertical_tilt_goal(pan, verticalTilt + magnitude, duration)
-            self.send_eye_goal(eye_x, eye_y - magnitude)
+            #self.send_eye_goal(eye_x, eye_y - magnitude)
 
 
     def nod(self, magnitude=0.4, delay=0.5, duration_of_individual_movements=0.4):
