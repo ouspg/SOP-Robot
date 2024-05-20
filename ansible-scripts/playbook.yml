@@ -26,7 +26,7 @@
           ansible.builtin.git:
             repo: https://github.com/felixschurk/SOP-Robot.git
             dest: /home/{{ ansible_env.USER }}/SOP-Robot
-            version: ansible-bootstrap-script
+            version: upgrade-to-humble
             update: false
 
 
@@ -53,9 +53,13 @@
       ansible.builtin.include_role:
         name: desktop
 
+          #     - name: Install ROS
+          #       ansible.builtin.include_role:
+          #         name: ros-foxy
+
     - name: Install ROS
       ansible.builtin.include_role:
-        name: ros
+        name: ros-humble
 
     - name: Clone and build control_toolbox
       ansible.builtin.include_role:

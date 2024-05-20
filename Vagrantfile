@@ -4,7 +4,7 @@
 
 Vagrant.configure("2") do |config|
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "generic/ubuntu2004"
+  config.vm.box = "generic/ubuntu2204"
   config.vm.hostname = "vagrant-ros"
   config.vm.define "vagrant-ros"
   config.vm.box_download_options = {"ssl-no-revoke" => true}
