@@ -53,10 +53,6 @@
       ansible.builtin.include_role:
         name: desktop
 
-          #     - name: Install ROS
-          #       ansible.builtin.include_role:
-          #         name: ros-foxy
-
     - name: Install ROS
       ansible.builtin.include_role:
         name: ros-humble
