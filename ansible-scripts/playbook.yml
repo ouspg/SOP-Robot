@@ -24,9 +24,9 @@
         - name: Clone SOP-Robot repository into /home/{{ ansible_env.USER }}/SOP-Robot
           become: false
           ansible.builtin.git:
-            repo: https://github.com/felixschurk/SOP-Robot.git
+            repo: https://github.com/ouspg/SOP-Robot.git
             dest: /home/{{ ansible_env.USER }}/SOP-Robot
-            version: upgrade-to-humble
+            version: master
             update: false
 
 
