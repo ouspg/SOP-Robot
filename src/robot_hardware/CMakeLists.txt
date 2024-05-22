@@ -49,7 +49,7 @@ target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
-  /ros2_control_ws/install/hardware_interface/include/
+  ~/ros2_control_ws/install/hardware_interface/include/
 )
 
 ament_target_dependencies(

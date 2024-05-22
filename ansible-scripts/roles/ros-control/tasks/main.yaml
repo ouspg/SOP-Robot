@@ -18,6 +18,20 @@
   ansible.builtin.file:
     path: /home/{{ ansible_env.USER }}/ros2_control_ws/src/ros-controls/ros2_controllers/tricycle_controller
     state: absent
+    
+- name: Install dependencies from apt
+  become: true
+  ansible.builtin.apt:
+    name:
+      - ros-humble-backward-ros
+      - ros-humble-generate-parameter-library
+      - ros-humble-kinematics-interface
+      - ros-humble-kinematics-interface-kdl
+      - ros-humble-ackermann-msgs
+      - ros-humble-realtime-tools
+      - ros-humble-joint-trajectory-controller
+    state: present
+    update_cache: true
 
 - name: Checkout commit in control_toolbox repository
   ansible.builtin.git:
