@@ -111,6 +111,7 @@
       ansible.builtin.pip:
         name:
           - opencv-python
+          - tf-keras
           - dlib
           - TTS
           - simpleaudio

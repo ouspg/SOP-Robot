@@ -22,16 +22,16 @@
 import datetime
 import argparse
 
-from keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
-from keras.utils import to_categorical
-from keras.layers.core import Dense
-from keras.layers.wrappers import Bidirectional
-from keras.layers.recurrent import GRU, SimpleRNN
-from keras.layers import Dropout
-from keras.models import Sequential
-from keras.models import load_model
-from keras.optimizers import Adam, RMSprop
-from keras import metrics
+from tf_keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
+from tf_keras.utils import to_categorical
+from tf_keras.layers import Dense
+from tf_keras.layers import Bidirectional
+from tf_keras.layers import GRU, SimpleRNN
+from tf_keras.layers import Dropout
+from tf_keras.models import Sequential
+from tf_keras.models import load_model
+from tf_keras.optimizers import Adam, RMSprop
+from tf_keras import metrics
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_score, recall_score, roc_auc_score, f1_score
 from sklearn.preprocessing import MinMaxScaler
@@ -42,7 +42,7 @@ from progressbar import ETA, Percentage, RotatingMarker
 
 import os
 import numpy as np
-# from scipy.misc import imresize
+#from scipy.misc import imresize
 
 import cv2
 import dlib
@@ -466,7 +466,7 @@ def test_video(video_path, shape_predictor_file, model):
         frame_names = sorted(os.listdir(video_path))
         for frame_name in frame_names:
             img = cv2.imread(os.path.join(video_path, frame_name))
-            img = imresize(img, (256, 320))
+            img = cv2.resize(img, (256, 320))
             frames.append(img)
     else:
         cap = cv2.VideoCapture(video_path)
@@ -474,7 +474,7 @@ def test_video(video_path, shape_predictor_file, model):
             ret, img = cap.read()
             if not ret:
                 break
-            img = imresize(img, (256, 320))
+            img = cv2.resize(img, (256, 320))
             frames.append(img)
 
     print('Fetched ' + str(len(frames)) + ' frames from the video.')

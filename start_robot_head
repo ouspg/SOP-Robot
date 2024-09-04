@@ -6,6 +6,5 @@ sleep 5
 # Launch face tracker and tracking preview window
 gnome-terminal --tab -- bash -c "ros2 run rqt_image_view rqt_image_view /face_tracker/image_face & ros2 launch face_tracker face_tracker.test.launch.py; exec bash"
 # Launch other ros2 nodes
-gnome-terminal --tab -- bash -c "ros2 run jaw_movement jaw_movement_node; exec bash"
 gnome-terminal --tab -- bash -c "ros2 run head_gestures head_gestures_node; exec bash"
 gnome-terminal --tab -- bash -c "ros2 run face_tracker_movement face_tracker_movement_node; exec bash"

@@ -27,8 +27,8 @@ class FaceTrackerMovementNode(Node):
         # ROS2 subscriptions
         self.face_subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 1)
         self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/face_topic', self.face_list_callback, 2)
-        self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/state', self.head_state_callback, 5)
-        self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/state', self.eyes_state_callback, 5)
+        self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/controller_state', self.head_state_callback, 5)
+        self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/controller_state', self.eyes_state_callback, 5)
         self.head_gesture_length_subscription = self.create_subscription(Float32, '/head_gestures/length', self.head_gesture_callback, 1)
 
         # Middle point of image view

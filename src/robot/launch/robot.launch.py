@@ -100,18 +100,18 @@ def generate_launch_description():
     
     controllers_to_start = [
         "head_controller",
-        #"eyes_controller",
+        "eyes_controller",
         #"jaw_controller",
-        "r_hand_controller",
+        #"r_hand_controller",
         #"r_shoulder_controller",
-        "l_hand_controller"
+        #"l_hand_controller"
     ]
     
     controller_spawners = [
         Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[controller_name, "-c", "/controller_manager"]
+        arguments=[controller_name,"-c", "/controller_manager"]
         ) for controller_name in controllers_to_start
     ]
 

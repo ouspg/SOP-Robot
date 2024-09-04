@@ -8,16 +8,17 @@
           <param name="use_fake">true</param>
         </xacro:if>
         <xacro:unless value="${use_fake_hardware}">
+          <param name="use_fake">false</param>
           <param name="dynamixel_info">${dynamixel_config_file}</param>
           <param name="usb_port">/dev/ttyUSB0</param>
           <param name="baud_rate">57600</param>
         </xacro:unless>
       </hardware>
-      <joint name="head_jaw_joint">
+      <!--joint name="head_jaw_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-      </joint>
+      </joint-->
       <joint name="head_pan_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>

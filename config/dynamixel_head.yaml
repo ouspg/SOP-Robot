@@ -23,5 +23,5 @@ eyes_shift_horizontal_joint:
 eyes_shift_vertical_joint:
  ID: 11
 
-head_jaw_joint:
- ID: 12
+#head_jaw_joint:
+ #ID: 12
