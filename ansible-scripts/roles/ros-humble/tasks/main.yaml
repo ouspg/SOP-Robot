@@ -30,11 +30,17 @@
           - python3-rosdep
           - python3-setuptools
           - python3-vcstool
-          - python3-keras
+          # - python3-keras
           - python3-virtualenv
           - wget
         state: present
         update_cache: true
+    
+    - name: Install pip packages for keras
+      ansible.builtin.pip:
+        name:
+          - keras
+        virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
 
     - name: Install pip packages for testing into a virtualenv
       ansible.builtin.pip:
@@ -64,7 +70,7 @@
         update_cache: true
         install_recommends: false
 
-    - name: Install ROS2 Humble
+    - name: Install ROS2 Humble and utility packages
       become: true
       ansible.builtin.apt:
         name:

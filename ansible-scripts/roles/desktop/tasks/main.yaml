@@ -18,7 +18,7 @@
   ansible.builtin.apt:
     name:
       - ubuntu-desktop
-      - virtualbox-guest-dkms
+      - virtualbox-dkms
       - virtualbox-guest-utils
       - virtualbox-guest-x11
     state: present

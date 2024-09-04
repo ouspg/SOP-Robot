@@ -24,9 +24,9 @@
         - name: Clone SOP-Robot repository into /home/{{ ansible_env.USER }}/SOP-Robot
           become: false
           ansible.builtin.git:
-            repo: https://github.com/felixschurk/SOP-Robot.git
+            repo: https://github.com/ouspg/SOP-Robot.git
             dest: /home/{{ ansible_env.USER }}/SOP-Robot
-            version: upgrade-to-humble
+            version: master
             update: false
 
 
@@ -52,10 +52,6 @@
     - name: Install Gnome and X11 forwarding
       ansible.builtin.include_role:
         name: desktop
-
-          #     - name: Install ROS
-          #       ansible.builtin.include_role:
-          #         name: ros-foxy
 
     - name: Install ROS
       ansible.builtin.include_role:
