@@ -9,7 +9,7 @@
 
     - name: Adding ROS repository
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main"
+        repo: "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu jammy main"
         state: present
 
 - name: Install additional packages and ROS
