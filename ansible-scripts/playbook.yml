@@ -21,15 +21,6 @@
             group: "{{ ansible_env.USER }}"
             mode: "0755"
 
-        - name: Clone SOP-Robot repository into /home/{{ ansible_env.USER }}/SOP-Robot
-          become: false
-          ansible.builtin.git:
-            repo: https://github.com/ouspg/SOP-Robot.git
-            dest: /home/{{ ansible_env.USER }}/SOP-Robot
-            version: master
-            update: false
-
-
         - name: Export workspace in .bashrc for {{ ansible_env.USER }}
           ansible.builtin.lineinfile:
             path: /home/{{ ansible_env.USER }}/.bashrc
@@ -55,11 +46,7 @@
 
     - name: Install ROS
       ansible.builtin.include_role:
-        name: ros-humble
-
-    - name: Clone and build control_toolbox
-      ansible.builtin.include_role:
-        name: ros-control
+        name: ros-iron
 
     - name: Clone and build opencv
       ansible.builtin.include_role:

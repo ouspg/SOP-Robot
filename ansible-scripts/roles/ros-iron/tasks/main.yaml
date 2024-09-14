@@ -9,7 +9,7 @@
 
     - name: Adding ROS repository
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu {{ ansible_distribution_release }} main"
+        repo: "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main"
         state: present
 
 - name: Install additional packages and ROS
@@ -70,29 +70,29 @@
         update_cache: true
         install_recommends: false
 
-    - name: Install ROS2 Humble and utility packages
+    - name: Install ROS2 iron and utility packages
       become: true
       ansible.builtin.apt:
         name:
-          - ros-humble-desktop
-          - ros-humble-dynamixel-sdk
-          - ros-humble-dynamixel-workbench
-          - ros-humble-test-msgs
-          - ros-humble-control-msgs
-          - ros-humble-realtime-tools
-          - ros-humble-xacro
-          - ros-humble-angles
-          - ros-humble-ros2-control
-          - ros-humble-ros2-controllers
-          - ros-humble-control-toolbox
-          - ros-humble-backward-ros
-          - ros-humble-generate-parameter-library
-          - ros-humble-kinematics-interface
-          - ros-humble-kinematics-interface-kdl
-          - ros-humble-ackermann-msgs
-          - ros-humble-joint-trajectory-controller          
+          - ros-iron-desktop
+          - ros-iron-dynamixel-sdk
+          - ros-iron-dynamixel-workbench
+          - ros-iron-ros2-control
+          - ros-iron-ros2-controllers
+          - ros-iron-control-toolbox
+          - ros-iron-backward-ros
+          - ros-iron-generate-parameter-library
+          - ros-iron-kinematics-interface
+          - ros-iron-kinematics-interface-kdl
+          - ros-iron-ackermann-msgs
+          - ros-iron-realtime-tools
+          - ros-iron-joint-trajectory-controller
+          - ros-iron-test-msgs
+          - ros-iron-control-msgs
+          - ros-iron-xacro
+          - ros-iron-angles
           - v4l-utils
-          - ros-humble-camera-calibration-parsers
+          - ros-iron-camera-calibration-parsers
           - espeak
         state: present
         update_cache: true
@@ -102,13 +102,13 @@
   - name: Source ROS setup for {{ ansible_env.USER }}
     ansible.builtin.lineinfile:
       path: /home/{{ ansible_env.USER }}/.bashrc
-      line: source /opt/ros/humble/setup.bash
+      line: source /opt/ros/iron/setup.bash
       state: present
 
   - name: Source ROS setup for noninteractive bash for {{ ansible_env.USER }}
     ansible.builtin.lineinfile:
       path: /home/{{ ansible_env.USER }}/.bashrc_noninteractive
-      line: source /opt/ros/humble/setup.bash
+      line: source /opt/ros/iron/setup.bash
       state: present
       create: true
 

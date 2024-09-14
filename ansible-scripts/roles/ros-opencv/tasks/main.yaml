@@ -9,17 +9,12 @@
   ansible.builtin.git:
     repo: https://github.com/ptrmu/ros2_shared.git
     dest: /home/{{ ansible_env.USER }}/opencv_cam_ws/src/ros2_shared
-    version: 02433ef4f873876c3dd3ab2925987cf04d224660
+    update: false
 
-- name: Run rosdep install, runs every time
-  ansible.builtin.command:
-  args:
-    cmd: rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
-    chdir: /home/{{ ansible_env.USER }}/opencv_cam_ws
 
 - name: Run colcon build for ~/opencv_cam_ws
   # explicitly source the ros environment
-  ansible.builtin.shell: source /home/{{ ansible_env.USER }}/.bashrc_noninteractive && colcon build
+  ansible.builtin.shell: source /opt/ros/$ROS_DISTRO/setup.bash && colcon build
   args:
     chdir: /home/{{ ansible_env.USER }}/opencv_cam_ws
     executable: /bin/bash
