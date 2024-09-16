@@ -182,8 +182,9 @@ class FaceTrackerNode(Node):
             self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, "bgr8"))
         except CvBridgeError as e:
             self.logger.warn("Could not convert ros img to opencv image: ", e)
-        # Publish faces info
-        self.face_publisher.publish(Faces(faces=msg_faces))
+        # Publish faces info if faces found
+        if len(msg_faces) > 0:
+            self.face_publisher.publish(Faces(faces=msg_faces))
 
         self.fps.update_fps()
 
