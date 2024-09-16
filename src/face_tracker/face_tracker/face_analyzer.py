@@ -8,16 +8,18 @@ import traceback
 from typing import List
 from pathlib import Path
 
-from .lip_movement_net import LipMovementDetector
-from .face_recognition import FaceRecognizer
-from .face import Face
-from .links_cluster import LinksCluster, Subcluster
+from lip_movement_net import LipMovementDetector
+from face_recognition import FaceRecognizer
+from face import Face
+from links_cluster import LinksCluster, Subcluster
 
 DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
 
 class FaceAnalyzer:
 
-    def __init__(self, logger, lip_movement_detector: LipMovementDetector=None, face_recognizer=True, correlation_tracker=True):
+    def __init__(self, logger, lip_movement_detector: LipMovementDetector=None, face_recognizer=True, 
+                correlation_tracker=True, cluster_similarity_threshold=0.3,
+                subcluster_similarity_threshold=0.2, pair_similarity_maximum=1.0):
         self.logger = logger
         self.correlation_tracker_enabled = correlation_tracker
         self.lip_movement_detector: LipMovementDetector = lip_movement_detector
@@ -37,9 +39,9 @@ class FaceAnalyzer:
         self.face_ids = []
         self.face_representations = []
 
-        self.cluster_similarity_threshold = 0.3
-        self.subcluster_similarity_threshold = 0.2
-        self.pair_similarity_maximum = 1.0
+        self.cluster_similarity_threshold = cluster_similarity_threshold
+        self.subcluster_similarity_threshold = subcluster_similarity_threshold
+        self.pair_similarity_maximum = pair_similarity_maximum
         self.cluster = LinksCluster(self.cluster_similarity_threshold,
                                     self.subcluster_similarity_threshold,
                                     self.pair_similarity_maximum,
