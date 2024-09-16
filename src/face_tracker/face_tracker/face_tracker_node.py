@@ -17,7 +17,7 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
-from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2
+from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2, Occurance
 
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -155,13 +155,15 @@ class FaceTrackerNode(Node):
         faces = self.face_tracker.on_frame_received(cv2_bgr_img)
         # loop through all faces
         for face in faces:
-            # TODO: use commented, when new face_tracker_msg is working
+            self.logger.info(f"{face =}")
+            occurances = []
+            for i in face["previous_occurances"]:
+                occurance = Occurance(start_time=str(i["start_time"]), end_time=str(i["end_time"]), duration=str(i["duration"]))
+                occurances.append(occurance)
             msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
                                 bottom_right=Point2(x=face["right"], y=face["bottom"]),
                                 face_id=face["face_id"],
-                                occurances=face["previous_occurances"])
-            #msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
-            #                   bottom_right=Point2(x=face["right"], y=face["bottom"]))
+                                occurances=occurances)
             msg_faces.append(msg_face)
 
         # Draw fps to the frame
