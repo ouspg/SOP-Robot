@@ -9,17 +9,19 @@ These can be modifien in:
 
 face_tracker_node:
 
-| Name             |                                    Description                                     |                               Default |
-| ---------------- | :--------------------------------------------------------------------------------: | ------------------------------------: |
-| lip_movement_detection |                      enable lip_movement_detection                           |                                  True |
-| face_recognition |                                enable face_recognition                             |                                  True |
-| correlation_tracking |                          enable correlation_tracking                           |                                 False |
-| image_topic      |                                  Input rgb image                                   |                            /image_raw |
-| image_face_topic | Output image with faces surrounded by triangles and face landmarks shown as circle |                            image_face |
-| face_topic       |                Output face and face landmark positions in the frame                |   faces - face_tracker_msgs.msg.Faces |
-| predictor        |                         Shape predictor data for landmarks                         | shape_predictor_68_face_landmarks.dat |
-| lip_movement_detector |                            Lip_movement model                          | 1_32_False_True_0.25_lip_motion_net_model.h5 |
-
+| Name                      | Description                                                                          | Default                                       |
+| ------------------------- | :----------------------------------------------------------------------------------: | --------------------------------------------: |
+| lip_movement_detection    | enable lip_movement_detection                                                        | True                                          |
+| face_recognition          | enable face_recognition                                                              | True                                          |
+| correlation_tracking      | enable correlation_tracking                                                          | False                                         |
+| cluster_similarity_threshold    | Treshold parameter for face clustering                                         | 0.3                                           |
+| subcluster_similarity_threshold | Treshold parameter for face clustering                                         | 0.2                                           |
+| pair_similarity_maximum   | pair_similarity_maximum parameter for face clustering                                | 1.0                                           |
+| image_topic               | Input rgb image                                                                      | /image_raw                                    |
+| image_face_topic          | Output image with faces surrounded by triangles and face landmarks shown as circle   | image_face                                    |
+| face_topic                | Output face and face landmark positions in the frame                                 | faces - face_tracker_msgs.msg.Faces           |
+| predictor                 | Shape predictor data for landmarks. Used by lip_movement_detector.                   | shape_predictor_68_face_landmarks.dat         |
+| lip_movement_detector     | Lip_movement model                                                                   | 1_32_False_True_0.25_lip_motion_net_model.h5  |
 
 Webcam_node:
 

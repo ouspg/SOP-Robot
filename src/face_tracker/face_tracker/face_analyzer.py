@@ -8,10 +8,10 @@ import traceback
 from typing import List
 from pathlib import Path
 
-from lip_movement_net import LipMovementDetector
-from face_recognition import FaceRecognizer
-from face import Face
-from links_cluster import LinksCluster, Subcluster
+from .lip_movement_net import LipMovementDetector
+from .face_recognition import FaceRecognizer
+from .face import Face
+from .links_cluster import LinksCluster, Subcluster
 
 DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
 

@@ -55,6 +55,24 @@ class FaceTrackerNode(Node):
             ._bool_value
         )
 
+        cluster_similarity_threshold = (
+            self.declare_parameter("cluster_similarity_threshold", 0.3)
+            .get_parameter_value()
+            .double_value
+        )
+
+        subcluster_similarity_threshold = (
+            self.declare_parameter("subcluster_similarity_threshold", 0.2)
+            .get_parameter_value()
+            .double_value
+        )
+
+        pair_similarity_maximum = (
+            self.declare_parameter("pair_similarity_maximum", 1.0)
+            .get_parameter_value()
+            .double_value
+        )
+
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
             .get_parameter_value()
@@ -111,7 +129,10 @@ class FaceTrackerNode(Node):
         self.face_tracker = FaceAnalyzer(self.logger.get_child("Face_Analyzer"),
                                         lip_movement_detector,
                                         face_recognition,
-                                        correlation_tracking)
+                                        correlation_tracking,
+                                        cluster_similarity_threshold,
+                                        subcluster_similarity_threshold,
+                                        pair_similarity_maximum)
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
             Image,
@@ -120,7 +141,7 @@ class FaceTrackerNode(Node):
             1,
         )
         self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
-        self.face_publisher = self.create_publisher(Faces, "face_topic", 1)
+        self.face_publisher = self.create_publisher(Faces, face_topic, 1)
 
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -155,7 +176,6 @@ class FaceTrackerNode(Node):
         faces = self.face_tracker.on_frame_received(cv2_bgr_img)
         # loop through all faces
         for face in faces:
-            self.logger.info(f"{face =}")
             occurances = []
             for i in face["previous_occurances"]:
                 occurance = Occurance(start_time=str(i["start_time"]), end_time=str(i["end_time"]), duration=str(i["duration"]))

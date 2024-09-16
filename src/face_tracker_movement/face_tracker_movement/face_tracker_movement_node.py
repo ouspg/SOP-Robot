@@ -25,7 +25,7 @@ class FaceTrackerMovementNode(Node):
         self.head_action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
 
         # ROS2 subscriptions
-        self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/face_topic', self.face_list_callback, 2)
+        self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/faces', self.face_list_callback, 2)
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/controller_state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/controller_state', self.eyes_state_callback, 5)
         self.head_gesture_length_subscription = self.create_subscription(Float32, '/head_gestures/length', self.head_gesture_callback, 1)
