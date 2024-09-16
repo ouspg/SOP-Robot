@@ -4,6 +4,8 @@ This package contains a node that publishes image with the detected faces for de
 ![](./img/example.png)
 
 ## Parameters
+These can be modifien in:
+`launch/face_tracker.test.launch.py`
 
 face_tracker_node:
 
@@ -11,7 +13,7 @@ face_tracker_node:
 | ---------------- | :--------------------------------------------------------------------------------: | ------------------------------------: |
 | lip_movement_detection |                      enable lip_movement_detection                           |                                  True |
 | face_recognition |                                enable face_recognition                             |                                  True |
-| correlation_tracking |                          enable correlation_tracking                           |                                  False |
+| correlation_tracking |                          enable correlation_tracking                           |                                 False |
 | image_topic      |                                  Input rgb image                                   |                            /image_raw |
 | image_face_topic | Output image with faces surrounded by triangles and face landmarks shown as circle |                            image_face |
 | face_topic       |                Output face and face landmark positions in the frame                |   faces - face_tracker_msgs.msg.Faces |
@@ -21,19 +23,19 @@ face_tracker_node:
 
 Webcam_node:
 
-| Name             |                                    Description                                     |                               Default |
-| ---------------- | :--------------------------------------------------------------------------------: | ------------------------------------: |
-| raw_image        |                              Raw image output topic                                |                            /image_raw |
-| index            |                          Device index, 0 for /dev/video0.                          |                                     0 |
-| width            |                    Device width in pixels. Specify 0 for default.                  |                                     0 |
-| height           |                    Device height in pixels. Specify 0 for default.                 |                                     0 |
-| fps              |             Framerate. Specify 0 to publish at default (device) framerate          |                                     0 |
-| mjpg             |                    Use mjpg compression, Specify False for default                 |                                 False |
+| Name             | Description                                                   | Default    |
+| ---------------- | :-----------------------------------------------------------: | ---------: |
+| raw_image        | Raw image output topic                                        | /image_raw |
+| index            | Device index, 0 for /dev/video0.                              | 0          |
+| width            | Device width in pixels. Specify 0 for default.                | 1280       |
+| height           | Device height in pixels. Specify 0 for default.               | 960        |
+| fps              | Framerate. Specify 0 to publish at default (device) framerate | 30         |
+| mjpg             | Use mjpg compression, Specify False for default               | True       |
 
-Command `v4l2-ctl --list-formats-ext` can be used to determine, which webcam parameters can be used, if you are not satisfied with the default parameters. Using mjpg compression usually allows larger resolution and fps, but might lower image quality.
+Command `v4l2-ctl --list-formats-ext` can be used to determine, which webcam parameters can be used, if you are not satisfied with the default parameters. Using mjpg compression usually allows larger resolution and fps, but the image quality is lower.
 ## Testing
 
-The following launches the usb camera and face detector nodes. By default, it uses the first camera (`/dev/video0`).
+The following launches the camera and face detector nodes. By default, it uses the first camera (`/dev/video0`).
 
 ```console
 ros2 launch face_tracker face_tracker.test.launch.py
