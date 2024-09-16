@@ -6,66 +6,57 @@
 * [Git](https://git-scm.com/)
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
   * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
-
-**Note: If you do not wish to use vagrant, you can instead run the vagrant-scripts/bootstrap.sh script on a clean Ubuntu Focal Fossa installation (you have to do minor changes to the script)**
+* [Ubuntu](https://releases.ubuntu.com/jammy/)
+   * Download Ubuntu 22.04 image to your computer
 
 **Note: after creating the machine, you will have to enable the USB controller in VM settings manually**
 
 If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
 
-[Fork](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo) this repository and do your development there.
+Clone this repository, create a new branch and do your development there.
 
 Remember to `git commit` your changes and push them to remote after
 every development session.
 
 At the end of the project, create light documentation for your ROS package in english (document code, what dependencies it requires, how it should be used, how it integrates with ROS and does it require more development to be usable) in markdown.
 
-## Environment setup with vagrant
+## Installing virtual machine
+1. Open up Virtual box and create a new virtual machine with the downloaded Ubuntu image. Once created launch the virtual machine and run the Ubuntu setup, create user account and setup root/admin password and reboot. 
+2. After setup is completed open at the terminal and install git and ansible:
+* `sudo apt update`
+* `sudo apt install software-properties-common`
+* `sudo add-apt-repository --yes --update ppa:ansible/ansible`
+* `sudo apt install git ansible`
+it is recommended to update packages to the newest versions from the start:
+* `sudo apt update`
+* `sudo apt upgrade`
+* Clone this repository to your home directory:
+* `git clone https://github.com/ouspg/SOP-Robot.git`
+and move to the cloned directory:
+* `cd SOP-Robot`
+* Run the ansible install script to install everything needed for the robot:
+* `ansible-playbook ansible-scripts/playbook.yml --ask-become-pass`
+this step can take few hours to complete.
+3. After install is completed run and test the virtual version of the robot by running the following commands while you are in SOP-Robot folder in your terminal:
+* `colcon build`
+* `source install/setup.bash`
+* `ros2 launch robot robot.fake.launch.py`
+* Open a new terminal tab on the same path for each or next commands:
+* `ros2 run hand_gestures hand_gestures_node`
+* `python3 client/unified_arms_client.py`
+* `python3 client/hand_client_tester.py`
+* You can now test the hand movements by typing commands to the
+hand_client_tester like for example:
+* l_hand_fist
+* r_hand_fist
+* l_hand_open
+* r_hand_open
 
-Install [Vagrant](https://www.vagrantup.com/)
 
-Vagrantfile is provided for setting up the ROS development environment. Do not store anything important in the guest. The guest is only meant for building and testing the ROS nodes.
-The vagrant syncs the repository (workspace) directory to `/workspace` directory in the guest.
-
-To provision the guest (you may have to set the provider manually):
-
-```pwsh
-vagrant up --provider=virtualbox
-```
-
-Provisioning the machine for the first time can take up to 1 hour, because after vagrant has set up the box it will install everything listed in [bootstrap.sh](../vagrant-scripts/bootstrap.sh). In the meantime, download VSCode and checkout the remote development feature mentioned below. If you are using HyperV on Windows as hypervisor, you may have to enable `smb direct` in Windows features to be able to mount smb shares. 
-
-Now test that the provision succeeded, so `vagrant ssh` into the guest and run `ls`, you should be see the following output:
-
-```console
-PS C:\projects\SOP-Robot> vagrant ssh
-vagrant@vagrant-ros:/workspace$ ls
-2  config  docs  img  launch  Makefile  README.md  scripts  sop-robot.code-workspace  src  vagrant  Vagrantfile  vagrant-scripts
-```
-
-The easiest way to setup development environment for the ROS packages is to use the [SSH Remote Development
-feature](https://code.visualstudio.com/docs/remote/ssh) in [Visual Studio Code](https://code.visualstudio.com/) and to do the development inside the guest machine using this feature.
-
-Follow [this](https://code.visualstudio.com/docs/remote/ssh) tutorial to setup the remote development on your host machine and the instructions below to setup the remote connection to your vagrant guest machine:
-
-1. Use `vagrant up` to bring up the guest machine
-2. Use `vagrant ssh-config >> ~/.ssh/config` to export the ssh-config
-   * **IMPORTANT! Confirm that the file encoding is UTF-8 without BOM, especially if you are on Windows! VSCode shows the file encoding in the bottom-right corner. Convert the encoding if necessary.**
-3. Open `Remote-SSH: Connect to Host` in VSCode
-4. Select `vagrant-ros`
-5. Select `Linux`
-6. Open the `/workspace` directory
-7. Install whatever extensions you want to use on the guest
-   1. For Python development, follow this [tutorial](https://code.visualstudio.com/docs/languages/python)
-   2. For C++ development, install C++ extension (confirm that `includePath` is set correctly). [This](https://code.visualstudio.com/docs/languages/cpp) and [this](https://code.visualstudio.com/docs/cpp/config-linux) tutorials may help.
-
-**Note: you may have to do recursive git clone (`git submodule update --init --recursive`) and run: `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y` after `vagrant up`, if the shared folder was not mounted correctly during `vagrant up`.**
-
-Additionally, if you lose the files of git submodules (`dynamixel-workbench` and `dynamixel-workbench-msgs`) you can get them back with `git submodule update --init --recursive`.
+## Setup vscode remote ssh
+Follow the instructions of this article I found from the last 3 steps of section 1 to the end of section 2 titled "Accessing the VM from VS Code from your host machine": [VSCode Remote Development with VirtualBox](https://medium.com/nullifying-the-null/vscode-remote-development-with-virtualbox-aecd702d7933)
 
 ## About Virtualbox setup
-
-When using vagrant virtualbox provider, the GUI should pop up when executing `vagrant up`. With virtualbox you can also just start the VM from virtualbox GUI.
 
 After the VM is created, remember to add USB device filters for the USB devices you are using with the robot in the VM settings (e.g., webcam, servo controller). Oracle VM VirtualBox Manager -> Select the created VM -> Settings -> USB -> Check the 'Enable USB Controller' box and choose USB 3.0 Controller -> Add filters for devices using the '+' button. Devices might not always automatically connect to VM even the filters are configured. You can connect them manually from the menu bar. Devices -> USB -> and you will get the list of usb devices. Just select one of them and Virtualbox attaches it to the VM. Tick appears next to the device when it is attached.
 

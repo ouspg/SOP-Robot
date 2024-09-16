@@ -28,9 +28,9 @@
         <joint name="l_pinky_joint" />
     </group>
     <group name="head">
-        <!--<joint name="head_tilt_joint" />-->
+        <joint name="head_tilt_joint" />
         <joint name="head_pan_joint" />
-        <!--<joint name="head_roll_joint" />-->
+        <joint name="head_roll_joint" />
     </group>
     <group name="eyes">
         <joint name="eyes_pan_joint" />
