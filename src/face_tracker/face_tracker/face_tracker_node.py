@@ -156,12 +156,12 @@ class FaceTrackerNode(Node):
         # loop through all faces
         for face in faces:
             # TODO: use commented, when new face_tracker_msg is working
-            # msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
-            #                    bottom_right=Point2(x=face["right"], y=face["bottom"]),
-            #                    face_id=face["face_id"],
-            #                    occurances=face["previous_occurances"])
             msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
-                               bottom_right=Point2(x=face["right"], y=face["bottom"]))
+                                bottom_right=Point2(x=face["right"], y=face["bottom"]),
+                                face_id=face["face_id"],
+                                occurances=face["previous_occurances"])
+            #msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
+            #                   bottom_right=Point2(x=face["right"], y=face["bottom"]))
             msg_faces.append(msg_face)
 
         # Draw fps to the frame

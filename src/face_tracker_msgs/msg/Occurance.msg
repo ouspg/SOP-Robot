@@ -1,3 +1,3 @@
-String start_time
-String end_time
-String duration
+string start_time
+string end_time
+string duration
