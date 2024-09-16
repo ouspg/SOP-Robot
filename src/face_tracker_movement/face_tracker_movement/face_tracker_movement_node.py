@@ -82,7 +82,7 @@ class FaceTrackerMovementNode(Node):
             face_sizes.append(face.bottom_right.x - face.top_left.x)
 
         largest_face_index = face_sizes.index(max(face_sizes))
-        largest_face = face_sizes[largest_face_index]
+        largest_face = msg.faces[largest_face_index]
         x=round((largest_face.top_left.x + largest_face.bottom_right.x) / 2)
         y=round((largest_face.top_left.y + largest_face.bottom_right.y) / 2)
 
