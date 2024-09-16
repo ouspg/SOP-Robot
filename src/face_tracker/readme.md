@@ -11,7 +11,7 @@ face_tracker_node:
 | ---------------- | :--------------------------------------------------------------------------------: | ------------------------------------: |
 | lip_movement_detection |                      enable lip_movement_detection                           |                                  True |
 | face_recognition |                                enable face_recognition                             |                                  True |
-| correlation_tracking |                          enable correlation_tracking                           |                                  True |
+| correlation_tracking |                          enable correlation_tracking                           |                                  False |
 | image_topic      |                                  Input rgb image                                   |                            /image_raw |
 | image_face_topic | Output image with faces surrounded by triangles and face landmarks shown as circle |                            image_face |
 | face_topic       |                Output face and face landmark positions in the frame                |   faces - face_tracker_msgs.msg.Faces |
