@@ -72,7 +72,6 @@ class FaceTrackerMovementNode(Node):
 
     # Main loop. Excecuted when face_tracker_node publishes faces.
     def face_list_callback(self, msg):
-        self.get_logger().info(str(msg))
         self.visible_face_amount = len(msg.faces)
 
         # Calculate largest face and point to those coordinates
