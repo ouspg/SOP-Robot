@@ -160,11 +160,11 @@ class FaceAnalyzer:
 
         # Draw rectangle around the face
         cv2.rectangle(frame, (face.left, face.top), (face.right, face.bottom), green, 1)
-
-        if face.speaking is not None:
+        
+        if self.lip_movement_detector is not None:
             cv2.putText(frame,
-                        face.speaking,
-                        (face.left + 2, face.bottom + 10 - 3),
+                        f"Face is speaking: {face.speaking}",
+                        (face.left + 2, face.top + 20),
                         self.font,
                         0.3,
                         (255, 255, 255),

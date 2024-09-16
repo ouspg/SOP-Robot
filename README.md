@@ -1,7 +1,7 @@
 
 # Getting started
 
-The robot uses ROS2 (Robot Operating System 2). Read the [ROS2 wiki!](https://index.ros.org/doc/ros2/). Tutorials and how-to guides are worth to check. 
+The robot uses ROS2 (Robot Operating System 2). Read the [ROS2 wiki!](https://docs.ros.org/). Tutorials and how-to guides are worth to check.
 
 Read also [controller](https://control.ros.org/master/index.html) documentation to understand why certain controllers are needed and how they control the motion.
 [Here](https://github.com/ros-controls/ros2_control_demos) are ros2 control demo repositories and more documentation about controllers.
@@ -14,17 +14,17 @@ Joint -> Servo mappings are defined in two files. Configuration file connects se
 
 ## Project structure
 
-* client - contains client to send actions for robot hand
-* config - dynamixel servo configuration
-* src - all packages
-  * src/arm_pack - not use in current configuration
-  * src/eye_movement - runs action client to create eye motion commands based on the face tracking information
-  * src/face_tracker - tracks the faces using camera feed and calculates locations and distances of faces and detects mouth movement. 
-  * src/head_gestures - not use in current configuration
-  * src/inmoov_description - robot files, which define the robot geometry and configuration for simulation (URDF, SRDF & rviz configuration)
-  * src/robot - robot launch files & servo controller configurations
-  * src/robot_hardware - hardware interface for ros2_controller, communicates with U2D2 via dynamixel workbench
-  * src/tts_package - Text-to-speech package for finnish speech synthesis 
+* `client`  - contains client to send actions for robot hand
+* `config`  - dynamixel servo configuration
+* `src`  - all packages
+  * `src/arm_pack`  - not use in current configuration
+  * `src/eye_movement`  - runs action client to create eye motion commands based on the face tracking information
+  * `src/face_tracker`  - tracks the faces using camera feed and calculates locations and distances of faces and detects mouth movement.
+  * `src/head_gestures`  - not use in current configuration
+  * `src/inmoov_description`  - robot files, which define the robot geometry and configuration for simulation (URDF, SRDF & rviz configuration)
+  * `src/robot`  - robot launch files & servo controller configurations
+  * `src/robot_hardware`  - hardware interface for ros2_controller, communicates with U2D2 via dynamixel workbench
+  * `src/tts_package`  - Text-to-speech package for finnish speech synthesis
 
 ## Servo Table
 

@@ -12,93 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+
+from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.conditions import IfCondition
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
-from launch.actions import RegisterEventHandler
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.event_handlers import OnProcessExit
 
 # Based on ROS2 control demo project (foxy branch)
 # Read more about those descriptions and launching robot at https://github.com/ros-controls/ros2_control_demos
 
 def generate_launch_description():
 
-    # Setting arguments, currently fake robot works without using arguments so default is always used
-    declared_arguments = []
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "start_rviz",
-            default_value="true",
-            description="start RViz automatically with the launch file",
-        )
-    )
-
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "prefix",
-            default_value='""',
-            description="Prefix of the joint names, useful for \
-        multi-robot setup. If changed than also joint names in the controllers' configuration \
-        have to be updated.",
-        )
-    )
-
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "use_fake_hardware",
-            default_value="true",
-            description="Start robot with fake hardware mirroring command to its states.",
-        )
-    )
-
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "fake_sensor_commands",
-            default_value="true",
-            description="Enable fake command interfaces for sensors used for simple simulations. \
-            Used only if 'use_fake_hardware' parameter is true.",
-        )
-    )
-
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "slowdown", default_value="3.0", description="Slowdown factor of the RRbot."
-        )
-    )
-
-    # Get URDF via xacro
     robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                [
-                    FindPackageShare("inmoov_description"),
-                    "robots",
-                    "inmoov.urdf.xacro",
-                ]
-            ),
-            " prefix:=",
-            LaunchConfiguration("prefix"),
-            " use_fake_hardware:=",
-            LaunchConfiguration("use_fake_hardware"),
-            " fake_sensor_commands:=",
-            LaunchConfiguration("fake_sensor_commands"),
-            " slowdown:=",
-            LaunchConfiguration("slowdown"),
-        ]
+      [
+          # Get URDF via xacro
+          PathJoinSubstitution([FindExecutable(name="xacro")]),
+          " ",
+          PathJoinSubstitution(
+              [
+                  FindPackageShare("inmoov_description"),
+                  "robots",
+                  "inmoov.urdf.xacro",
+              ]
+          ),
+          " use_fake_hardware:=true",
+      ]
     )
     robot_description = {"robot_description": robot_description_content}
 
-    rrbot_controllers = PathJoinSubstitution(
-        [
-            FindPackageShare("robot"),
-            "controllers",
-            "robot.yaml",
-        ]
+
+    controller = os.path.join(
+        get_package_share_directory('robot'),
+        'controllers',
+        'robot.yaml'
+        )
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare("inmoov_description"), "config", "inmoov.rviz"]
     )
 
     node_robot_state_publisher = Node(
@@ -107,88 +60,54 @@ def generate_launch_description():
         output="screen",
         parameters=[robot_description],
     )
-
-    controller_manager_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[robot_description, rrbot_controllers],
-        output={
-            "stdout": "screen",
-            "stderr": "screen",
-        },
-    )
-
     spawn_jsb_controller = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["joint_state_broadcaster"],
         output="screen",
     )
 
-    rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("inmoov_description"), "config", "inmoov.rviz"]
-    )
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
         name="rviz2",
         arguments=["-d", rviz_config_file],
-        condition=IfCondition(LaunchConfiguration("start_rviz")),
+        output="screen",
     )
 
-    # Not currently used/needed, but could be useful later when needing delayed start
-    delayed_rviz_node = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=spawn_jsb_controller,
-            on_exit=[rviz_node],
-        )
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description, controller],
+        output={
+          'stdout': 'screen',
+          'stderr': 'screen',
+          },
     )
-
-    head_fake_controller_spawner = Node(
+    
+    controllers_to_start = [
+        "head_controller",
+        "eyes_controller",
+        "jaw_controller",
+        "r_hand_controller",
+        "r_shoulder_controller",
+        "l_hand_controller"
+    ]
+    
+    controller_spawners = [
+        Node(
         package="controller_manager",
-        executable="spawner.py",
-        arguments=["head_controller", "-c", "/controller_manager"],
-    )
-
-    eyes_fake_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner.py",
-        arguments=["eyes_controller", "-c", "/controller_manager"],
-    )
-
-    jaw_fake_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner.py",
-        arguments=["jaw_controller", "-c", "/controller_manager"],
-    )
-
-    r_shoulder_fake_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner.py",
-        arguments=["r_shoulder_controller", "-c", "/controller_manager"],
-    )
-
-    r_hand_fake_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner.py",
-        arguments=["r_hand_controller", "-c", "/controller_manager"],
-    )
-    l_hand_fake_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner.py",
-        arguments=["l_hand_controller", "-c", "/controller_manager"],
-    )
+        executable="spawner",
+        arguments=[controller_name, "-c", "/controller_manager"]
+        ) for controller_name in controllers_to_start
+    ]
 
     nodes = [
-        controller_manager_node,
-        node_robot_state_publisher,
+        ros2_control_node,
         spawn_jsb_controller,
-        rviz_node,
-        head_fake_controller_spawner,
-        eyes_fake_controller_spawner,
-        jaw_fake_controller_spawner,
-        r_shoulder_fake_controller_spawner,
-        r_hand_fake_controller_spawner,
-        l_hand_fake_controller_spawner
+        *controller_spawners,
+        node_robot_state_publisher,
+        rviz_node
     ]
-    return LaunchDescription(declared_arguments + nodes)
+
+    return LaunchDescription(nodes)

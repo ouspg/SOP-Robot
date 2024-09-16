@@ -1,0 +1,25 @@
+---
+  - name: Run rosdep install
+    ansible.builtin.command:
+    args:
+      cmd: rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+      chdir: /home/{{ ansible_env.USER }}/SOP-Robot
+
+  - name: Run colcon build for ~/SOP-Robot
+    # explicitly source the ros environment
+    ansible.builtin.shell: source /home/{{ ansible_env.USER }}/.bashrc_noninteractive && colcon build
+    args:
+      chdir: /home/{{ ansible_env.USER }}/SOP-Robot
+      executable: /bin/bash
+
+  - name: Source ROS setup for {{ ansible_env.USER }}
+    ansible.builtin.lineinfile:
+      path: /home/{{ ansible_env.USER }}/.bashrc
+      line: source /home/{{ ansible_env.USER }}/SOP-Robot/install/local_setup.bash
+      state: present
+
+  - name: Source ROS setup for noninteractive bash for {{ ansible_env.USER }}
+    ansible.builtin.lineinfile:
+      path: /home/{{ ansible_env.USER }}/.bashrc_noninteractive
+      line: source /home/{{ ansible_env.USER }}/SOP-Robot/install/local_setup.bash
+      state: present
