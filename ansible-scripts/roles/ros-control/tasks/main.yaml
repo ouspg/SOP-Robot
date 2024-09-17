@@ -42,7 +42,7 @@
 - name: Run rosdep install, runs every time
   ansible.builtin.command:
   args:
-    cmd: rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+    cmd: rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
 
 - name: Run colcon build for ~/ros2_control_ws

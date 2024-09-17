@@ -25,8 +25,7 @@ class FaceTrackerMovementNode(Node):
         self.head_action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
 
         # ROS2 subscriptions
-        self.face_subscription = self.create_subscription(Point2, '/face_tracker/face_location_topic', self.listener_callback, 1)
-        self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/face_topic', self.face_list_callback, 2)
+        self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/faces', self.face_list_callback, 2)
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/controller_state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/controller_state', self.eyes_state_callback, 5)
         self.head_gesture_length_subscription = self.create_subscription(Float32, '/head_gestures/length', self.head_gesture_callback, 1)
@@ -71,10 +70,23 @@ class FaceTrackerMovementNode(Node):
 
         self.get_logger().info('Face tracking movement client initialized.')
 
-    # Get the amount of detected faces
+    # Main loop. Excecuted when face_tracker_node publishes faces.
     def face_list_callback(self, msg):
-        #self.get_logger().info(str(msg))
         self.visible_face_amount = len(msg.faces)
+
+        # Calculate largest face and point to those coordinates
+        # TODO: Make more sophisticated function for face movement
+        face_sizes = []
+        for face in msg.faces:
+            face_sizes.append(face.bottom_right.x - face.top_left.x)
+
+        largest_face_index = face_sizes.index(max(face_sizes))
+        largest_face = msg.faces[largest_face_index]
+        x=round((largest_face.top_left.x + largest_face.bottom_right.x) / 2)
+        y=round((largest_face.top_left.y + largest_face.bottom_right.y) / 2)
+
+        self.analyze_coordinates(x, y)
+
         
     # Get the current state of head joints. Updated at 20 Hz (see robot.yaml)
     def head_state_callback(self, msg):
@@ -116,9 +128,8 @@ class FaceTrackerMovementNode(Node):
         self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
         self.idle_timer.reset()
         
-    # Main loop. Excecuted when face_tracker_node publishes face coordinates.
     # Feel free to experiment with the timings to fine-tune behavior
-    def listener_callback(self, msg):
+    def analyze_coordinates(self, x, y):
         self.idle_timer.timer_period_ns = 5000000000
         self.idle_timer.reset()
         self.idling = False
@@ -134,7 +145,7 @@ class FaceTrackerMovementNode(Node):
                 self.is_glancing = True
                 self.get_logger().info('glance')
             else:
-                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(msg.x, msg.y)
+                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(x, y)
                 self.is_glancing = False
 
             # Move eyes
@@ -151,7 +162,7 @@ class FaceTrackerMovementNode(Node):
                 return
         
         if self.head_enabled:
-            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(msg.x, msg.y)
+            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(x, y)
             self.pan_diff = self.goal_pan - self.head_state[0]
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
             if self.pan_diff != 0 or self.v_diff != 0: 

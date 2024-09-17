@@ -61,10 +61,6 @@
       ansible.builtin.include_role:
         name: ros-control
 
-    - name: Clone and build opencv
-      ansible.builtin.include_role:
-        name: ros-opencv
-
     - name: Build SOP-Robot
       ansible.builtin.include_role:
         name: ros-sop-robot

@@ -38,6 +38,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Point2.msg"
   "msg/Face.msg"
   "msg/Faces.msg"
+  "msg/Occurance.msg"
  )
 
 ament_package()
