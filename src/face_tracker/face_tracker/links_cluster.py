@@ -1,4 +1,6 @@
 """
+Original implementation is from here. Modifications are made to adjust it for SOP-Robot.
+
 https://github.com/QEDan/links_clustering/tree/master
 
 Links online clustering algorithm.

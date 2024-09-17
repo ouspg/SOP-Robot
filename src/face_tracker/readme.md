@@ -17,11 +17,17 @@ face_tracker_node:
 | cluster_similarity_threshold    | Treshold parameter for face clustering                                         | 0.3                                           |
 | subcluster_similarity_threshold | Treshold parameter for face clustering                                         | 0.2                                           |
 | pair_similarity_maximum   | pair_similarity_maximum parameter for face clustering                                | 1.0                                           |
+| face_recognition_model    | Face recognition model from deepface                                                 | "SFace"                                       |
+| face_detection_model      | Face detection model from deepface                                                   | "yunet"                                       |
 | image_topic               | Input rgb image                                                                      | /image_raw                                    |
 | image_face_topic          | Output image with faces surrounded by triangles and face landmarks shown as circle   | image_face                                    |
 | face_topic                | Output face and face landmark positions in the frame                                 | faces - face_tracker_msgs.msg.Faces           |
 | predictor                 | Shape predictor data for landmarks. Used by lip_movement_detector.                   | shape_predictor_68_face_landmarks.dat         |
 | lip_movement_detector     | Lip_movement model                                                                   | 1_32_False_True_0.25_lip_motion_net_model.h5  |
+
+! Notice: If `face_recognition_model` or `face_detection_model` is changed, also `cluster_similarity_threshold`, `subcluster_similarity_threshold` and `pair_similarity_maximum` have to be adjusted.
+
+! Correlation tracker is disabled face detection and recognition is not done in separate thread from correlation tracking.
 
 Webcam_node:
 
@@ -66,3 +72,4 @@ To use it, simply enter the desired coordinates on a single line, separated by e
 ## Potential future improvements
 
 * Save recognized faces to some kind of database
+* Correlation tracking blocks face recognition and detection. Separate correlation tracking to different thread than face detection and recognition. - Allows usage of higher demand face recognition models.

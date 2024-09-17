@@ -73,11 +73,24 @@ class FaceTrackerNode(Node):
             .double_value
         )
 
+        face_recognition_model = (
+            self.declare_parameter("face_recognition_model", "SFace")
+            .get_parameter_value()
+            .string_value
+        )
+
+        face_detection_model = (
+            self.declare_parameter("face_detection_model", "yunet")
+            .get_parameter_value()
+            .string_value
+        )
+
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
             .get_parameter_value()
             .string_value
         )
+
         face_image_topic = (
             self.declare_parameter(
                 "face_image_topic", "image_face"
@@ -85,6 +98,7 @@ class FaceTrackerNode(Node):
             .get_parameter_value()
             .string_value
         )
+
         face_topic = (
             self.declare_parameter(
                 "face_topic", "faces"
@@ -92,6 +106,7 @@ class FaceTrackerNode(Node):
             .get_parameter_value()
             .string_value
         )
+
         predictor = (
             self.declare_parameter("predictor", "shape_predictor_68_face_landmarks.dat")
             .get_parameter_value()
@@ -132,7 +147,10 @@ class FaceTrackerNode(Node):
                                         correlation_tracking,
                                         cluster_similarity_threshold,
                                         subcluster_similarity_threshold,
-                                        pair_similarity_maximum)
+                                        pair_similarity_maximum,
+                                        face_recognition_model,
+                                        face_detection_model)
+
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
             Image,

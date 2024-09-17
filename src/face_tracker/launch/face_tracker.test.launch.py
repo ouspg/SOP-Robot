@@ -22,6 +22,8 @@ def generate_launch_description():
                 "cluster_similarity_threshold": 0.3,
                 "subcluster_similarity_threshold": 0.2,
                 "pair_similarity_maximum": 1.0,
+                "face_recognition_model": "SFace",
+                "face_detection_model": "yunet",
                 "image_topic": "/image_raw",
                 "face_image_topic": "image_face",
                 "face_topic": "faces",

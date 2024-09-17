@@ -1,10 +1,6 @@
 import dlib
 from typing import List
 
-from collections import deque
-from collections import Counter
-
-# TODO: change to better name, plain face has conflict with Face class in face_tracker_msg
 class Face():
     def __init__(self, left, right, top, bottom, image, representation, cluster_dict):
         self.left = left
@@ -73,49 +69,3 @@ class Face():
             'face_id': face_id,
             'previous_occurances': previous_occurances,
         }
-
-    # def update(self, left, right, top, bottom, image, representation, identity, distance, matching_type):
-    #     """
-    #     Update the face information
-    #     """
-    #     self.left = left
-    #     self.right = right
-    #     self.top = top
-    #     self.bottom = bottom
-    #     self.image = image
-    #     self.representation = representation
-
-    #     face_verified = False
-    #     if matching_type == "representation":
-    #         face_verified = True
-    #     self.update_identity(identity, distance, face_verified)
-    
-    # def update_identity(self, identity, distance, face_verified=False):
-    #     """
-    #     Update face identity deque with new identity value from face recognition result. 
-    #     Doesn't add None to the deque.
-    #     Calculate the face identity by calculating the most common identity in the deque.
-    #     Update the resent identity value.
-    #     """
-    #     self.identity_deque.append(identity)
-
-    #     if face_verified:
-    #         self.concurrent_validations += 1
-    #         if self.concurrent_validations > 5:
-    #             self.identity_is_valid = True
-    #     else:
-    #         self.identity_is_valid = False
-    #         self.concurrent_validations == 0
-
-    #     # if len(self.identity_deque) > 5:
-
-    #     # Do not update identity unnecessarily
-    #     if identity != self.cluster_dict:
-    #         identity_counts = Counter(self.identity_deque)
-    #         self.cluster_dict = identity_counts.most_common(1)[0][0]
-
-    #     self.last_identity = identity
-    #     self.last_identity_distance = distance
-        
-
-

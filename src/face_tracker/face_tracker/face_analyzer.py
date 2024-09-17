@@ -17,9 +17,16 @@ DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
 
 class FaceAnalyzer:
 
-    def __init__(self, logger, lip_movement_detector: LipMovementDetector=None, face_recognizer=True, 
-                correlation_tracker=True, cluster_similarity_threshold=0.3,
-                subcluster_similarity_threshold=0.2, pair_similarity_maximum=1.0):
+    def __init__(self,
+                logger,
+                lip_movement_detector: LipMovementDetector=None,
+                face_recognizer=True,
+                correlation_tracker=True,
+                cluster_similarity_threshold=0.3,
+                subcluster_similarity_threshold=0.2,
+                pair_similarity_maximum=1.0,
+                face_recognition_model="SFace",
+                face_detection_model="yunet"):
         self.logger = logger
         self.correlation_tracker_enabled = correlation_tracker
         self.lip_movement_detector: LipMovementDetector = lip_movement_detector
@@ -28,14 +35,11 @@ class FaceAnalyzer:
         if face_recognizer:
             self.face_recognizer = FaceRecognizer(db_path=DEFAULT_FACE_DB_PATH,
                                                   logger=self.logger,
-                                                  model_name="SFace",
-                                                  detector_backend="yunet",
-                                                  distance_metric="cosine") # uses our own implemenation for distance
+                                                  model_name=face_recognition_model,
+                                                  detector_backend=face_detection_model)
         else:
             self.face_recognizer = None
 
-        # TODO: add faces to sql database and read faces from it
-        # self.face_ids, self.face_representations = self.face_recognizer.get_database_representations()
         self.face_ids = []
         self.face_representations = []
 
@@ -134,18 +138,14 @@ class FaceAnalyzer:
             w = face_region["w"]
             h = face_region["h"]
 
-            face: Face = None
             representation: List[float] = self.face_recognizer.represent(face_img)
 
             # Compare face to the database
 
             cluster_predictation = self.cluster.predict(np.array(representation))
 
-            if face is None:
-                # Matching face not found, create new one
-                face = Face(x, x + w, y, y + h, face_img, representation, cluster_predictation)
-
-                # self.logger.info("new face found")
+            # Matching face not found, create new one
+            face = Face(x, x + w, y, y + h, face_img, representation, cluster_predictation)
 
             if self.correlation_tracker_enabled:
                 face.start_track(frame)
