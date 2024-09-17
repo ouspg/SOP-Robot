@@ -116,7 +116,6 @@
     - name: Install pip packages for SpeechRecognition
       ansible.builtin.pip:
         name:
-          - opencv-python
           - tf-keras
           - dlib
           - TTS
@@ -126,6 +125,13 @@
           - farm-haystack[inference]
         virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
 
+- name: Install packages for face traking
+  ansible.builtin.pip:
+    name:
+      - opencv-python
+      - deepface==0.0.89
+      - progressbar
+    virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
 
 - name: Download dynamixel and trigger udev
   block:

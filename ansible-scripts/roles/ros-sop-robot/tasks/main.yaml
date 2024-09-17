@@ -2,7 +2,7 @@
   - name: Run rosdep install
     ansible.builtin.command:
     args:
-      cmd: rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y
+      cmd: rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
       chdir: /home/{{ ansible_env.USER }}/SOP-Robot
 
   - name: Run colcon build for ~/SOP-Robot
