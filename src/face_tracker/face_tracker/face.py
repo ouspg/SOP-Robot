@@ -61,6 +61,10 @@ class Face():
         else:
             face_id = self.cluster_dict["id"]
             previous_occurances = self.cluster_dict["conversations"]
+        if self.speaking is None:
+            speaking = ""
+        else:
+            speaking = self.speaking
         return {
             'left': self.left,
             'right': self.right,
@@ -68,4 +72,5 @@ class Face():
             'bottom': self.bottom,
             'face_id': face_id,
             'previous_occurances': previous_occurances,
+            'speaking': speaking,
         }
