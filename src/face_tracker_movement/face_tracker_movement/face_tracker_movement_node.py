@@ -133,7 +133,7 @@ class FaceTrackerMovementNode(Node):
 
     def head_gesture_callback(self, msg):
         gesture = msg.data
-        self.logger.info(gesture)
+        self.logger.info(f"Head gesture: {gesture}")
         gesture = gesture.split(",")
         args = {}
         for i in range(1, len(gesture)):
@@ -150,7 +150,7 @@ class FaceTrackerMovementNode(Node):
         elif gesture == 'shake':
             self.head_shake(**args)
         else:
-            self.logger.info("Gesture not implemented")
+            self.logger.info("Gesture not implemented!")
 
     # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
