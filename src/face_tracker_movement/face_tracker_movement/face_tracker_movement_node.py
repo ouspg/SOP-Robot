@@ -420,7 +420,7 @@ class FaceTrackerMovementNode(Node):
 
     #   Center eyes
     def center_eyes(self, duration=None):
-        self.send_eye_goal(-0.7, -0.75, duration)
+        self.send_eye_goal(self.start_eyes_state[0], self.start_eyes_state[1], duration)
 
 
     """
