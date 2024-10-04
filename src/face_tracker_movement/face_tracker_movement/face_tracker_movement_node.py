@@ -19,6 +19,8 @@ class FaceTrackerMovementNode(Node):
 
     def __init__(self, functionality):
         super().__init__('face_tracker_movement_client')
+        
+        self.logger = self.get_logger()
 
         # Action clients for eye and head controllers
         self.eye_action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
@@ -56,10 +58,10 @@ class FaceTrackerMovementNode(Node):
         self.visible_face_amount = 0
 
         if functionality.lower() == "head":
-            self.get_logger().info('Eye movement is disabled.')
+            self.logger.info('Eye movement is disabled.')
             self.eyes_enabled = False
         elif functionality.lower() == "eyes":
-            self.get_logger().info('Head movement is disabled.')
+            self.logger.info('Head movement is disabled.')
             self.head_enabled = False
 
         self.center_eyes()
@@ -68,7 +70,7 @@ class FaceTrackerMovementNode(Node):
 
         self.idle_timer = self.create_timer(5, self.idle_timer_callback)
 
-        self.get_logger().info('Face tracking movement client initialized.')
+        self.logger.info('Face tracking movement client initialized.')
 
     # Main loop. Excecuted when face_tracker_node publishes faces.
     def face_list_callback(self, msg):
@@ -93,7 +95,7 @@ class FaceTrackerMovementNode(Node):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
                 self.head_state[i] = self.start_head_state[i]
-                self.get_logger().info("Head joint ID " + str(self.head_joint_ids[i]) + " is not responding")
+                self.logger.info("Head joint ID " + str(self.head_joint_ids[i]) + " is not responding")
             else:
                 self.head_state[i] = val
 
@@ -102,7 +104,7 @@ class FaceTrackerMovementNode(Node):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
                 self.eyes_state[i] = self.start_eyes_state[i]
-                self.get_logger().info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
+                self.logger.info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
             else:
                 self.eyes_state[i] = val
 
@@ -118,7 +120,7 @@ class FaceTrackerMovementNode(Node):
     # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
         self.idling = True
-        self.get_logger().info("Idling...\x1B[1A")
+        self.logger.info("Idling...\x1B[1A")
         if self.eyes_enabled:
             self.send_eye_goal(self.get_random_eye_location()[0], -0.75)
 
@@ -143,7 +145,7 @@ class FaceTrackerMovementNode(Node):
             if randomvalue <= glance_percentage:
                 eye_location_x, eye_location_y = self.get_random_eye_location()
                 self.is_glancing = True
-                self.get_logger().info('glance')
+                self.logger.info('glance')
             else:
                 eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(x, y)
                 self.is_glancing = False
@@ -166,7 +168,7 @@ class FaceTrackerMovementNode(Node):
             self.pan_diff = self.goal_pan - self.head_state[0]
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
             if self.pan_diff != 0 or self.v_diff != 0: 
-                self.get_logger().info("Turning head to x: " + str(self.goal_pan) + " y: " + str(self.goal_vertical_tilt))
+                self.logger.info("Turning head to x: " + str(self.goal_pan) + " y: " + str(self.goal_vertical_tilt))
                 self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
                 time.sleep(0.3)
         
@@ -186,7 +188,7 @@ class FaceTrackerMovementNode(Node):
         self.eye_action_client.wait_for_server()
 
         self.eye_action_client.send_goal_async(goal_msg)
-        #self.get_logger().info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
+        #self.logger.info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
 
     def send_horizontal_tilt_goal(self, horizontalTilt):
         goal_msg = FollowJointTrajectory.Goal()
