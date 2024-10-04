@@ -238,14 +238,7 @@ class FaceTrackerMovementNode(Node):
             delay: The delay (in seconds) between the start of each individual movement
             duration_of_individual_movements: The time (in seconds) it takes for an individual movement to finish. Should be less than delay.
         """
-        self.logger.info("head_shake")
-        self.logger.info(f"head_shake: {magnitude =}")
-        self.logger.info(f"head_shake: {delay =}")
-        self.logger.info(f"head_shake: {duration_of_individual_movements =}")
-        self.logger.info(f"head_shake: {self.head_state =}")
-        self.logger.info(f"head_shake: {self.eyes_state =}")
         if self.head_state:
-            self.logger.info("head state: True")
             pan_start = self.head_state[0]
             msg = Float32()
             msg.data = delay * 3
@@ -266,9 +259,6 @@ class FaceTrackerMovementNode(Node):
             magnitude: The magnitude of the head turn.
             duration: The time in seconds it should take to finish the head turn.
         """
-        self.logger.info(f"fixed_gaze_head_turn: {direction =}")
-        self.logger.info(f"fixed_gaze_head_turn: {magnitude =}")
-        self.logger.info(f"fixed_gaze_head_turn: {duration =}")
         duration = Duration(sec=0, nanosec=int(duration * 100000000))
         pan, _, _, verticalTilt = self.head_state
         eye_x, eye_y = self.eyes_state
@@ -278,7 +268,6 @@ class FaceTrackerMovementNode(Node):
                 magnitude = self.head_pan_upper_limit - pan
             if eye_x - magnitude < self.eye_horizontal_lower_limit:
                 magnitude = self.eye_horizontal_lower_limit - eye_x
-            self.logger.info(f"fixed_gaze_head_turn: in left:{magnitude =}")
 
             self.send_pan_and_vertical_tilt_goal(pan + magnitude, verticalTilt, duration)
             self.send_eye_goal(eye_x - magnitude, eye_y, duration)
@@ -288,8 +277,6 @@ class FaceTrackerMovementNode(Node):
                 magnitude = pan - self.head_pan_lower_limit
             if eye_x + magnitude > self.eye_horizontal_upper_limit:
                 magnitude = self.eye_horizontal_upper_limit - eye_x
-            self.logger.info(f"fixed_gaze_head_turn: in right:{magnitude =}")
-
             self.send_pan_and_vertical_tilt_goal(pan - magnitude, verticalTilt, duration)
             self.send_eye_goal(eye_x + magnitude, eye_y, duration)
         
