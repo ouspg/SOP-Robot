@@ -202,8 +202,7 @@ class FaceTrackerMovementNode(Node):
             self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(x, y)
             self.pan_diff = self.goal_pan - self.head_state[0]
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
-            if self.pan_diff != 0 or self.v_diff != 0: 
-                self.logger.info("Turning head to x: " + str(self.goal_pan) + " y: " + str(self.goal_vertical_tilt))
+            if self.pan_diff != 0 or self.v_diff != 0:
                 self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
                 time.sleep(0.3)
         
@@ -325,6 +324,7 @@ class FaceTrackerMovementNode(Node):
         self.head_action_client.send_goal_async(goal_msg)
         
     def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=400000000)):
+        self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
