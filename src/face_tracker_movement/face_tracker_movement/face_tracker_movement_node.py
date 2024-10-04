@@ -383,7 +383,7 @@ class FaceTrackerMovementNode(Node):
             h_coeff = 0
 
         pan = x_diff * h_coeff + self.head_state[0]
-        pan = max(min(1.75, pan), -0.25) # limit head values to reasonable values
+        pan = max(min(self.head_pan_upper_limit, pan), self.head_pan_lower_limit) # limit head values to reasonable values
         # Alternative version: Adjust the pan value slightly to make smaller movements a bit bigger
         #pan = 0.8 * abs(x_diff * h_coeff) ** 0.8
         #pan = math.copysign(pan, -x_diff)
@@ -391,7 +391,7 @@ class FaceTrackerMovementNode(Node):
         # Vertical tilt
         v_coeff = -0.002
         vertical_tilt = y_diff * v_coeff + self.head_state[3]
-        vertical_tilt = max(min(1.5, vertical_tilt), 0.8)
+        vertical_tilt = max(min(self.head_vertical_upper_limit, vertical_tilt), self.head_vertical_lower_limit)
 
         return pan, vertical_tilt
 
@@ -413,7 +413,8 @@ class FaceTrackerMovementNode(Node):
         v_coeff = 0.003
         eye_location_y = y_diff * v_coeff + self.eyes_state[1]
         
-        eye_location_y = max(min(-0.2, eye_location_y), -0.7)
+        eye_location_y = max(min(self.eye_vertical_upper_limit, eye_location_y), self.eye_vertical_lower_limit)
+        eye_location_x = max(min(self.eye_horizontal_upper_limit, eye_location_y), self.eye_horizontal_lower_limit)
 
         return eye_location_x, eye_location_y
 
