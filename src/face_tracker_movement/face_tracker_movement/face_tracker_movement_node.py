@@ -126,7 +126,7 @@ class FaceTrackerMovementNode(Node):
     def eyes_state_callback(self, msg):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
-                self.eyes_state[i] = self.start_eyes_center_position[i]
+                self.eyes_state[i] = self.eyes_center_position[i]
                 self.logger.info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
             else:
                 self.eyes_state[i] = val
