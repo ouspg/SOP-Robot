@@ -66,8 +66,8 @@ class FaceTrackerMovementNode(Node):
         self.head_state = self.start_head_state[:]      # Tries to have the up-to-date head servo values.
 
         self.eyes_joint_ids = [9, 11]                   # Servo ids for eye joints. Order comes from eyes_controller: [eyes_shift_horizontal_joint, eyes_shift_vertical_joint]
-        self.start_eyes_state = [-0.7, -0.75]           # Good starting values for eye servos. Should not be modified in runtime.
-        self.eyes_state = self.start_eyes_state[:]      # Tries to have the up-to-date head servo values.
+        self.eyes_center_position = [-0.7, -0.75]           # Good starting values for eye servos. Should not be modified in runtime.
+        self.eyes_state = self.eyes_center_position[:]      # Tries to have the up-to-date head servo values.
 
         # Some variables
         self.pan_diff = 0
@@ -126,7 +126,7 @@ class FaceTrackerMovementNode(Node):
     def eyes_state_callback(self, msg):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
-                self.eyes_state[i] = self.start_eyes_state[i]
+                self.eyes_state[i] = self.start_eyes_center_position[i]
                 self.logger.info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
             else:
                 self.eyes_state[i] = val
@@ -420,7 +420,7 @@ class FaceTrackerMovementNode(Node):
 
     #   Center eyes
     def center_eyes(self, duration=None):
-        self.send_eye_goal(self.start_eyes_state[0], self.start_eyes_state[1], duration)
+        self.send_eye_goal(self.eyes_center_position[0], self.eyes_center_position[1], duration)
 
 
     """
