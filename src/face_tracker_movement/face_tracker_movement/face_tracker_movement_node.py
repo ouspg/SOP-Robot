@@ -43,7 +43,7 @@ class FaceTrackerMovementNode(Node):
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/controller_state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/controller_state', self.eyes_state_callback, 5)
 
-        self.head_gesture_subscription = self.create_subscription(String, '/head_gestures/head_gesture_topic', self.head_gesture_callback, 10)
+        self.head_gesture_subscription = self.create_subscription(String, '/face_tracker_movement/head_gesture_topic', self.head_gesture_callback, 10)
 
         # Set initial values
         if simulation:
