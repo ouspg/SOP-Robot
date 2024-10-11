@@ -195,10 +195,10 @@ class FaceTrackerMovementNode(Node):
         self.idling = True
         self.logger.info("Idling...\x1B[1A")
         if self.eyes_enabled:
-            self.send_eye_goal(self.get_random_eye_location()[0], -0.75)
+            self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
 
         if self.head_enabled:
-            self.goal_pan = random.uniform(0.25, 1.25)
+            self.goal_pan = random.uniform(self.head_pan_lower_limit, self.head_pan_upper_limit)
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
         self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
         self.idle_timer.reset()
