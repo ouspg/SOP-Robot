@@ -17,8 +17,20 @@ from std_msgs.msg import String, Float32
 
 class FaceTrackerMovementNode(Node):
 
-    def __init__(self, functionality):
+    def __init__(self):
         super().__init__('face_tracker_movement_client')
+
+        functionality = (
+            self.declare_parameter("functionality", "full")
+            .get_parameter_value()
+            .string_value
+        )
+
+        simulation = (
+            self.declare_parameter("simulation", False)
+            .get_parameter_value()
+            ._bool_value
+        )
         
         self.logger = self.get_logger()
 
@@ -33,27 +45,55 @@ class FaceTrackerMovementNode(Node):
 
         self.head_gesture_subscription = self.create_subscription(String, '/head_gestures/head_gesture_topic', self.head_gesture_callback, 10)
 
-        """
-        # Values that should work with the actual hardware
-        self.head_vertical_lower_limit = 0.8
-        self.head_vertical_upper_limit = 1.5
-        self.head_pan_lower_limit = -0.25
-        self.head_pan_upper_limit = 1.75
-        self.eye_vertical_lower_limit = -0.7
-        self.eye_vertical_upper_limit = -0.2
-        self.eye_horizontal_lower_limit = -2.0
-        self.eye_horizontal_upper_limit = 0.0
-        """
+        # Set initial values
+        if simulation:
+            self.logger.info("Running face_tracker_movement in simulation mode")
 
-        # Values that should work in the simulator
-        self.head_vertical_lower_limit = -0.3
-        self.head_vertical_upper_limit = 0.3
-        self.head_pan_lower_limit = -2.0
-        self.head_pan_upper_limit = 2.0
-        self.eye_vertical_lower_limit = -0.5
-        self.eye_vertical_upper_limit = 0.5
-        self.eye_horizontal_lower_limit = -0.6
-        self.eye_horizontal_upper_limit = 0.6
+            # Set initial values for simulation environment
+            # Movement limits
+            self.head_vertical_lower_limit = -0.3
+            self.head_vertical_upper_limit = 0.3
+            self.head_pan_lower_limit = -2.0
+            self.head_pan_upper_limit = 2.0
+            self.eye_vertical_lower_limit = -0.5
+            self.eye_vertical_upper_limit = 0.5
+            self.eye_horizontal_lower_limit = -0.6
+            self.eye_horizontal_upper_limit = 0.6
+
+            # starting states
+            self.start_head_state = [0, 0, 0, 1]                # Should not be modified in runtime.
+            self.eyes_center_position = [0, 0]                  # Should not be modified in runtime.
+
+            # Set movement directions
+            self.head_pan_multiplicator = -1
+            self.head_vertical_multiplicator = 1
+            self.eye_vertical_multiplicator = -1
+            self.eye_horizontal_multiplicator = -1
+
+        else:
+            self.logger.info(f"Running face_tracker_movement in hardware mode")
+
+            # Set initial values for actual robot
+            # Movement limits
+            self.head_vertical_lower_limit = 0.8
+            self.head_vertical_upper_limit = 1.5
+            self.head_pan_lower_limit = -0.25
+            self.head_pan_upper_limit = 1.75
+            self.eye_vertical_lower_limit = -0.7
+            self.eye_vertical_upper_limit = -0.2
+            self.eye_horizontal_lower_limit = -2.0
+            self.eye_horizontal_upper_limit = 0.0
+
+            # starting states
+            self.start_head_state = [0.6, 0.5, -0.5, 1.2]       # Should not be modified in runtime.
+            self.eyes_center_position = [-0.7, -0.75]           # Should not be modified in runtime.
+
+            # Set movement directions
+            self.head_pan_multiplicator = 1
+            self.head_vertical_multiplicator = 1
+            self.eye_vertical_multiplicator = 1
+            self.eye_horizontal_multiplicator = 1
+
 
         # Middle point of image view
         self.middle_x = 640
@@ -62,11 +102,9 @@ class FaceTrackerMovementNode(Node):
         self.idling = False # Not used currently
 
         self.head_joint_ids = [4, 1, 3, 2]              # Servo ids for head joints. Order comes from head_controller: [head_pan_joint, head_tilt_right_joint, head_tilt_left_joint, head_tilt_vertical_joint]
-        self.start_head_state = [0.6, 0.5, -0.5, 1.2]   # Good starting values for head servos. Should not be modified in runtime.
         self.head_state = self.start_head_state[:]      # Tries to have the up-to-date head servo values.
 
         self.eyes_joint_ids = [9, 11]                   # Servo ids for eye joints. Order comes from eyes_controller: [eyes_shift_horizontal_joint, eyes_shift_vertical_joint]
-        self.eyes_center_position = [-0.7, -0.75]           # Good starting values for eye servos. Should not be modified in runtime.
         self.eyes_state = self.eyes_center_position[:]      # Tries to have the up-to-date head servo values.
 
         # Some variables
@@ -304,7 +342,8 @@ class FaceTrackerMovementNode(Node):
             duration = Duration(sec=0, nanosec=max(int(200000000 * x_diff), 200000000))
 
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[horizontal, vertical], time_from_start=duration)
+        trajectory_points = JointTrajectoryPoint(positions=[horizontal * self.eye_horizontal_multiplicator, vertical * self.eye_vertical_multiplicator],
+                                                 time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_horizontal_joint', 'eyes_shift_vertical_joint'],
                                               points=[trajectory_points])
 
@@ -326,7 +365,7 @@ class FaceTrackerMovementNode(Node):
     def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=400000000)):
         self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=[pan, verticalTilt], time_from_start=duration)
+        trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
                                               points=[trajectory_points])
 
@@ -436,17 +475,12 @@ class FaceTrackerMovementNode(Node):
         return random_x, random_y
 
 
-def main():
+def main(args=None):
     print('Hi from face_tracker_movement.')
 
-    rclpy.init()
+    rclpy.init(args=args)
 
-    arg = "full"
-
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-
-    action_client = FaceTrackerMovementNode(arg)
+    action_client = FaceTrackerMovementNode()
 
     rclpy.spin(action_client)
 
