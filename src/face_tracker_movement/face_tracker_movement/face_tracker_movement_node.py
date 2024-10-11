@@ -401,7 +401,7 @@ class FaceTrackerMovementNode(Node):
         eye_location_y = y_diff * v_coeff + self.eyes_state[1]
         
         eye_location_y = max(min(self.eye_vertical_upper_limit, eye_location_y), self.eye_vertical_lower_limit)
-        eye_location_x = max(min(self.eye_horizontal_upper_limit, eye_location_y), self.eye_horizontal_lower_limit)
+        eye_location_x = max(min(self.eye_horizontal_upper_limit, eye_location_x), self.eye_horizontal_lower_limit)
 
         return eye_location_x, eye_location_y
 
