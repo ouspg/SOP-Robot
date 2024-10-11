@@ -51,8 +51,8 @@ class FaceTrackerMovementNode(Node):
 
             # Set initial values for simulation environment
             # Movement limits
-            self.head_vertical_lower_limit = -0.3
-            self.head_vertical_upper_limit = 0.3
+            self.head_vertical_lower_limit = 0
+            self.head_vertical_upper_limit = 2
             self.head_pan_lower_limit = -2.0
             self.head_pan_upper_limit = 2.0
             self.eye_vertical_lower_limit = -0.5
