@@ -178,7 +178,7 @@ class FaceTrackerMovementNode(Node):
 
             # Check if doing the glance or not
             if randomvalue <= glance_percentage:
-                eye_location_x, eye_location_y = self.get_random_eye_location()
+                eye_location_x, eye_location_y = self.get_random_eye_location(distance_from_current_x_position = 0.5)
                 self.is_glancing = True
                 self.logger.info('glance')
             else:
@@ -413,13 +413,25 @@ class FaceTrackerMovementNode(Node):
     """
     Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance.
     """
-    def get_random_eye_location(self):
-        random_x = random.uniform(-2, 0.5)
-        random_y = random.uniform(-1.5, 0)
-
-        # Can possibly loop for a while because of the random number being too close multiple times but it should only rarely affect performance
-        while abs(self.eyes_state[0] - random_x) < 0.5:
-            random_x = random.uniform(-2, 0.5)
+    def get_random_eye_location(self, distance_from_current_x_position=0):
+        # Get random x location for eyes
+        random_x_list = list()
+        if self.eye_horizontal_lower_limit < self.eyes_state[0] - distance_from_current_x_position:
+            random_x_list.append(random.uniform(
+                self.eye_horizontal_lower_limit, 
+                self.eyes_state[0] - distance_from_current_x_position
+                ))
+        if self.eye_horizontal_upper_limit > self.eyes_state[0] + distance_from_current_x_position:
+            random_x_list.append(random.uniform(
+                self.eyes_state[0] + distance_from_current_x_position,
+                self.eye_horizontal_upper_limit
+                ))
+        if len(random_x_list) == 0:
+            self.logger.warning(f"Cannot get random eye position due to too large {distance_from_current_x_position =}" 
+                                "compared to eye max and minimum locaitons! Setting random_x to current position.")
+            random_x_list.append(self.eyes_state[0])
+        random_x = random.choice(random_x_list)
+        random_y = random.uniform(self.eye_vertical_lower_limit, self.eye_vertical_upper_limit)
 
         return random_x, random_y
 
