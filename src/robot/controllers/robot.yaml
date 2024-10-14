@@ -14,7 +14,7 @@ controller_manager:
     jaw_controller:
       type: joint_trajectory_controller/JointTrajectoryController
     
-    r_shoulder_controller:
+    shoulder_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
     r_hand_controller:
@@ -35,8 +35,8 @@ joint_state_broadcaster:
     - waist_pan_joint
     - waist_roll_joint
     #- r_shoulder_lift_joint
-    - r_upper_arm_roll_joint
-    - r_elbow_flex_joint
+    #- r_upper_arm_roll_joint
+    #- r_elbow_flex_joint
     #- r_shoulder_out_joint
     - r_thumb1_joint
     #- r_thumb_joint
@@ -56,10 +56,10 @@ joint_state_broadcaster:
     - r_pinky3_joint
     - r_pinky4_joint
     - r_wrist_roll_joint
-    - l_shoulder_lift_joint
-    - l_upper_arm_roll_joint
-    - l_elbow_flex_joint
-    - l_shoulder_out_joint
+    #- l_shoulder_lift_joint
+    #- l_upper_arm_roll_joint
+    #- l_elbow_flex_joint
+    #- l_shoulder_out_joint
     - l_thumb1_joint
     #- l_thumb_joint
     - l_thumb3_joint
@@ -198,14 +198,26 @@ jaw_controller:
     action_monitor_rate: 20.0 # Defaults to 20
     
 
-r_shoulder_controller:
+shoulder_controller:
   ros__parameters:
     joints:
     - r_shoulder_lift_joint
     - r_shoulder_out_joint
+    - r_upper_arm_roll_joint
+    - r_elbow_flex_joint
+    - l_shoulder_lift_joint
+    - l_upper_arm_roll_joint
+    - l_elbow_flex_joint
+    - l_shoulder_out_joint
     write_op_modes:
     - r_shoulder_lift_joint
-    - r_shoulder_out
+    - r_shoulder_out_joint
+    - r_upper_arm_roll_joint
+    - r_elbow_flex_joint
+    - l_shoulder_lift_joint
+    - l_upper_arm_roll_joint
+    - l_elbow_flex_joint
+    - l_shoulder_out_joint
     allow_partial_joints_goal: true
     interface_name: position
 

@@ -3,6 +3,7 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
 from trajectory_msgs.msg import JointTrajectory,JointTrajectoryPoint
+from sensor_msgs.msg import JointState
 from control_msgs.action import FollowJointTrajectory
 from std_msgs.msg import String
 
@@ -10,6 +11,7 @@ class HandGestureNode(Node):
     def __init__(self):
         super().__init__('hand_gesture_client')
         self.right_hand_action_client = ActionClient(self, FollowJointTrajectory, "r_hand_controller/follow_joint_trajectory")
+        self.right_hand_publisher = self.create_publisher(JointState, "/joints_sub", 1)
         self.left_hand_action_client = ActionClient(self, FollowJointTrajectory, "l_hand_controller/follow_joint_trajectory")
         self.right_hand_gesture_subscription = self.create_subscription(String, "/r_hand/r_hand_topic", self.r_hand_callback, 10)
         self.left_hand_gesture_subscription = self.create_subscription(String, "/l_hand/l_hand_topic", self.l_hand_callback, 10)
@@ -48,14 +50,12 @@ class HandGestureNode(Node):
             self.send_left_hand_goal(self.left_positions_dict[action])
 
     def send_right_hand_goal(self, action, duration=Duration(sec=1)):
-        goal_msg = FollowJointTrajectory.Goal()
-        trajectory_points = JointTrajectoryPoint(positions=action, time_from_start=duration)
-        goal_msg.trajectory = JointTrajectory(joint_names=["r_thumb_joint", "r_index1_joint", "r_middle1_joint", "r_ring_joint", "r_pinky_joint"],
-                                              points=[trajectory_points])
+        
+        goal_msg = JointState(name=["r_thumb_joint", "r_index1_joint", "r_middle1_joint", "r_ring_joint", "r_pinky_joint"],
+                                              position=action)
 
-        self.right_hand_action_client.wait_for_server()
 
-        self.right_hand_action_client.send_goal_async(goal_msg)
+        self.right_hand_publisher.publish(goal_msg)
 
 
     def send_left_hand_goal(self, action, duration=Duration(sec=1)):

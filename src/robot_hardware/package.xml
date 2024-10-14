@@ -14,7 +14,8 @@
   <depend>rclcpp</depend>
   <depend>dynamixel_workbench_toolbox</depend>
   <depend>yaml-cpp</depend>
-
+  <depend>libserial-dev</depend>
+  
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

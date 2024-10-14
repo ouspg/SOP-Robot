@@ -10,7 +10,7 @@ from control_msgs.action import FollowJointTrajectory
 from builtin_interfaces.msg import Duration
 
 # Define the Arduino serial port and baud rate
-SERIAL_PORT = '/dev/ttyACM0'  # Replace with the appropriate port
+SERIAL_PORT = '/dev/ttyACM1'  # Replace with the appropriate port
 BAUD_RATE = 115200
 
 # Define the ROS2 topic names

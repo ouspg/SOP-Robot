@@ -90,7 +90,7 @@ def generate_launch_description():
         "eyes_controller",
         "jaw_controller",
         "r_hand_controller",
-        "r_shoulder_controller",
+        "shoulder_controller",
         "l_hand_controller"
     ]
     

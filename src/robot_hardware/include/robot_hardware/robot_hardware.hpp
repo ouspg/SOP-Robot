@@ -9,7 +9,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "visibility_control.h"
-
+#include "arduino_comms.hpp"
 #include <dynamixel_workbench_toolbox/dynamixel_workbench.h>
 #include <hardware_interface/handle.hpp>
 #include <hardware_interface/hardware_info.hpp>
@@ -93,6 +93,7 @@ namespace robot_hardware
 
     const rclcpp::Logger logger_;
 
+    ArduinoComms comms_;
     rclcpp::Node::SharedPtr node_;
 
     std::unordered_map<std::string, int> joint_indices_;

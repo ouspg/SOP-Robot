@@ -40,7 +40,7 @@ def generate_launch_description():
         parameters=[
             {
                 "raw_image": "/image_raw",
-                "index": 0,
+                "index": 4,
                 "width": 1280,
                 "height": 960,
                 "fps": 30,
