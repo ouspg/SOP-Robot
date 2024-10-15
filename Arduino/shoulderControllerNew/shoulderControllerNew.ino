@@ -73,7 +73,7 @@ void setup() {
 void loop() {
   // The new version, uses id:angle commands
   if (SerialUSB.available() > 0) {
-    String command = SerialUSB.readStringUntil('\n')
+    String command = SerialUSB.readStringUntil('\n');
 
     // Split command string by commas and colons
     int servosToMove[NUM_SERVOS];
