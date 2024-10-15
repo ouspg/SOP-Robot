@@ -52,7 +52,7 @@ void setup() {
       while(1);
     }
     
-    servos[i]write(expectedStartingPos[i]);
+    servos[i].write(expectedStartingPos[i]);
     servos[i].attach(SERVO_PINS[i]);
   }
 
