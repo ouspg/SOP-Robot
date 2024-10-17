@@ -193,8 +193,10 @@ class FaceTrackerNode(Node):
 
         msg_faces = []
         faces = self.face_tracker.on_frame_received(cv2_bgr_img)
-        if faces:
-            faces.extend(get_phone_boxes_from_image(cv2_bgr_img))
+        phones = get_phone_boxes_from_image(cv2_bgr_img)
+        if phones != []:
+            faces = phones
+        #self.logger.info(str(faces))
         # loop through all faces
         for face in faces:
             occurances = []
