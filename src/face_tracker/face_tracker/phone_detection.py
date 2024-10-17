@@ -120,7 +120,7 @@ def get_phone_boxes_from_image(image):
 
         box[2] = box[0] + w / 2
         box[3] = box[1] + h / 2
-        box_objects.append(Box(box[0], box[2], box[1], box[3]))
+        box_objects.append({'left:' int(box[0]), 'right': int(box[2]), 'top': int(box[1]), 'bottom': int(box[3])})
 
     return box_objects
 
