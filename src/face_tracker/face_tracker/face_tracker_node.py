@@ -23,7 +23,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 from .lip_movement_net import LipMovementDetector
 from .face_analyzer import FaceAnalyzer
-from ...phone_detection import get_phone_boxes_from_image
+from .phone_detection import get_phone_boxes_from_image
 
 bridge = CvBridge()
 
@@ -198,9 +198,9 @@ class FaceTrackerNode(Node):
         # loop through all faces
         for face in faces:
             occurances = []
-            for i in face["previous_occurances"]:
-                occurance = Occurance(start_time=str(i["start_time"]), end_time=str(i["end_time"]), duration=str(i["duration"]))
-                occurances.append(occurance)
+            #for i in face["previous_occurances"]:
+             #   occurance = Occurance(start_time=str(i["start_time"]), end_time=str(i["end_time"]), duration=str(i["duration"]))
+              #  occurances.append(occurance)
             msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
                                 bottom_right=Point2(x=face["right"], y=face["bottom"]),
                                 face_id=face["face_id"],

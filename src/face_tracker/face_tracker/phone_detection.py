@@ -4,7 +4,7 @@ import cv2
 
 # read class names from text file
 classes = None
-with open("coco.names", "r") as f:
+with open("./src/face_tracker/detection-model/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
 
@@ -58,7 +58,7 @@ def get_phone_boxes_from_image(image):
     scale = 0.00392
 
     # read pre-trained model and config file
-    net = cv2.dnn.readNet("yolov4-tiny.weights", "yolov4-tiny.cfg")
+    net = cv2.dnn.readNet("./src/face_tracker/detection-model/yolov4-tiny.weights", "./src/face_tracker/detection-model/yolov4-tiny.cfg")
 
     # create input blob
     blob = cv2.dnn.blobFromImage(image, scale, (416, 416), (0, 0, 0), True, crop=False)
