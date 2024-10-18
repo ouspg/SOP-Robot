@@ -7,12 +7,11 @@ from deepface.modules.verification import find_threshold
 
 class FaceRecognizer(object):
 
-    def __init__(self, db_path, logger, model_name, detector_backend):
+    def __init__(self, logger, model_name, detector_backend):
         """
         Initialize face recognizer, and create embeddings in the intialization
         """
         self.logger = logger
-        self.db_path = db_path
         self.model_name = model_name
         self.detector_backend = detector_backend
 

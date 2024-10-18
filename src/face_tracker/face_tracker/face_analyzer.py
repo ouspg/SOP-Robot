@@ -13,8 +13,6 @@ from .face_recognition import FaceRecognizer
 from .face import Face
 from .links_cluster import LinksCluster, Subcluster
 
-DEFAULT_FACE_DB_PATH = os.path.expanduser('~')+"/database"
-
 class FaceAnalyzer:
 
     def __init__(self,
@@ -33,8 +31,7 @@ class FaceAnalyzer:
 
         # Face recognition
         if face_recognizer:
-            self.face_recognizer = FaceRecognizer(db_path=DEFAULT_FACE_DB_PATH,
-                                                  logger=self.logger,
+            self.face_recognizer = FaceRecognizer(logger=self.logger,
                                                   model_name=face_recognition_model,
                                                   detector_backend=face_detection_model)
         else:
