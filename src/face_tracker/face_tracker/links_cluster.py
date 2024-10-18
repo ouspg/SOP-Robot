@@ -176,7 +176,7 @@ class LinksCluster:
         if len(self.clusters) == 0:
             # Handle first vector
             self.clusters.append(Cluster(Subcluster(new_vector, store_vectors=self.store_vectors)))
-            return None
+            return self.clusters[0].as_dict()
 
         best_subcluster = None
         best_similarity = -np.inf
