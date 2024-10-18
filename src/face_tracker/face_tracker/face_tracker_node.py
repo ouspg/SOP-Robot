@@ -200,6 +200,7 @@ class FaceTrackerNode(Node):
                 occurances.append(occurance)
             msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
                                bottom_right=Point2(x=face["right"], y=face["bottom"]),
+                               diagonal=face["diagonal"],
                                face_id=face["face_id"],
                                speaking=face["speaking"],
                                occurances=occurances)

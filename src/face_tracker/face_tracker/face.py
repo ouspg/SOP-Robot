@@ -1,4 +1,5 @@
 import dlib
+import math
 from typing import List
 
 class Face():
@@ -7,6 +8,8 @@ class Face():
         self.right = right
         self.top = top
         self.bottom = bottom
+        
+        self.diagonal = math.sqrt((right - left) ** 2 + (bottom - top) ** 2)
 
         self.image = image
         self.representation: List[float] = representation
@@ -50,7 +53,8 @@ class Face():
             'left': face left coordinate in the frame,
             'right': face right coordinate in the frame,
             'top': face top coordinate in the frame,
-            'bottom': face bottom coordinate in the frame:,
+            'bottom': face bottom coordinate in the frame,
+            'diagonal': Diagonal length of the frame,
             'face_id': string of uuid4 or None, identifier of the face,
             'previous_occurances': List[dict] or None. List of previous occurances, when face has been visible. 
                                    Dict  includes keys "start_time", "stop_time" and "duration".
@@ -70,6 +74,7 @@ class Face():
             'right': self.right,
             'top': self.top,
             'bottom': self.bottom,
+            'diagonal': self.diagonal,
             'face_id': face_id,
             'previous_occurances': previous_occurances,
             'speaking': speaking,
