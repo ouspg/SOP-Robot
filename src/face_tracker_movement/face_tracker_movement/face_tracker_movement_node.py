@@ -343,6 +343,7 @@ class FaceTrackerMovementNode(Node):
             randomvalue = random.uniform(0, 1)  
 
             # Check if doing the glance or not
+            # TODO: Consider using head gestures for the glance
             if randomvalue <= glance_percentage:
                 eye_location_x, eye_location_y = self.get_random_eye_location(distance_from_current_x_position = 0.5)
                 self.is_glancing = True
