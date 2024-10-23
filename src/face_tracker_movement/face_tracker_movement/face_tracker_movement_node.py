@@ -116,7 +116,26 @@ class FaceTrackerMovementNode(Node):
         # Are head/eye joints used in the current configuration? 
         self.head_enabled = True
         self.eyes_enabled = True
+
+        # Face info
         self.visible_face_amount = 0
+        self.previous_face = None  # TODO: Not yet used
+        self.preferred_face_id = None
+        self.preferred_face_tracking_start_time = None
+
+        # TODO: Consider using non constant value for preferred face tracking time limit
+        self.preferred_face_tracking_timelimit = 10  # in seconds
+
+        self.blocked_faces: list[dict] = []  # Includes face_id, block_start and block_duration
+
+        # TODO: Consider using non constant value for face blocking time
+        self.blocked_faces_timeout = 20  # in seconds
+
+        # Face tracking tresholds
+        # TODO: Select good values
+        # TODO: use ros arguments for the treshold values to be able to change these on runtime
+        self.ignore_small_faces_treshold = 50
+        self.near_interaction_treshold = 320
 
         if functionality.lower() == "head":
             self.logger.info('Eye movement is disabled.')
@@ -137,19 +156,24 @@ class FaceTrackerMovementNode(Node):
     def face_list_callback(self, msg):
         self.visible_face_amount = len(msg.faces)
 
-        # Calculate largest face and point to those coordinates
         # TODO: Make more sophisticated function for face movement
-        face_sizes = []
-        for face in msg.faces:
-            face_sizes.append(face.bottom_right.x - face.top_left.x)
 
-        largest_face_index = face_sizes.index(max(face_sizes))
-        largest_face = msg.faces[largest_face_index]
-        x=round((largest_face.top_left.x + largest_face.bottom_right.x) / 2)
-        y=round((largest_face.top_left.y + largest_face.bottom_right.y) / 2)
+        # TODO Propably not needed to update every time (as goal is 30fps). Consider moving this to own timer or something.
+        self.update_blocked_faces()
 
-        self.analyze_coordinates(x, y)
+        face = self.select_face_to_track(msg.faces)
 
+        if face:
+            # Calculate middle coordinates
+            x=round((face.top_left.x + face.bottom_right.x) / 2)
+            y=round((face.top_left.y + face.bottom_right.y) / 2)
+
+            # Reset idle callback
+            self.idle_timer.timer_period_ns = 2000000000  # 2s
+            self.idle_timer.reset()
+            self.idling = False
+
+            self.analyze_coordinates(x, y)
         
     # Get the current state of head joints. Updated at 20 Hz (see robot.yaml)
     def head_state_callback(self, msg):
@@ -202,12 +226,116 @@ class FaceTrackerMovementNode(Node):
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
         self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
         self.idle_timer.reset()
+
+    def select_face_to_track(self, faces):
+        """
+        Selects and tracks a face from a list based on preferred face ID or largest face.
         
+        Args:
+            faces (list): List of face objects.
+        
+        Returns:
+            face: The selected face object, or `None` if no suitable face is found.
+        """
+        non_blocked_faces = []
+        selected_face = None
+    
+        # TODO Include face.speaking check to the algorithm
+        
+        # Check face sizes to determine if the person should be tracked constantly
+        # TODO: Consider to use information also from other modules - like if somebody speaks to the robot
+        max_face_size = max([face.diagonal for face in faces])
+        if max_face_size > self.near_interaction_treshold:
+            # Near interaction - Continuous tracking
+
+            # remove preferred face
+
+            selected_face = self.select_largest_face(faces)
+        else:
+            # Far interaction - Look faces only some time and then ignore
+
+            # Remove blocked faces and too small faces from faces list
+            for face in faces:
+                if ((face.diagonal > self.ignore_small_faces_treshold) and
+                    (face.face_id not in [blocked_face["face_id"] for blocked_face in self.blocked_faces])):
+                    non_blocked_faces.append(face)
+
+            # face list can now be empty
+            if len(non_blocked_faces) == 0:
+                return None
+            
+            selected_face = self.select_face_far_interaction(non_blocked_faces)
+
+        # selected_face can be None
+        if selected_face:
+            if not self.previous_face or selected_face.face_id != self.previous_face.face_id:
+                self.logger.info(f"Tracking face with id={selected_face.face_id}")
+            if not self.preferred_face_id:
+                self.add_preferred_face(selected_face)
+        self.previous_face = selected_face
+        return selected_face
+    
+    def select_face_far_interaction(self, faces):
+        if self.preferred_face_id:
+            selected_face = next((face for face in faces if face.face_id == self.preferred_face_id), None)
+            # Track preferred face if 
+            if selected_face:
+                if time.time() - self.preferred_face_tracking_start_time < self.preferred_face_tracking_timelimit:
+                    # Select preferred face
+                    pass
+                else:
+                    if len(faces) > 1:
+                        # Select largest face that is not preferred face
+                        face_list = [face for face in faces if face.face_id != self.preferred_face_id]
+                        selected_face = self.select_largest_face(face_list)
+                    else:
+                        # No faces that can be selected
+                        selected_face = None
+                    self.remove_preferred_face()
+            else:
+                self.remove_preferred_face()
+
+                # Select largest face
+                selected_face = self.select_largest_face(faces)
+        else:
+            # Select largest face
+            selected_face = self.select_largest_face(faces)
+
+        return selected_face
+
+    def select_largest_face(self, faces):
+        return max(faces, key=lambda face: face.diagonal)
+    
+    def update_blocked_faces(self):
+        remaining_faces = []
+
+        # Filter and log deleted items
+        for blocked_face in self.blocked_faces:
+            if blocked_face["block_start"] + blocked_face["block_duration"] < time.time():
+                self.logger.info(f"Removed face {blocked_face['face_id']} from blocked faces")
+            else:
+                remaining_faces.append(blocked_face)
+        self.blocked_faces = remaining_faces
+
+    def add_preferred_face(self, face):
+        if self.preferred_face_id == face.face_id:
+            self.logger.warning("Setting preferred face to same as old preferred face!")
+        self.preferred_face_id = face.face_id
+        self.preferred_face_tracking_start_time = face.occurances[-1].end_time  # Timestamp for last time face was seen
+        self.logger.info(f"Preferred face set to {self.preferred_face_id}")
+
+    def remove_preferred_face(self):
+        self.blocked_faces.append({
+            "face_id": self.preferred_face_id,
+            "block_start": time.time(),
+            "block_duration": self.blocked_faces_timeout,
+        })
+        self.logger.info(f"preferred face removed and blocked: {self.preferred_face_id}")
+        self.preferred_face_id = None
+        self.preferred_face_tracking_start_time = None
+
     # Feel free to experiment with the timings to fine-tune behavior
     def analyze_coordinates(self, x, y):
-        self.idle_timer.timer_period_ns = 5000000000
-        self.idle_timer.reset()
-        self.idling = False
 
         if self.eyes_enabled:
             #self.logger.info('x: %d, y: %d' % (msg.x, msg.y))
