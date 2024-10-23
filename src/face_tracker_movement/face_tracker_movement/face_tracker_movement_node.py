@@ -99,7 +99,7 @@ class FaceTrackerMovementNode(Node):
         self.middle_x = 640
         self.middle_y = 400
         self.is_glancing = False
-        self.idling = False # Not used currently
+        self.idling = False # Used only for logging
 
         self.head_joint_ids = [4, 1, 3, 2]              # Servo ids for head joints. Order comes from head_controller: [head_pan_joint, head_tilt_right_joint, head_tilt_left_joint, head_tilt_vertical_joint]
         self.head_state = self.start_head_state[:]      # Tries to have the up-to-date head servo values.
@@ -216,8 +216,9 @@ class FaceTrackerMovementNode(Node):
 
     # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
+        if self.idling == False:
+            self.logger.info("Start idling...")
         self.idling = True
-        self.logger.info("Idling...\x1B[1A")
         if self.eyes_enabled:
             self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
 
