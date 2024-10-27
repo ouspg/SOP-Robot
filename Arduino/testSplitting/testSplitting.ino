@@ -1,4 +1,5 @@
 #include <AUnit.h>
+using namespace aunit;
 
 const int NUM_SERVOS = 9;
 
@@ -38,7 +39,7 @@ String extractServos(String command) {
     }
   }
 
-  return string1
+  return string1;
 }
 
 String extractAngles(String command) {
@@ -71,12 +72,12 @@ String extractAngles(String command) {
   String string1 = "Received servos: ";
 
   for (int i = 0; i < angleIndex; ++i) {
-    string1.concat(servos[i]);
+    string1.concat(servosToMove[i]);
     if (i < angleIndex - 1) {
       string1.concat(",");
     }
   }
-  return string1
+  return string1;
 }
 
 test(extractCommand) {
@@ -92,5 +93,5 @@ void setup() {
 }
 
 void loop() {
-  aunit::testrunner::run()
+  TestRunner::run();
 }
