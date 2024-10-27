@@ -244,14 +244,17 @@ class FaceTrackerMovementNode(Node):
         # TODO tune this on real hardware to see what works! 
         movement_time = int(max(abs(travel_distance) / max_travel_distance * 4000000000, 500000000))
 
-        if self.eyes_enabled:
-            # TODO make this a const so it doesn't get calced every time
-            eye_middle = (abs(self.eye_horizontal_lower_limit) + abs(self.eye_horizontal_upper_limit)) / 2
-            self.logger.info(f"Eye midpoint is: {eye_middle}")
+        # Commented for testing both head and eyes
+        # if self.eyes_enabled:
+            # self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
 
+        self.logger.info(f"Eye midpoint is: {self.eyes_center_position[0]}")
 
+        # Eyes will be biased to look in the direction of the head
+        # TODO Normal or Uniform distribution for eyes going up/down?
+        self.send_eye_goal(random.gauss(self.eye_horizontal_lower_limit, self.eye_horizontal_upper_limit), random.gauss(self.eye_vertical_lower_limit, self.eye_vertical_upper_limit))
 
-            self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
+        
 
         if self.head_enabled:
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
