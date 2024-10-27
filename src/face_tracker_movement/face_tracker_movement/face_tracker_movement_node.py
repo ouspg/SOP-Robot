@@ -70,6 +70,8 @@ class FaceTrackerMovementNode(Node):
             self.eye_vertical_multiplicator = -1
             self.eye_horizontal_multiplicator = -1
 
+            self.simulation = True
+
         else:
             self.logger.info(f"Running face_tracker_movement in hardware mode")
 
@@ -93,6 +95,8 @@ class FaceTrackerMovementNode(Node):
             self.head_vertical_multiplicator = 1
             self.eye_vertical_multiplicator = 1
             self.eye_horizontal_multiplicator = 1
+
+            self.simulation = False
 
 
         # Middle point of image view
@@ -219,13 +223,41 @@ class FaceTrackerMovementNode(Node):
         if self.idling == False:
             self.logger.info("Start idling...")
         self.idling = True
+
+        # Only for simulator, gets around not getting servo positions 
+        # this might have a bugged interaction for the idling movement after tracking!
+        if self.simulation == True:
+            self.head_state[0] = self.goal_pan
+
+        # Generate a random goal between the min and max pan limits
+        self.goal_pan = random.uniform(self.head_pan_lower_limit, self.head_pan_upper_limit)
+
+        # Travel distance is current head state minus the position of the goal (e.g. current state is -0.2, random generated goal is -0.6. Travel distance is 0.4. abs(-0.2 - -0.4))
+        # self.head_state[0] refers to the current state of the pan servo.
+        travel_distance = abs(self.head_state[0] - self.goal_pan)
+
+        # Max travel distance
+        # TODO this should be a const calculated at the start!
+        max_travel_distance = abs(self.head_pan_lower_limit) + abs(self.head_pan_upper_limit)
+
+        # Movement time is calculated based off the maximum travel distance available. Max pan from side to side is 4s, minimum movement time is 0.5s.
+        # TODO tune this on real hardware to see what works! 
+        movement_time = int(max(abs(travel_distance) / max_travel_distance) * 4000000000, 500000000)
+
         if self.eyes_enabled:
+            # TODO make this a const so it doesn't get calced every time
+            eye_middle = (abs(self.eye_horizontal_lower_limit) + abs(self.eye_horizontal_upper_limit)) / 2
+            self.logger.info(f"Eye midpoint is: {eye_middle}")
+
+
+
             self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
 
         if self.head_enabled:
-            self.goal_pan = random.uniform(self.head_pan_lower_limit, self.head_pan_upper_limit)
-            self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
-        self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
+            self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
+        # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
+        # TODO fine-tune timer on real robot to see what fits.
+        self.idle_timer.timer_period_ns = movement_time + int(1000000000 * random.gauss(0.5, 1.5))
         self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
@@ -372,9 +404,9 @@ class FaceTrackerMovementNode(Node):
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
             if self.pan_diff != 0 or self.v_diff != 0:
                 self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
-                time.sleep(0.3)
+                #time.sleep(0.3)
         
-        time.sleep(0.2)
+        #time.sleep(0.2)
 
     def nod(self, magnitude=0.4, delay=0.5, duration_of_individual_movements=0.4):
         """
@@ -492,7 +524,8 @@ class FaceTrackerMovementNode(Node):
 
         self.head_action_client.send_goal_async(goal_msg)
         
-    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=400000000)):
+    # TODO max time moved to 0.6s does this break anything?
+    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=800000000)):
         # self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
