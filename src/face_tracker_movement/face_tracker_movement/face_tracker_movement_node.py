@@ -242,7 +242,7 @@ class FaceTrackerMovementNode(Node):
 
         # Movement time is calculated based off the maximum travel distance available. Max pan from side to side is 4s, minimum movement time is 0.5s.
         # TODO tune this on real hardware to see what works! 
-        movement_time = int(max(abs(travel_distance) / max_travel_distance) * 4000000000, 500000000)
+        movement_time = int(max(abs(travel_distance) / max_travel_distance * 4000000000, 500000000))
 
         if self.eyes_enabled:
             # TODO make this a const so it doesn't get calced every time
