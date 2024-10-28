@@ -1,9 +1,5 @@
-import numpy as np
-import scipy
-
 from deepface import DeepFace
 from deepface.models.FacialRecognition import FacialRecognition
-from deepface.modules.verification import find_threshold
 
 class FaceRecognizer(object):
 
