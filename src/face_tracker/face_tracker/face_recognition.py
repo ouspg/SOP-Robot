@@ -18,9 +18,6 @@ class FaceRecognizer(object):
         # build models once to store them in the memory
         self.model: FacialRecognition = DeepFace.build_model(model_name=model_name)
 
-        # find custom values for this input set
-        self.target_size = self.model.input_shape
-
         logger.info(f"facial recognition model {model_name} is just built")
 
         self.logger.info("FaceRecognizer initialized!")
@@ -41,7 +38,6 @@ class FaceRecognizer(object):
         """
         face_objs = DeepFace.extract_faces(
             img_path=img,
-            target_size=self.target_size,
             detector_backend=self.detector_backend,
             enforce_detection=False,
         )
