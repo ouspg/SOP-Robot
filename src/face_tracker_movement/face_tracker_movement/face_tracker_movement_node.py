@@ -236,11 +236,13 @@ class FaceTrackerMovementNode(Node):
         max_idle_movement = 2 / 3 * max_travel_distance
 
         # Generate a random goal between the min and max pan limits
+        # TODO: Consider adding larger possibility for no pan movement - only eyes move
         self.goal_pan = random.uniform(max(self.head_pan_lower_limit, self.head_state[0] - max_idle_movement), min(self.head_pan_upper_limit, self.head_state[0] + max_idle_movement))
 
         # Travel distance is current head state minus the position of the goal (e.g. current state is -0.2, random generated goal is -0.6. Travel distance is 0.4. abs(-0.2 - -0.4))
         # self.head_state[0] refers to the current state of the pan servo.
-        travel_distance = abs(self.head_state[0] - self.goal_pan)
+        pan_travel = self.head_state[0] - self.goal_pan
+        travel_distance = abs(pan_travel)
 
         # Movement time is calculated based off the maximum travel distance available. Max pan from side to side is 4s, minimum movement time is 0.5s.
         # TODO tune this on real hardware to see what works! 
@@ -254,15 +256,29 @@ class FaceTrackerMovementNode(Node):
 
         # Eyes will be biased to look in the direction of the head
         # TODO Normal or Uniform distribution for eyes going up/down?
-        self.send_eye_goal(random.gauss(self.eye_horizontal_lower_limit, self.eye_horizontal_upper_limit), random.gauss(self.eye_vertical_lower_limit, self.eye_vertical_upper_limit))
 
-        
+        eye_goal_vertical = random.gauss(self.eyes_center_position[1], (self.eyes_center_position[1] + self.eye_vertical_upper_limit) / 3)
+
+        if pan_travel > 0:
+            eye_goal_horizontal = random.uniform(self.eye_horizontal_lower_limit, self.eye_horizontal_lower_limit / 6)
+        elif pan_travel < 0:
+            eye_goal_horizontal = random.uniform(self.eye_horizontal_upper_limit / 6, self.eye_horizontal_upper_limit)
+        else:
+            eye_goal_horizontal = random.uniform(self.eye_horizontal_lower_limit, self.eye_horizontal_upper_limit)
+
+        # For testing only
+        self.logger.info(f"{pan_travel=}")
+        self.logger.info(f"{eye_goal_vertical=}")
+        self.logger.info(f"{eye_goal_horizontal=}")
+
+        if self.eyes_enabled:
+            self.send_eye_goal(eye_goal_horizontal, eye_goal_vertical)
 
         if self.head_enabled:
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
         # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
         # TODO fine-tune timer on real robot to see what fits.
-        self.idle_timer.timer_period_ns = movement_time + random.gauss(500000000, 1500000000)
+        self.idle_timer.timer_period_ns = movement_time + random.uniform(500000000, 1500000000)
         self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
