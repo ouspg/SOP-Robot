@@ -374,6 +374,22 @@ class FaceTrackerMovementNode(Node):
 
     # Feel free to experiment with the timings to fine-tune behavior
     def analyze_coordinates(self, x, y):
+        # Calculate face movement
+        x_diff = self.middle_x - x
+        y_diff = self.middle_y - y
+
+        if abs(x_diff) < 100:
+            eye_x = x_diff
+            head_x = 0
+        else:
+            eye_x = x_diff * 2 / 3
+            head_x = x_diff / 3
+        if abs(y_diff) < 50:
+            eye_y = y_diff
+            head_y = 0
+        else:
+            eye_y = y_diff # This is only done because vertical head movement doesn't work!
+            head_y = 0
 
         if self.eyes_enabled:
             #self.logger.info('x: %d, y: %d' % (msg.x, msg.y))
@@ -387,7 +403,7 @@ class FaceTrackerMovementNode(Node):
                 self.is_glancing = True
                 self.logger.info('glance')
             else:
-                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(x, y)
+                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(eye_x, eye_y)
                 self.is_glancing = False
 
             # Move eyes
@@ -403,8 +419,8 @@ class FaceTrackerMovementNode(Node):
                 time.sleep(0.7)
                 return
         
-        if self.head_enabled:
-            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(x, y)
+        if self.head_enabled and (head_x != 0 or head_y != 0):
+            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(head_x, head_y)
             self.pan_diff = self.goal_pan - self.head_state[0]
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
             if self.pan_diff != 0 or self.v_diff != 0:
@@ -552,17 +568,7 @@ class FaceTrackerMovementNode(Node):
 
     Returns: Absolute pan and vertical tilt values for head servos
     """
-    def transform_face_location_to_head_values(self, face_location_x, face_location_y):
-       
-        # Calculate face movement
-        x_diff = self.middle_x - face_location_x
-        y_diff = self.middle_y - face_location_y
-
-        # If the face is close enough to the center, leave the small movements for the eyes.
-        if abs(x_diff) < 100:
-            x_diff = 0
-        if abs(y_diff) < 50:
-            y_diff = 0
+    def transform_face_location_to_head_values(self, x_diff, y_diff):
 
         # Transform face movement to head joint values
         # Head pan
@@ -572,6 +578,7 @@ class FaceTrackerMovementNode(Node):
         When eyes are used for movement, do not move head when there are multiple faces detected.
         Done to mitigate robot going back and forth between detected faces when they are roughly at the same distance.
         """
+        # TODO
         if self.visible_face_amount > 1 and self.eyes_enabled:
             h_coeff = 0
 
@@ -592,11 +599,7 @@ class FaceTrackerMovementNode(Node):
     Calculates new x and y location for the eyes corresponding to the face location coordinates given
     as arguments.
     """
-    def transform_face_location_to_eye_location(self, face_location_x, face_location_y):
-        
-        # Calculate face movement
-        x_diff = self.middle_x - face_location_x
-        y_diff = self.middle_y - face_location_y
+    def transform_face_location_to_eye_location(self, x_diff, y_diff):
 
         # Transform face movement to eye movement
         # Horizontal eye movement
