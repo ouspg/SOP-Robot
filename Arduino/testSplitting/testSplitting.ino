@@ -30,10 +30,10 @@ String extractServos(String command) {
   angleIndex++;
 
   // Send back the received angles
-  String string1 = "Received angles: ";
+  String string1;
 
   for (int i = 0; i < angleIndex; ++i) {
-    string1.concat(angles[i]);
+    string1.concat(servosToMove[i]);
     if (i < angleIndex - 1) {
       string1.concat(",");
     }
@@ -69,22 +69,21 @@ String extractAngles(String command) {
   angleIndex++;
 
   // Send back the received angles
-  String string1 = "Received servos: ";
+  String string1;
 
   for (int i = 0; i < angleIndex; ++i) {
-    string1.concat(servosToMove[i]);
+    string1.concat(angles[i]);
     if (i < angleIndex - 1) {
       string1.concat(",");
     }
   }
+
   return string1;
 }
 
 test(extractCommand) {
   assertEqual(extractAngles("2:69,3:80,4:93,8:40"), (String) "69,80,93,40");
   assertEqual(extractServos("2:69,3:80,4:93,8:40"), (String) "2,3,4,8");
-  assertEqual(extractAngles("aaaaaaaa"), (String) "69,80,93,40");
-  assertEqual(extractServos("aaaaaaaa"), (String) "2,3,4,8");
 }
 
 void setup() {

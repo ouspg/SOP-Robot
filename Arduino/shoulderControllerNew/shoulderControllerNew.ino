@@ -71,6 +71,8 @@ void setup() {
 }
 
 void loop() {
+  // https://forum.arduino.cc/t/solved-serialusb-checking-if-connection-is-still-present/582448/3
+
   // The new version, uses id:angle commands
   if (SerialUSB.available() > 0) {
     String command = SerialUSB.readStringUntil('\n');
