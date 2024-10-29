@@ -79,7 +79,7 @@ class FaceTrackerMovementNode(Node):
             # Movement limits
             self.head_vertical_lower_limit = 0.8
             self.head_vertical_upper_limit = 1.5
-            self.head_pan_lower_limit = -0.25
+            self.head_pan_lower_limit = -0.75
             self.head_pan_upper_limit = 1.75
             self.eye_vertical_lower_limit = -0.7
             self.eye_vertical_upper_limit = -0.2
@@ -101,7 +101,7 @@ class FaceTrackerMovementNode(Node):
 
         # Middle point of image view
         self.middle_x = 640
-        self.middle_y = 400
+        self.middle_y = 480
         self.is_glancing = False
         self.idling = False # Used only for logging
 
@@ -246,7 +246,7 @@ class FaceTrackerMovementNode(Node):
 
         # Movement time is calculated based off the maximum travel distance available. Max pan from side to side is 4s, minimum movement time is 0.5s.
         # TODO tune this on real hardware to see what works! 
-        movement_time = int(max(abs(travel_distance) / max_idle_movement * 4000000000, 500000000))
+        movement_time = int(max(abs(travel_distance) / max_idle_movement * 3000000000, 750000000))
 
         # Commented for testing both head and eyes
         # if self.eyes_enabled:
@@ -278,7 +278,7 @@ class FaceTrackerMovementNode(Node):
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
         # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
         # TODO fine-tune timer on real robot to see what fits.
-        self.idle_timer.timer_period_ns = movement_time + random.uniform(500000000, 1500000000)
+        self.idle_timer.timer_period_ns = movement_time + random.uniform(750000000, 1500000000)
         self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
@@ -394,12 +394,12 @@ class FaceTrackerMovementNode(Node):
         x_diff = self.middle_x - x
         y_diff = self.middle_y - y
 
-        if abs(x_diff) < 100:
-            eye_x = x_diff
-            head_x = 0
-        else:
-            eye_x = x_diff * 2 / 3
-            head_x = x_diff / 3
+        #if abs(x_diff) < 100:
+         #   eye_x = x_diff
+          #  head_x = 0
+        #else:
+        eye_x = x_diff 
+        head_x = x_diff 
         if abs(y_diff) < 50:
             eye_y = y_diff
             head_y = 0
@@ -561,7 +561,10 @@ class FaceTrackerMovementNode(Node):
         self.head_action_client.send_goal_async(goal_msg)
         
     # TODO max time moved to 0.6s does this break anything?
-    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=800000000)):
+    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=None):
+        if duration == None:
+            x_diff = abs(self.head_state[0] - pan)
+            duration = Duration(sec=0, nanosec=max(int(300000000 * x_diff), 300000000))
         # self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
