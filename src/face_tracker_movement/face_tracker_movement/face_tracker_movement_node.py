@@ -229,20 +229,22 @@ class FaceTrackerMovementNode(Node):
         if self.simulation == True:
             self.head_state[0] = self.goal_pan
 
+        # Max travel distance
+        # TODO this should be a const calculated at the start!
+        max_travel_distance = abs(self.head_pan_lower_limit) + abs(self.head_pan_upper_limit)
+
+        max_idle_movement = 2 / 3 * max_travel_distance
+
         # Generate a random goal between the min and max pan limits
-        self.goal_pan = random.uniform(self.head_pan_lower_limit, self.head_pan_upper_limit)
+        self.goal_pan = random.uniform(max(self.head_pan_lower_limit, self.head_state[0] - max_idle_movement), min(self.head_pan_upper_limit, self.head_state[0] + max_idle_movement))
 
         # Travel distance is current head state minus the position of the goal (e.g. current state is -0.2, random generated goal is -0.6. Travel distance is 0.4. abs(-0.2 - -0.4))
         # self.head_state[0] refers to the current state of the pan servo.
         travel_distance = abs(self.head_state[0] - self.goal_pan)
 
-        # Max travel distance
-        # TODO this should be a const calculated at the start!
-        max_travel_distance = abs(self.head_pan_lower_limit) + abs(self.head_pan_upper_limit)
-
         # Movement time is calculated based off the maximum travel distance available. Max pan from side to side is 4s, minimum movement time is 0.5s.
         # TODO tune this on real hardware to see what works! 
-        movement_time = int(max(abs(travel_distance) / max_travel_distance * 4000000000, 500000000))
+        movement_time = int(max(abs(travel_distance) / max_idle_movement * 4000000000, 500000000))
 
         # Commented for testing both head and eyes
         # if self.eyes_enabled:
@@ -260,7 +262,7 @@ class FaceTrackerMovementNode(Node):
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
         # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
         # TODO fine-tune timer on real robot to see what fits.
-        self.idle_timer.timer_period_ns = movement_time + int(1000000000 * random.gauss(0.5, 1.5))
+        self.idle_timer.timer_period_ns = movement_time + random.gauss(500000000, 1500000000)
         self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
@@ -407,9 +409,8 @@ class FaceTrackerMovementNode(Node):
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
             if self.pan_diff != 0 or self.v_diff != 0:
                 self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
-                #time.sleep(0.3)
-        
-        #time.sleep(0.2)
+
+        # TODO memory of previous faces and look at their coordinates if you lose current face
 
     def nod(self, magnitude=0.4, delay=0.5, duration_of_individual_movements=0.4):
         """
