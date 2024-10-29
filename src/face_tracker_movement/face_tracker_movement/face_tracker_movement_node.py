@@ -70,6 +70,8 @@ class FaceTrackerMovementNode(Node):
             self.eye_vertical_multiplicator = -1
             self.eye_horizontal_multiplicator = -1
 
+            self.simulation = True
+
         else:
             self.logger.info(f"Running face_tracker_movement in hardware mode")
 
@@ -93,6 +95,8 @@ class FaceTrackerMovementNode(Node):
             self.head_vertical_multiplicator = 1
             self.eye_vertical_multiplicator = 1
             self.eye_horizontal_multiplicator = 1
+
+            self.simulation = False
 
 
         # Middle point of image view
@@ -219,13 +223,46 @@ class FaceTrackerMovementNode(Node):
         if self.idling == False:
             self.logger.info("Start idling...")
         self.idling = True
-        if self.eyes_enabled:
-            self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
+
+        # Only for simulator, gets around not getting servo positions 
+        # this might have a bugged interaction for the idling movement after tracking!
+        if self.simulation == True:
+            self.head_state[0] = self.goal_pan
+
+        # Max travel distance
+        # TODO this should be a const calculated at the start!
+        max_travel_distance = abs(self.head_pan_lower_limit) + abs(self.head_pan_upper_limit)
+
+        max_idle_movement = 2 / 3 * max_travel_distance
+
+        # Generate a random goal between the min and max pan limits
+        self.goal_pan = random.uniform(max(self.head_pan_lower_limit, self.head_state[0] - max_idle_movement), min(self.head_pan_upper_limit, self.head_state[0] + max_idle_movement))
+
+        # Travel distance is current head state minus the position of the goal (e.g. current state is -0.2, random generated goal is -0.6. Travel distance is 0.4. abs(-0.2 - -0.4))
+        # self.head_state[0] refers to the current state of the pan servo.
+        travel_distance = abs(self.head_state[0] - self.goal_pan)
+
+        # Movement time is calculated based off the maximum travel distance available. Max pan from side to side is 4s, minimum movement time is 0.5s.
+        # TODO tune this on real hardware to see what works! 
+        movement_time = int(max(abs(travel_distance) / max_idle_movement * 4000000000, 500000000))
+
+        # Commented for testing both head and eyes
+        # if self.eyes_enabled:
+            # self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
+
+        self.logger.info(f"Eye midpoint is: {self.eyes_center_position[0]}")
+
+        # Eyes will be biased to look in the direction of the head
+        # TODO Normal or Uniform distribution for eyes going up/down?
+        self.send_eye_goal(random.gauss(self.eye_horizontal_lower_limit, self.eye_horizontal_upper_limit), random.gauss(self.eye_vertical_lower_limit, self.eye_vertical_upper_limit))
+
+        
 
         if self.head_enabled:
-            self.goal_pan = random.uniform(self.head_pan_lower_limit, self.head_pan_upper_limit)
-            self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec= random.randint(1000000000, 4000000000)))
-        self.idle_timer.timer_period_ns = random.randint(1000000000, 4000000000)
+            self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
+        # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
+        # TODO fine-tune timer on real robot to see what fits.
+        self.idle_timer.timer_period_ns = movement_time + random.gauss(500000000, 1500000000)
         self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
@@ -337,6 +374,22 @@ class FaceTrackerMovementNode(Node):
 
     # Feel free to experiment with the timings to fine-tune behavior
     def analyze_coordinates(self, x, y):
+        # Calculate face movement
+        x_diff = self.middle_x - x
+        y_diff = self.middle_y - y
+
+        if abs(x_diff) < 100:
+            eye_x = x_diff
+            head_x = 0
+        else:
+            eye_x = x_diff * 2 / 3
+            head_x = x_diff / 3
+        if abs(y_diff) < 50:
+            eye_y = y_diff
+            head_y = 0
+        else:
+            eye_y = y_diff # This is only done because vertical head movement doesn't work!
+            head_y = 0
 
         if self.eyes_enabled:
             #self.logger.info('x: %d, y: %d' % (msg.x, msg.y))
@@ -350,7 +403,7 @@ class FaceTrackerMovementNode(Node):
                 self.is_glancing = True
                 self.logger.info('glance')
             else:
-                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(x, y)
+                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(eye_x, eye_y)
                 self.is_glancing = False
 
             # Move eyes
@@ -366,15 +419,14 @@ class FaceTrackerMovementNode(Node):
                 time.sleep(0.7)
                 return
         
-        if self.head_enabled:
-            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(x, y)
+        if self.head_enabled and (head_x != 0 or head_y != 0):
+            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(head_x, head_y)
             self.pan_diff = self.goal_pan - self.head_state[0]
             self.v_diff = self.goal_vertical_tilt - self.head_state[3]
             if self.pan_diff != 0 or self.v_diff != 0:
                 self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
-                time.sleep(0.3)
-        
-        time.sleep(0.2)
+
+        # TODO memory of previous faces and look at their coordinates if you lose current face
 
     def nod(self, magnitude=0.4, delay=0.5, duration_of_individual_movements=0.4):
         """
@@ -492,7 +544,8 @@ class FaceTrackerMovementNode(Node):
 
         self.head_action_client.send_goal_async(goal_msg)
         
-    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=400000000)):
+    # TODO max time moved to 0.6s does this break anything?
+    def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=Duration(sec=0, nanosec=800000000)):
         # self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
@@ -515,17 +568,7 @@ class FaceTrackerMovementNode(Node):
 
     Returns: Absolute pan and vertical tilt values for head servos
     """
-    def transform_face_location_to_head_values(self, face_location_x, face_location_y):
-       
-        # Calculate face movement
-        x_diff = self.middle_x - face_location_x
-        y_diff = self.middle_y - face_location_y
-
-        # If the face is close enough to the center, leave the small movements for the eyes.
-        if abs(x_diff) < 100:
-            x_diff = 0
-        if abs(y_diff) < 50:
-            y_diff = 0
+    def transform_face_location_to_head_values(self, x_diff, y_diff):
 
         # Transform face movement to head joint values
         # Head pan
@@ -535,6 +578,7 @@ class FaceTrackerMovementNode(Node):
         When eyes are used for movement, do not move head when there are multiple faces detected.
         Done to mitigate robot going back and forth between detected faces when they are roughly at the same distance.
         """
+        # TODO
         if self.visible_face_amount > 1 and self.eyes_enabled:
             h_coeff = 0
 
@@ -555,11 +599,7 @@ class FaceTrackerMovementNode(Node):
     Calculates new x and y location for the eyes corresponding to the face location coordinates given
     as arguments.
     """
-    def transform_face_location_to_eye_location(self, face_location_x, face_location_y):
-        
-        # Calculate face movement
-        x_diff = self.middle_x - face_location_x
-        y_diff = self.middle_y - face_location_y
+    def transform_face_location_to_eye_location(self, x_diff, y_diff):
 
         # Transform face movement to eye movement
         # Horizontal eye movement
