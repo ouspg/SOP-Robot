@@ -2,16 +2,17 @@
 
 const int NUM_SERVOS = 9;
 
-const int POT_PINS[2] = {A0, A1};
+const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 const int ServoMins[NUM_SERVOS] = {10, 10, 20, 0, 0, 0, 0, 55, 0};
 const int ServoMax[NUM_SERVOS] = {60, 180, 100, 60, 180, 180, 100, 115, 180};
 
+// Set these based on the degree limits to have accurate map from potentiometer to degree
+const int PotMins[NUM_SERVOS] = {140, 140, 0, 0, 0, 0, 0, 0, 0}
+const int PotMins[NUM_SERVOS] = {340, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023}
 
-const int PotMins[NUM_SERVOS] = {0, 140, 0, 0, 0, 0, 0, 0, 0}
-const int PotMins[NUM_SERVOS] = {1023, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023}
-
+// Set expected for 0 on emmpty, to not cause stopping
 const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
 
 /*
@@ -31,33 +32,32 @@ servo pin - servo function
 
 // Convert potentiometer values to degrees
 int potToDegree(int value, int servoIndex) {
-  int min = ServoMins[servoIndex];
-  int max = ServoMax[servoIndex];
-  int degree = map(value, 140, 900, min, max);
-  return degree;
+  int servoMin = ServoMins[servoIndex];
+  int servoMax = ServoMax[servoIndex];
+
+  int potMin = PotMins[servoIndex];
+  int potMax = PotMax[servoIndex];
+
+  return map(value, potMin, potMax, min, max);
 }
 
 Servo servos[NUM_SERVOS];
 
 void setup() {
   SerialUSB.begin(115200);
-  // Attach servos to pins and check if potentiometers have moved
 
-  // stupid hard coding, because all servos can't have a potentiometer
+  // Hard coded, because all servos can't have a potentiometer attached
+  // Has to be NUM_SERVOS long, to not break loops
   int currentPosL[NUM_SERVOS] = {potToDegree(analogRead(A0), 0)), potToDegree(analogRead(A1), 1), 0, 0, 0, 0, 0, 0, 0};
 
   for (int i = 0; i < NUM_SERVOS; ++i) {
-
-    int currentPos = currentPosL[i];
-    
-    if (abs(expectedStartingPos[i]) - currentPos) > 5 {
+    if (abs(expectedStartingPos[i]) - currentPosL[i]) > 5 {
       SerialUSB.println("Potentiometer misaligned on servo: ");
       SerialUSB.print(SERVO_PINS[i]);
       SerialUSB.println();
 
       // stop execution to avoid dmg
       while(1);
-
     }
   
     // Write the starting positions, so servos don't move when attached
@@ -122,13 +122,10 @@ void loop() {
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
       servos[servoIndex].write(constrainedAngle);
 
-      delay(1000);
-      /*
       // Delay so each instruction has time to complete
       while (abs(potToDegree(analogRead(POT_PINS[servoIndex]), servoIndex) - constrainedAngle) > 5) {
         delay(300);
       }
-      */
     }
 
     SerialUSB.println(analogRead(A0));
