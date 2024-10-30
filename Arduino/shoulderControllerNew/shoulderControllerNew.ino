@@ -2,13 +2,17 @@
 
 const int NUM_SERVOS = 9;
 
-const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
+const int POT_PINS[2] = {A0, A1};
 const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-const int ServoMins[NUM_SERVOS] = {0, 0, 20, 0, 0, 0, 0, 55, 0};
-const int ServoMax[NUM_SERVOS] = {180, 180, 100, 60, 180, 180, 100, 115, 180};
+const int ServoMins[NUM_SERVOS] = {10, 10, 20, 0, 0, 0, 0, 55, 0};
+const int ServoMax[NUM_SERVOS] = {60, 180, 100, 60, 180, 180, 100, 115, 180};
 
-const int expectedStartingPos[NUM_SERVOS] = {30, 90, 10, 0, 34, 80, 10, 0};
+
+const int PotMins[NUM_SERVOS] = {0, 140, 0, 0, 0, 0, 0, 0, 0}
+const int PotMins[NUM_SERVOS] = {1023, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023}
+
+const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
 
 /*
 servo pin - servo function
@@ -25,26 +29,27 @@ servo pin - servo function
        10 - ?
 */
 
- //can be replaced with constrain() ?
-int check(int value, int min, int max){
-  return (value + min < max) ? (min + value) : ((min + value > max ) ? max : value);
-}
-
-// convert potentiometer values to degrees
-int potToDegree(int value) {
-  return map(value, 0, 1023, 0, 180);
+// Convert potentiometer values to degrees
+int potToDegree(int value, int servoIndex) {
+  int min = ServoMins[servoIndex];
+  int max = ServoMax[servoIndex];
+  int degree = map(value, 140, 900, min, max);
+  return degree;
 }
 
 Servo servos[NUM_SERVOS];
 
 void setup() {
   SerialUSB.begin(115200);
-
   // Attach servos to pins and check if potentiometers have moved
 
-  for (int i = 0; i < NUM_SERVOS; ++i) {
-    int currentPos = potToDegree(analogRead(i));
+  // stupid hard coding, because all servos can't have a potentiometer
+  int currentPosL[NUM_SERVOS] = {potToDegree(analogRead(A0), 0)), potToDegree(analogRead(A1), 1), 0, 0, 0, 0, 0, 0, 0};
 
+  for (int i = 0; i < NUM_SERVOS; ++i) {
+
+    int currentPos = currentPosL[i];
+    
     if (abs(expectedStartingPos[i]) - currentPos) > 5 {
       SerialUSB.println("Potentiometer misaligned on servo: ");
       SerialUSB.print(SERVO_PINS[i]);
@@ -52,40 +57,36 @@ void setup() {
 
       // stop execution to avoid dmg
       while(1);
+
     }
-    
+  
+    // Write the starting positions, so servos don't move when attached
     servos[i].write(expectedStartingPos[i]);
     servos[i].attach(SERVO_PINS[i]);
   }
 
+  /*
   // Only R upper rotation
-  // int currentPos = potToDegree(analogRead(i));
+  int currentPos = potToDegree(analogRead(A1), 1);
+    if (abs(expectedStartingPos[1] - currentPos) > 5) {
+      SerialUSB.println("Potentiometer misaligned on servo: ");
+      SerialUSB.print(SERVO_PINS[1]);
+      SerialUSB.println();
 
-  //   if (abs(expectedStartingPos[1]) - currentPos) > 5 {
-  //     SerialUSB.println("Potentiometer misaligned on servo: ");
-  //     SerialUSB.print(SERVO_PINS[1]);
-  //     SerialUSB.println();
+      // stop execution to avoid dmg
+      while(1);
+    }
 
-  //     // stop execution to avoid dmg
-  //     while(1);
-  //   }
-  //   servos[1].attach(SERVO_PINS[1]);
+    servos[1].write(expectedStartingPos[1]);
+    servos[1].attach(SERVO_PINS[1]);
+
+    SerialUSB.println("Connected");
+    */
 }
 
 void loop() {
-  // Should work on zero, dtr() returns true when serial is connected.
-  // https://forum.arduino.cc/t/solved-serialusb-checking-if-connection-is-still-present/582448/3
-  if (!SerialUSB.dtr()) {
-    for (int i = 0; i < NUM_SERVOS; ++i) {
-      servos[i].write(expectedStartingPos[i]);
-      // Delay so each instruction has time to complete
-      while (abs(potToDegree(analogRead(POT_PINS[servoIndex])) - constrainedAngle) > 5) {
-        delay(300);
-      }
-    }
-  }
-
   // The new version, uses id:angle commands
+
   if (SerialUSB.available() > 0) {
     String command = SerialUSB.readStringUntil('\n');
 
@@ -121,11 +122,17 @@ void loop() {
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
       servos[servoIndex].write(constrainedAngle);
 
+      delay(1000);
+      /*
       // Delay so each instruction has time to complete
-      while (abs(potToDegree(analogRead(POT_PINS[servoIndex])) - constrainedAngle) > 5) {
+      while (abs(potToDegree(analogRead(POT_PINS[servoIndex]), servoIndex) - constrainedAngle) > 5) {
         delay(300);
       }
+      */
     }
+
+    SerialUSB.println(analogRead(A0));
+    SerialUSB.println(potToDegree(analogRead(A0), 0));
 
     // Send back the received angles
     SerialUSB.print("Received angles: ");
