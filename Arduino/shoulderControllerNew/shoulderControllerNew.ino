@@ -1,8 +1,10 @@
 #include <Servo.h>
 
 const int NUM_SERVOS = 9;
-const int POT_PINS[NUM_SERVOS] = {A0, A1, A2, A3, A4, A5};
+
+const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
+
 const int ServoMins[NUM_SERVOS] = {0, 0, 20, 0, 0, 0, 0, 55, 0};
 const int ServoMax[NUM_SERVOS] = {180, 180, 100, 60, 180, 180, 100, 115, 180};
 
@@ -71,7 +73,17 @@ void setup() {
 }
 
 void loop() {
+  // Should work on zero, dtr() returns true when serial is connected.
   // https://forum.arduino.cc/t/solved-serialusb-checking-if-connection-is-still-present/582448/3
+  if (!SerialUSB.dtr()) {
+    for (int i = 0; i < NUM_SERVOS; ++i) {
+      servos[i].write(expectedStartingPos[i]);
+      // Delay so each instruction has time to complete
+      while (abs(potToDegree(analogRead(POT_PINS[servoIndex])) - constrainedAngle) > 5) {
+        delay(300);
+      }
+    }
+  }
 
   // The new version, uses id:angle commands
   if (SerialUSB.available() > 0) {
