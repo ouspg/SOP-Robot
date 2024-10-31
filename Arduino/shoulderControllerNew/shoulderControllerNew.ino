@@ -12,7 +12,7 @@ const int ServoMax[NUM_SERVOS] = {60, 180, 100, 60, 180, 180, 100, 115, 180};
 const int PotMins[NUM_SERVOS] = {144, 140, 0, 0, 0, 0, 0, 0, 0};
 const int PotMax[NUM_SERVOS] = {360, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023};
 
-// Set expected for 0 on empty, to not cause stopping
+// Set expected for 0 on empty servos, to not trigger potentiometer check
 const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
 
 /*
@@ -30,7 +30,7 @@ servo pin - servo function
        10 - ?
 */
 
-// Convert potentiometer values to degrees
+// Converts potentiometer values to degrees
 int potToDegree(int value, int servoIndex) {
   int servoMin = ServoMins[servoIndex];
   int servoMax = ServoMax[servoIndex];
@@ -49,12 +49,12 @@ void setup() {
     delay(500);
   }
 
-  // Hard coded, because all servos can't have a potentiometer attached
   // Has to be NUM_SERVOS long, to not break loops
   int currentPosL[NUM_SERVOS] = {potToDegree(analogRead(A0), 0), potToDegree(analogRead(A1), 1), 0, 0, 0, 0, 0, 0, 0};
 
   for (int i = 0; i < NUM_SERVOS; ++i) {
     
+    //check if potentiometers have moved
     if (abs(expectedStartingPos[i] - currentPosL[i]) > 5) {
       SerialUSB.println("Potentiometer misaligned on servo: ");
       SerialUSB.print(SERVO_PINS[i]);
@@ -71,12 +71,11 @@ void setup() {
 }
 
 void loop() {
-  // Moves all joints to default when serial connection is lost
+  // Moves all joints to default position when serial connection is lost
   if (!SerialUSB.dtr()) {
     for (int i = 0; i < NUM_SERVOS; ++i) {
       servos[i].write(expectedStartingPos[i]);
     }
-
     while(1);
   }
 
