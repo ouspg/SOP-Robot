@@ -4,14 +4,14 @@
 
 # This file contains the servo IDs for the robot's head
 
-head_tilt_right_joint:
- ID: 1
+#head_tilt_right_joint:
+# ID: 1
 
-head_tilt_vertical_joint:
- ID: 2
+#head_tilt_vertical_joint:
+# ID: 2
 
-head_tilt_left_joint:
- ID: 3
+#head_tilt_left_joint:
+# ID: 3
 
 head_pan_joint:
  ID: 4

@@ -101,17 +101,17 @@ class FaceTrackerMovementNode(Node):
 
             self.simulation = False
 
-        self.camera_diagonal_fov = math.pi / 3  # 60° In degrees
+        self.camera_diagonal_fov = 1.19555054  # 60° In degrees
         self.camera_resolution_x = 1280
         self.camera_resolution_y = 960
         self.angle_per_pixel = self.camera_diagonal_fov / math.sqrt(self.camera_resolution_x**2 + self.camera_resolution_y**2)
         self.logger.info(f"{self.angle_per_pixel=}")
 
         # camera angle to eye and head servo angle coeffs (servo_angle = camera_angle * coeff)
-        self.camera_angle_eye_vertical_coeff = 4.58366236105
-        self.camera_angle_eye_horizontal_coeff = -3.05577490736
-        self.camera_angle_head_vertical_coeff = -3.05577490736
-        self.camera_angle_head_pan_coeff = -1.19175221387
+        self.camera_angle_eye_vertical_coeff = 4.01489
+        self.camera_angle_eye_horizontal_coeff = -2.67659
+        self.camera_angle_head_vertical_coeff = -2.67659
+        self.camera_angle_head_pan_coeff = -1.04387
 
         # Calculate camera angle constraints for eyes and head
         self.camera_angle_eye_vertical_lower_limit = self.eye_vertical_lower_limit / self.camera_angle_eye_vertical_coeff
@@ -468,24 +468,24 @@ class FaceTrackerMovementNode(Node):
         head_pan_angle = 0
         eyes_horizontal_angle = 0
         # Divide horizontal angle for head and eyes
-        if abs(horizontal_angle) < math.pi / 36:  # head is in center sector of 10 degrees TODO: Adjust angle
+        """ if abs(horizontal_angle) < math.pi / 36:  # head is in center sector of 10 degrees TODO: Adjust angle
             # if abs(self.eyes_state[0]) > abs(horizontal_angle):
             # Center the eyes over time
             # TODO The rate of centering can be dependent on face message frequency.
             eye_centering_multiplier = 0.2
             eyes_horizontal_angle = - self.eyes_state[0] * eye_centering_multiplier + horizontal_angle
             head_pan_angle = self.eyes_state[0] * eye_centering_multiplier
+        else: """
+        # Resolve eye movement - use 1/3 of total angle or move eyes to limit
+        if horizontal_angle > 0:
+            # Left movement
+            eyes_horizontal_angle = min(self.camera_angle_eye_horizontal_lower_limit - self.eyes_state[0], horizontal_angle / 3)
         else:
-            # Resolve eye movement - use 1/3 of total angle or move eyes to limit
-            if horizontal_angle > 0:
-                # Left movement
-                eyes_horizontal_angle = min(self.camera_angle_eye_horizontal_lower_limit - self.eyes_state[0], horizontal_angle / 3)
-            else:
-                # Right movement
-                eyes_horizontal_angle = max(self.camera_angle_eye_horizontal_upper_limit - self.eyes_state[0], horizontal_angle / 3)
-            # Use the remaining for head
-            # Applly movement limits later
-            head_pan_angle = horizontal_angle - eyes_horizontal_angle
+            # Right movement
+            eyes_horizontal_angle = max(self.camera_angle_eye_horizontal_upper_limit - self.eyes_state[0], horizontal_angle / 3)
+        # Use the remaining for head
+        # Applly movement limits later
+        head_pan_angle = horizontal_angle - eyes_horizontal_angle
         return head_pan_angle, eyes_horizontal_angle
     
     def divide_vertical_camera_angle_for_head_and_eyes(self, vertical_angle):
@@ -603,7 +603,7 @@ class FaceTrackerMovementNode(Node):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
         if duration == None:
             horizontal_diff = abs(self.eyes_servo_state[0] - horizontal)
-            duration = Duration(sec=0, nanosec=max(int(200000000 * horizontal_diff), 200000000))
+            duration = Duration(sec=0, nanosec=max(int(150000000 * horizontal_diff), 150000000))
 
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[horizontal * self.eye_horizontal_multiplicator, vertical * self.eye_vertical_multiplicator],
@@ -614,7 +614,7 @@ class FaceTrackerMovementNode(Node):
         self.eye_action_client.wait_for_server()
 
         self.eye_action_client.send_goal_async(goal_msg)
-        # self.logger.info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
+        self.logger.info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
 
     def send_horizontal_tilt_goal(self, horizontalTilt):
         goal_msg = FollowJointTrajectory.Goal()
@@ -630,8 +630,8 @@ class FaceTrackerMovementNode(Node):
     def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=None):
         if duration == None:
             x_diff = abs(self.head_state[0] - pan)
-            duration = Duration(sec=0, nanosec=max(int(300000000 * x_diff), 300000000))
-        # self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
+            duration = Duration(sec=0, nanosec=int(200000000 * x_diff))
+        self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],

@@ -120,7 +120,7 @@ def generate_launch_description():
         spawn_jsb_controller,
         *controller_spawners,
         node_robot_state_publisher,
-        rviz_node
+        #rviz_node
     ]
 
     return LaunchDescription(nodes)
