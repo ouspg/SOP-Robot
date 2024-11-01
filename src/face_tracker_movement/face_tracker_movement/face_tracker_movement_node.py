@@ -48,6 +48,9 @@ class FaceTrackerMovementNode(Node):
         # Set initial values
         if simulation:
             self.logger.info("Running face_tracker_movement in simulation mode")
+            self.logger.info("Notice that the camera is not moved in simulation, when face is moveing. " + 
+                             "This means that face location doesn't change, when head moves." +
+                             "Idle movement should be similar, but has some hacky solutions that make it work.")
 
             # Set initial values for simulation environment
             # Movement limits
@@ -636,7 +639,6 @@ class FaceTrackerMovementNode(Node):
     #   Center eyes
     def center_eyes(self, duration=None):
         self.send_eye_goal(self.eyes_center_position[0], self.eyes_center_position[1], duration)
-
 
     """
     Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance. Uses servo values.
