@@ -639,29 +639,29 @@ class FaceTrackerMovementNode(Node):
 
 
     """
-    Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance.
+    Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance. Uses servo values.
     """
-    def get_random_eye_location(self, distance_from_current_x_position=0):
+    def get_random_eye_location(self, distance_from_current_horizontal_position=0):
         # Get random x location for eyes
-        random_x_list = list()
-        if self.eye_horizontal_lower_limit < self.eyes_state[0] - distance_from_current_x_position:
-            random_x_list.append(random.uniform(
+        random_horizontal_list = list()
+        if self.eye_horizontal_lower_limit < self.eyes_servo_state[0] - distance_from_current_horizontal_position:
+            random_horizontal_list.append(random.uniform(
                 self.eye_horizontal_lower_limit, 
-                self.eyes_state[0] - distance_from_current_x_position
+                self.eyes_servo_state[0] - distance_from_current_horizontal_position
                 ))
-        if self.eye_horizontal_upper_limit > self.eyes_state[0] + distance_from_current_x_position:
-            random_x_list.append(random.uniform(
-                self.eyes_state[0] + distance_from_current_x_position,
+        if self.eye_horizontal_upper_limit > self.eyes_servo_state[0] + distance_from_current_horizontal_position:
+            random_horizontal_list.append(random.uniform(
+                self.eyes_servo_state[0] + distance_from_current_horizontal_position,
                 self.eye_horizontal_upper_limit
                 ))
-        if len(random_x_list) == 0:
-            self.logger.warning(f"Cannot get random eye position due to too large {distance_from_current_x_position =}" 
-                                "compared to eye max and minimum locaitons! Setting random_x to current position.")
-            random_x_list.append(self.eyes_state[0])
-        random_x = random.choice(random_x_list)
-        random_y = random.uniform(self.eye_vertical_lower_limit, self.eye_vertical_upper_limit)
+        if len(random_horizontal_list) == 0:
+            self.logger.warning(f"Cannot get random eye position due to too large {distance_from_current_horizontal_position =}" 
+                                "compared to eye max and minimum locaitons! Setting random_horizontal to current position.")
+            random_horizontal_list.append(self.eyes_servo_state[0])
+        random_horizontal = random.choice(random_horizontal_list)
+        random_vertical = random.uniform(self.eye_vertical_lower_limit, self.eye_vertical_upper_limit)
 
-        return random_x, random_y
+        return random_horizontal, random_vertical
 
 
 def main(args=None):
