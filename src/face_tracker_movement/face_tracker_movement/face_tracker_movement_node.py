@@ -101,10 +101,27 @@ class FaceTrackerMovementNode(Node):
 
             self.simulation = False
 
+        self.camera_diagonal_fov = math.pi / 3  # 60° In degrees
+        self.camera_resolution_x = 1280
+        self.camera_resolution_y = 960
+        self.angle_per_pixel = self.camera_diagonal_fov / math.sqrt(self.camera_resolution_x**2 + self.camera_resolution_y**2)
+        self.logger.info(f"{self.angle_per_pixel=}")
+
+        # camera angle to eye and head servo angle coeffs (servo_angle = camera_angle * coeff)
+        self.camera_angle_eye_vertical_coeff = 4.58366236105
+        self.camera_angle_eye_horizontal_coeff = -3.05577490736
+        self.camera_angle_head_vertical_coeff = -3.05577490736
+        self.camera_angle_head_pan_coeff = -1.19175221387
+
+        # Calculate camera angle constraints for eyes and head
+        self.camera_angle_eye_vertical_lower_limit = self.eye_vertical_lower_limit / self.camera_angle_eye_vertical_coeff
+        self.camera_angle_eye_vertical_upper_limit = self.eye_vertical_upper_limit / self.camera_angle_eye_vertical_coeff
+        self.camera_angle_eye_horizontal_lower_limit = self.eye_horizontal_lower_limit / self.camera_angle_eye_horizontal_coeff
+        self.camera_angle_eye_horizontal_upper_limit = self.eye_horizontal_upper_limit / self.camera_angle_eye_horizontal_coeff
 
         # Middle point of image view
-        self.middle_x = 640
-        self.middle_y = 480
+        self.middle_x = self.camera_resolution_x / 2
+        self.middle_y = self.camera_resolution_y / 2
         self.is_glancing = False
         self.idling = False # Used only for logging
 
@@ -112,13 +129,11 @@ class FaceTrackerMovementNode(Node):
         self.head_state = self.start_head_state[:]      # Tries to have the up-to-date head servo values.
 
         self.eyes_joint_ids = [9, 11]                   # Servo ids for eye joints. Order comes from eyes_controller: [eyes_shift_horizontal_joint, eyes_shift_vertical_joint]
-        self.eyes_state = self.eyes_center_position[:]      # Tries to have the up-to-date head servo values.
+        self.eyes_servo_state = self.eyes_center_position[:]      # Tries to have the up-to-date head servo values.
+        self.eyes_state = [self.eyes_servo_state[0] / self.camera_angle_eye_horizontal_coeff, self.eyes_servo_state[1] / self.camera_angle_eye_vertical_coeff]
 
         # Some variables
-        self.pan_diff = 0
         self.goal_pan = self.head_state[0]
-        self.v_diff = 0
-        self.goal_vertical_tilt = self.head_state[3]
 
         # Are head/eye joints used in the current configuration? 
         self.head_enabled = True
@@ -163,24 +178,25 @@ class FaceTrackerMovementNode(Node):
     def face_list_callback(self, msg):
         self.visible_face_amount = len(msg.faces)
 
-        # TODO: Make more sophisticated function for face movement
-
         # TODO Propably not needed to update every time (as goal is 30fps). Consider moving this to own timer or something.
         self.update_blocked_faces()
 
         face = self.select_face_to_track(msg.faces)
 
         if face:
-            # Calculate middle coordinates
-            x=round((face.top_left.x + face.bottom_right.x) / 2)
-            y=round((face.top_left.y + face.bottom_right.y) / 2)
-
             # Reset idle callback
             self.idle_timer.timer_period_ns = 2000000000  # 2s
             self.idle_timer.reset()
             self.idling = False
 
-            self.analyze_coordinates(x, y)
+            glance_percentage = 0.005 # Chance of executing a glance on each frame where a face has been detected. TODO: Decide on a good value
+            # Check if doing the glance or not
+            if random.uniform(0, 1) <= glance_percentage:
+                self.glance()
+                return  # Consider current head position old
+
+            self.track_face(face)
+
         
     # Get the current state of head joints. Updated at 20 Hz (see robot.yaml)
     def head_state_callback(self, msg):
@@ -195,10 +211,13 @@ class FaceTrackerMovementNode(Node):
     def eyes_state_callback(self, msg):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
-                self.eyes_state[i] = self.eyes_center_position[i]
+                self.eyes_servo_state[i] = self.eyes_center_position[i]
                 self.logger.info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
             else:
-                self.eyes_state[i] = val
+                # Servo angle
+                self.eyes_servo_state[i] = val
+                # Camera angle
+                self.eyes_state = [val[0] / self.camera_angle_eye_horizontal_coeff, val[1] / self.camera_angle_eye_vertical_coeff]
 
     def head_gesture_callback(self, msg):
         gesture = msg.data
@@ -218,6 +237,8 @@ class FaceTrackerMovementNode(Node):
             self.nod(**args)
         elif gesture == 'shake':
             self.head_shake(**args)
+        elif gesture == 'glance':
+            self.glance(**args)
         else:
             self.logger.info("Gesture not implemented!")
 
@@ -391,61 +412,92 @@ class FaceTrackerMovementNode(Node):
         self.preferred_face_id = None
         self.preferred_face_tracking_start_time = None
 
-    # Feel free to experiment with the timings to fine-tune behavior
-    def analyze_coordinates(self, x, y):
-        # Calculate face movement
+    def track_face(self, face):
+        """
+        Takes face message, calculates the head and eye movements from face location in pixels.
+        Sends the movement goals for head and eyes.
+        """
+        pan_angle_head = 0
+        vertical_angle_head = 0
+        horizontal_angle_eyes = 0
+        vertical_angle_eyes = 0
+
+        # Calculate the face middle coordinates
+        x=round((face.top_left.x + face.bottom_right.x) / 2)
+        y=round((face.top_left.y + face.bottom_right.y) / 2)
+
+        # Calculate movement in pixels
         x_diff = self.middle_x - x
         y_diff = self.middle_y - y
 
-        #if abs(x_diff) < 100:
-         #   eye_x = x_diff
-          #  head_x = 0
-        #else:
-        eye_x = x_diff 
-        head_x = x_diff 
-        if abs(y_diff) < 50:
-            eye_y = y_diff
-            head_y = 0
+        # Convert pixel values to camera angle
+        horizontal_angle = x_diff * self.angle_per_pixel
+        vertical_angle = y_diff * self.angle_per_pixel
+
+        if self.eyes_enabled and self.head_enabled:
+            # Head and eyes are enabled - Divide the angle of total movement for head and eyes
+            pan_angle_head, horizontal_angle_eyes = self.divide_horizontal_camera_angle_for_head_and_eyes(horizontal_angle)
+            vertical_angle_head, vertical_angle_eyes = self.divide_vertical_camera_angle_for_head_and_eyes(vertical_angle)
+
+        elif self.eyes_enabled:
+            # Only eyes are enabled - move only eyes
+            horizontal_angle_eyes = horizontal_angle
+            vertical_angle_eyes = vertical_angle
         else:
-            eye_y = y_diff # This is only done because vertical head movement doesn't work!
-            head_y = 0
+            pan_angle_head = horizontal_angle
+            vertical_angle_head = 0  # The vertical head movement is disabled
 
-        if self.eyes_enabled:
-            #self.logger.info('x: %d, y: %d' % (msg.x, msg.y))
-            glance_percentage = 0.005 # Chance of executing a glance on each frame where a face has been detected. TODO: Decide on a good value
-            randomvalue = random.uniform(0, 1)  
+        # Transform camera angles to servo angles
+        # Send movement goals
+        if self.eyes_enabled and (horizontal_angle_eyes != 0 or vertical_angle_eyes != 0):
+            eye_goal_horizontal, eye_goal_vertical = self.transform_camera_angle_to_eye_location(horizontal_angle_eyes, vertical_angle_eyes)
+            self.send_eye_goal(eye_goal_horizontal, eye_goal_vertical)
 
-            # Check if doing the glance or not
-            # TODO: Consider using head gestures for the glance
-            if randomvalue <= glance_percentage:
-                eye_location_x, eye_location_y = self.get_random_eye_location(distance_from_current_x_position = 0.5)
-                self.is_glancing = True
-                self.logger.info('glance')
+        if self.head_enabled and (pan_angle_head != 0 or vertical_angle_head != 0):
+            goal_pan, goal_vertical_tilt = self.transform_camera_angle_to_head_location(pan_angle_head, vertical_angle_head)
+            self.send_pan_and_vertical_tilt_goal(goal_pan, goal_vertical_tilt) 
+
+        # TODO memory of previous faces and look at their coordinates if you lose current face (in idle)
+
+    def divide_horizontal_camera_angle_for_head_and_eyes(self, horizontal_angle):
+        """
+        Divide horizontal camera angle for eyes and head.
+        If face is in center, but eyes are not centered, move eyes to center and head towards target horizontal angle.
+        Otherwise take 1/3 of camera angle for eyes or move eyes to limit. Use remaining angle for head.
+        """
+        head_pan_angle = 0
+        eyes_horizontal_angle = 0
+        # Divide horizontal angle for head and eyes
+        if abs(horizontal_angle) < math.pi / 36:  # head is in center sector of 10 degrees TODO: Adjust angle
+            # if abs(self.eyes_state[0]) > abs(horizontal_angle):
+            # Center the eyes over time
+            # TODO The rate of centering can be dependent on face message frequency.
+            eye_centering_multiplier = 0.2
+            eyes_horizontal_angle = - self.eyes_state[0] * eye_centering_multiplier + horizontal_angle
+            head_pan_angle = self.eyes_state[0] * eye_centering_multiplier
+        else:
+            # Resolve eye movement - use 1/3 of total angle or move eyes to limit
+            if horizontal_angle > 0:
+                # Left movement
+                eyes_horizontal_angle = min(self.camera_angle_eye_horizontal_lower_limit - self.eyes_state[0], horizontal_angle / 3)
             else:
-                eye_location_x, eye_location_y = self.transform_face_location_to_eye_location(eye_x, eye_y)
-                self.is_glancing = False
-
-            # Move eyes
-            self.send_eye_goal(eye_location_x, eye_location_y)
-
-            if self.visible_face_amount > 1:
-                time.sleep(0.5)
-
-            if self.is_glancing:
-                # Center the eyes back to the face after glancing
-                time.sleep(0.5)
-                self.center_eyes()
-                time.sleep(0.7)
-                return
-        
-        if self.head_enabled and (head_x != 0 or head_y != 0):
-            self.goal_pan, self.goal_vertical_tilt = self.transform_face_location_to_head_values(head_x, head_y)
-            self.pan_diff = self.goal_pan - self.head_state[0]
-            self.v_diff = self.goal_vertical_tilt - self.head_state[3]
-            if self.pan_diff != 0 or self.v_diff != 0:
-                self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.goal_vertical_tilt)
-
-        # TODO memory of previous faces and look at their coordinates if you lose current face
+                # Right movement
+                eyes_horizontal_angle = max(self.camera_angle_eye_horizontal_upper_limit - self.eyes_state[0], horizontal_angle / 3)
+            # Use the remaining for head
+            # Applly movement limits later
+            head_pan_angle = horizontal_angle - eyes_horizontal_angle
+        return head_pan_angle, eyes_horizontal_angle
+    
+    def divide_vertical_camera_angle_for_head_and_eyes(self, vertical_angle):
+        """
+        Divide vertical camera angle for eyes and head.
+        Currently vertical angle is not divided because head vertical movement is not working.
+        TODO: Modify function when taking vertical movement into use
+        """
+        # vertical movement
+        eyes_vertical_angle = vertical_angle
+        head_vertical_angle = 0  # The vertical head movement is disabled
+        return head_vertical_angle, eyes_vertical_angle
 
     def nod(self, magnitude=0.4, delay=0.5, duration_of_individual_movements=0.4):
         """
@@ -488,6 +540,17 @@ class FaceTrackerMovementNode(Node):
             pan = self.head_state[0]
             self.fixed_gaze_head_turn('left', pan_start - pan, duration_of_individual_movements)
 
+    def glance(self, delay=0.5, duration_of_individual_movements=None):
+        """
+        Makes a eye glance to random direction
+        """
+        if self.head_state:
+            eye_location_horizontal, eye_location_vertical = self.get_random_eye_location(distance_from_current_horizontal_position = 0.5)
+            self.send_eye_goal(eye_location_horizontal, eye_location_vertical)
+            # Center the eyes back to the face after glancing
+            time.sleep(delay)
+            self.center_eyes(duration=duration_of_individual_movements)
+
     def fixed_gaze_head_turn(self, direction, magnitude, duration=0.4):
         """
         Turns the head while keeping the gaze steady by rotating the eyes in the opposite direction as the head.
@@ -499,7 +562,7 @@ class FaceTrackerMovementNode(Node):
         """
         duration = Duration(sec=0, nanosec=int(duration * 100000000))
         pan, _, _, verticalTilt = self.head_state
-        eye_x, eye_y = self.eyes_state
+        eye_x, eye_y = self.eyes_servo_state
 
         if direction == 'left':
             if pan + magnitude > self.head_pan_upper_limit:
@@ -539,8 +602,8 @@ class FaceTrackerMovementNode(Node):
     def send_eye_goal(self, horizontal, vertical, duration=None):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
         if duration == None:
-            x_diff = abs(self.eyes_state[0] - horizontal)
-            duration = Duration(sec=0, nanosec=max(int(200000000 * x_diff), 200000000))
+            horizontal_diff = abs(self.eyes_servo_state[0] - horizontal)
+            duration = Duration(sec=0, nanosec=max(int(200000000 * horizontal_diff), 200000000))
 
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[horizontal * self.eye_horizontal_multiplicator, vertical * self.eye_vertical_multiplicator],
@@ -584,57 +647,43 @@ class FaceTrackerMovementNode(Node):
         #time.sleep(1) # Wait a bit so that the new goal doesn't override the old, still-in-process goal
         self.send_pan_and_vertical_tilt_goal(pan, verticalTilt)
 
-    """
-    Calculates new pan and vertical tilt values corresponding to the face location coordinates given
-    as arguments. 
 
-    Returns: Absolute pan and vertical tilt values for head servos
-    """
-    def transform_face_location_to_head_values(self, x_diff, y_diff):
+    def transform_camera_angle_to_eye_location(self, horizontal_angle, vertical_angle):
+        """
+        Calculate eye horizontal and vertical servo joint angles from camera angle
+        Use limits if final location is outside movement limits.
+        """
+        
+        # Transform camera angle to eye servo angle
+        # Horizontal eye movement
+        eye_location_x = horizontal_angle * self.camera_angle_eye_horizontal_coeff + self.eyes_servo_state[0]
+        # Vertical eye movement
+        eye_location_y = vertical_angle * self.camera_angle_eye_vertical_coeff + self.eyes_servo_state[1]
+        
+        eye_location_y = max(min(self.eye_vertical_upper_limit, eye_location_y), self.eye_vertical_lower_limit)
+        eye_location_x = max(min(self.eye_horizontal_upper_limit, eye_location_x), self.eye_horizontal_lower_limit)
+
+        return eye_location_x, eye_location_y
+
+    def transform_camera_angle_to_head_location(self, horizontal_angle, vertical_angle):
+        """
+        Calculate head pan and vertical servo joint angles from camera angle.
+        Use limits if final location is outside movement limits.
+        """
 
         # Transform face movement to head joint values
         # Head pan
-        h_coeff = -0.00078
-
-        """
-        When eyes are used for movement, do not move head when there are multiple faces detected.
-        Done to mitigate robot going back and forth between detected faces when they are roughly at the same distance.
-        """
-        # TODO
-        if self.visible_face_amount > 1 and self.eyes_enabled:
-            h_coeff = 0
-
-        pan = x_diff * h_coeff + self.head_state[0]
+        pan = horizontal_angle * self.camera_angle_head_pan_coeff + self.head_state[0]
         pan = max(min(self.head_pan_upper_limit, pan), self.head_pan_lower_limit) # limit head values to reasonable values
         # Alternative version: Adjust the pan value slightly to make smaller movements a bit bigger
         #pan = 0.8 * abs(x_diff * h_coeff) ** 0.8
         #pan = math.copysign(pan, -x_diff)
 
         # Vertical tilt
-        v_coeff = -0.002
-        vertical_tilt = y_diff * v_coeff + self.head_state[3]
+        vertical_tilt = vertical_angle * self.camera_angle_eye_vertical_coeff + self.head_state[3]
         vertical_tilt = max(min(self.head_vertical_upper_limit, vertical_tilt), self.head_vertical_lower_limit)
 
         return pan, vertical_tilt
-
-    """
-    Calculates new x and y location for the eyes corresponding to the face location coordinates given
-    as arguments.
-    """
-    def transform_face_location_to_eye_location(self, x_diff, y_diff):
-
-        # Transform face movement to eye movement
-        # Horizontal eye movement
-        h_coeff = -0.002
-        eye_location_x = x_diff * h_coeff + self.eyes_state[0]
-        # Vertical eye movement
-        v_coeff = 0.003
-        eye_location_y = y_diff * v_coeff + self.eyes_state[1]
-        
-        eye_location_y = max(min(self.eye_vertical_upper_limit, eye_location_y), self.eye_vertical_lower_limit)
-        eye_location_x = max(min(self.eye_horizontal_upper_limit, eye_location_x), self.eye_horizontal_lower_limit)
-
-        return eye_location_x, eye_location_y
 
     #   Center eyes
     def center_eyes(self, duration=None):
