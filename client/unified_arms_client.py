@@ -33,6 +33,8 @@ class UnifiedArms(Node):
         self.publisher                    = self.create_publisher(String, FEEDBACK_TOPIC_NAME, 10)
         self.left_hand_gesture_publisher  = self.create_publisher(String, "/l_hand/l_hand_topic", 10)
         self.right_hand_gesture_publisher = self.create_publisher(String, "/r_hand/r_hand_topic", 10)
+        self.ids = [2,3]
+        self.pos = [45, 120]
 
         #Create main program subscriber
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
@@ -41,8 +43,8 @@ class UnifiedArms(Node):
 
         self.SHOULDER_POSITIONS = {
             "zero": [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
-            "rps_1": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
-            "rps_2": [30.0, 90.0, 10.0, 0.0, 79.0, 80.0, 75.0, 0.0]
+            "rps_1": [55.0, 110.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
+            "rps_2": [35.0, 70.0, 10.0, 0.0, 79.0, 80.0, 75.0, 0.0]
         }
 
         self.HAND_ACTIONS = [
@@ -119,6 +121,8 @@ class UnifiedArms(Node):
         if arg in self.ACTION_PATTERNS:
             # Action is a pattern
             self.perform_action_from_pattern(arg)
+        elif arg == "pos":
+            self.arm_gesture(arg)
         else:
             self.logger.info("Action not implemented")
 
@@ -158,39 +162,27 @@ class UnifiedArms(Node):
     def arm_gesture(self, action, hand="both"):
         self.logger.info(f"Action: {action}")
 
-        goal_msg = JointTrajectory()
-        goal_msg.joint_names = ["r_shoulder_lift_joint", "r_shoulder_out_joint", "r_upper_arm_roll_joint", "r_elbow_flex_joint",
-        "l_shoulder_lift_joint", "l_shoulder_out_joint", "l_upper_arm_roll_joint", "l_elbow_flex_joint"]
-        point = JointTrajectoryPoint()
 
-        if hand == "right":
-            # Replace left hand values with -1.0 which means do nothing for that servo
-            point.positions = self.SHOULDER_POSITIONS[action][4:] + [-1.0, -1.0, -1.0, -1.0]
-        elif hand == "left":
-            # Replace right hand values with -1.0 which means do nothing for that servo
-            point.positions = [-1.0, -1.0, -1.0, -1.0] + self.SHOULDER_POSITIONS[action][:4]
-        elif hand == "both":
-            point.positions = self.SHOULDER_POSITIONS[action]
+        positions = []
+        if action in self.SHOULDER_POSITIONS:
+            if hand == "right":
+                # Replace left hand values with -1.0 which means do nothing for that servo
+                positions = self.SHOULDER_POSITIONS[action][4:] + [-1.0, -1.0, -1.0, -1.0]
+            elif hand == "left":
+                # Replace right hand values with -1.0 which means do nothing for that servo
+                positions = [-1.0, -1.0, -1.0, -1.0] + self.SHOULDER_POSITIONS[action][:4]
+            elif hand == "both":
+                positions = self.SHOULDER_POSITIONS[action]
+            else:
+                self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
         else:
-            self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
-
-        dur = Duration()
-        dur.sec = 1
-        point.time_from_start = dur
-        goal_msg.points = [point]
-
-        self.logger.info(f"Sending request")
-        print(type(goal_msg))
-        #self.publisher_.publish(goal_msg)
-
-        # Extract the desired angles from the received message
+            positions = self.pos
         angles = []
-        for point in goal_msg.points:
-            angles.extend(point.positions)
-
+        for i in range(len(self.ids)):
+            angles.append(f"{self.ids[i]}:{positions[i]}")
         # Prepare the command to be sent to the Arduino
         command = ','.join(str(angle) for angle in angles)
-
+        self.logger.info(command)
         # Note: Could return at the start of function
         # but this leaves room for implementation for fake robot
         if self.serial:
