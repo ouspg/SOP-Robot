@@ -35,7 +35,8 @@ class UnifiedArms(Node):
         self.right_hand_gesture_publisher = self.create_publisher(String, "/r_hand/r_hand_topic", 10)
         self.ids = [2,3]
         self.pos = [45, 120]
-
+        self.zero = [30, 90]
+        self.hold = [70, 70]
         #Create main program subscriber
         self.gesture_subscription = self.create_subscription(String, "/arms/arm_action", self.action_callback, 10)
 
@@ -121,10 +122,9 @@ class UnifiedArms(Node):
         if arg in self.ACTION_PATTERNS:
             # Action is a pattern
             self.perform_action_from_pattern(arg)
-        elif arg == "pos":
-            self.arm_gesture(arg)
         else:
-            self.logger.info("Action not implemented")
+            self.arm_gesture(arg)
+
 
 
     def perform_action_from_pattern(self, pattern):
@@ -175,8 +175,12 @@ class UnifiedArms(Node):
                 positions = self.SHOULDER_POSITIONS[action]
             else:
                 self.logger.info(f"Should be 'left', 'right' or 'both'(default) instead of: '{hand}'")
-        else:
+        elif action == "pos":
             positions = self.pos
+        elif action == "zer":
+            positions = self.zero
+        elif action == "hold":
+            positions = self.hold
         angles = []
         for i in range(len(self.ids)):
             angles.append(f"{self.ids[i]}:{positions[i]}")
