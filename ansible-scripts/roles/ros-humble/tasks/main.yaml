@@ -129,7 +129,7 @@
   ansible.builtin.pip:
     name:
       - opencv-python
-      - deepface==0.0.89
+      - deepface==0.0.92
       - progressbar
     virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
 

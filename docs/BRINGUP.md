@@ -46,7 +46,7 @@ This opens the view to see the camera feed and what face detection recognizes.
 To get the eyes moving. (Don't be scared about eyes flipping awkwardly to the side. More about this at the end...)
 
 ```console
-ros2 run face_tracker_movement face_tracker_movement_node eyes
+ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p functionality:=eyes -p simulation:=true 
 ```
 
 Success! You are done. Eyes should "follow" your face. This implementation has a flaw that it is made for the real hardware, so the eye_movement node controls the eyes like it would have the real hardware. In other words, the eyes have different "zero" position in simulation compared to real hardware.

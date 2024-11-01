@@ -63,10 +63,10 @@ Currently, the following actions are available.
 
 ## How to run
 
-Ensure that you have set up the robot as instructed in [Robot bring-up](../docs/BRINGUP.md). head_gestures_node also needs to be started up, which can be done with the following command:
+Ensure that you have set up the robot as instructed in [Robot bring-up](../docs/BRINGUP.md). face_tracker_movement_node also needs to be started up, which can be done with the following command:
 
 ```
-ros2 run head_gestures head_gestures_node
+ros2 run face_tracker_movement face_tracker_movement_node
 ```
 
 Once the robot is running properly, open a new command window, and start the client with the following command.

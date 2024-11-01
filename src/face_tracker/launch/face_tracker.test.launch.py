@@ -16,7 +16,7 @@ def generate_launch_description():
         namespace="face_tracker",
         parameters=[
             {
-                "lip_movement_detection": True,
+                "lip_movement_detection": False,
                 "face_recognition": True,
                 "correlation_tracking": False,
                 "cluster_similarity_threshold": 0.3,

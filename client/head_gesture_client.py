@@ -7,7 +7,7 @@ class HeadGestureClient(Node):
     def __init__(self):
         super().__init__("head_gesture_client")
 
-        self.head_gesture_publisher = self.create_publisher(String, "/head_gestures/head_gesture_topic", 10)
+        self.head_gesture_publisher = self.create_publisher(String, "/face_tracker_movement/head_gesture_topic", 10)
         self.available_commands = ["nod", "shake"]
         self.exit_commands = ["quit", "exit"]
 

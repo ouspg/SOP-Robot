@@ -196,12 +196,14 @@ class FaceTrackerNode(Node):
         for face in faces:
             occurances = []
             for i in face["previous_occurances"]:
-                occurance = Occurance(start_time=str(i["start_time"]), end_time=str(i["end_time"]), duration=str(i["duration"]))
+                occurance = Occurance(start_time=float(i["start_time"]), end_time=float(i["end_time"]), duration=float(i["duration"]))
                 occurances.append(occurance)
             msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
-                                bottom_right=Point2(x=face["right"], y=face["bottom"]),
-                                face_id=face["face_id"],
-                                occurances=occurances)
+                               bottom_right=Point2(x=face["right"], y=face["bottom"]),
+                               diagonal=face["diagonal"],
+                               face_id=face["face_id"],
+                               speaking=face["speaking"],
+                               occurances=occurances)
             msg_faces.append(msg_face)
 
         # Draw fps to the frame

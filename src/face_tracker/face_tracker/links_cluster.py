@@ -16,7 +16,6 @@ import numpy as np
 from scipy.spatial.distance import cosine
 
 CONVERSATION_TRESHOLD = 30  # Threshold value to determine that two conversations is same (s)
-CONVERSATION_MINIMUM_LENGTH = 1  # Minimum lenght of conversation
 
 class Subcluster:
     """Class for subclusters and edges between subclusters."""
@@ -33,12 +32,11 @@ class Subcluster:
         # information, when this identity is seen
         now = time.time()
         self.last_seen = now
-        self.current_conversation = {
+        self.conversations: List[Dict] = [{
             "start_time": now,
             "end_time": now,
             "duration": 0,
-        }
-        self.conversations: List[Dict] = []
+        }]
         self.total_time_on_camera = 0
 
     def add(self, vector: np.ndarray):
@@ -56,20 +54,17 @@ class Subcluster:
         # Update time, when seen
         now = time.time()
         if now - self.last_seen <= CONVERSATION_TRESHOLD:
-            # Determine, that conversation is still going
-            self.current_conversation["end_time"] = now 
-            self.current_conversation["duration"] = self.current_conversation["end_time"] - self.current_conversation["start_time"]
+            # conversation is still going
+            self.conversations[-1]["end_time"] = now 
+            self.conversations[-1]["duration"] = self.conversations[-1]["end_time"] - self.conversations[-1]["start_time"]
             self.total_time_on_camera += now - self.last_seen
         else:
-            # last conversation is ended -> start new one
-            if self.current_conversation["duration"] >= CONVERSATION_MINIMUM_LENGTH:
-                # Save prevous conversation
-                self.conversations.append(self.current_conversation)
-            self.current_conversation = {
+            # conversation is ended -> start new one
+            self.conversations.append({
                 "start_time": now,
                 "end_time": now,
                 "duration": 0,
-            }
+            })
 
         self.last_seen = now
 
@@ -124,28 +119,6 @@ class Cluster:
 
         # Merge time info
         sc_1.conversations = self.__combine_conversation_lists([sc_1.conversations, sc_2.conversations])
-        
-        if (sc_1.current_conversation["end_time"] >= sc_2.current_conversation["start_time"]
-                and sc_1.current_conversation["start_time"] <= sc_2.current_conversation["end_time"]):
-            # Conversations overlap -> combine them
-            sc_1.current_conversation["start_time"] = min(sc_1.current_conversation["start_time"], 
-                                                        sc_2.current_conversation["start_time"])
-            sc_1.current_conversation["end_time"] = max(sc_1.current_conversation["end_time"], 
-                                                        sc_2.current_conversation["end_time"])
-            sc_1.current_conversation["duration"] = sc_1.current_conversation["end_time"] - sc_1.current_conversation["start_time"]
-        else:
-            if sc_1.current_conversation["start_time"] < sc_2.current_conversation["start_time"]:
-                conv_latest = sc_2.current_conversation
-                conv_older = sc_1.current_conversation
-            else:
-                conv_latest = sc_1.current_conversation
-                conv_older = sc_2.current_conversation
-
-            # Conversations do not overlap -> choose latest conversation
-            sc_1.current_conversation = conv_latest
-            # Add older conversation to conversations list
-            if conv_older["duration"] >= CONVERSATION_MINIMUM_LENGTH:
-                sc_1.conversations.append(conv_older)
 
         if delete_merged:
             self.subclusters = self.subclusters[:sc_idx2] \
@@ -160,8 +133,9 @@ class Cluster:
         """
         return self.__combine_conversation_lists([sc.conversations for sc in self.subclusters])
 
-    @staticmethod
-    def __combine_conversation_lists(conversation_lists: list):
+    # @staticmethod
+    def __combine_conversation_lists(self, conversation_lists: list):
+        self.logger.info(f"{conversation_lists=}")
         conversations = []
         # current_conversations = []
         for conversation_list in conversation_lists:
@@ -202,7 +176,7 @@ class LinksCluster:
         if len(self.clusters) == 0:
             # Handle first vector
             self.clusters.append(Cluster(Subcluster(new_vector, store_vectors=self.store_vectors)))
-            return None
+            return self.clusters[0].as_dict()
 
         best_subcluster = None
         best_similarity = -np.inf

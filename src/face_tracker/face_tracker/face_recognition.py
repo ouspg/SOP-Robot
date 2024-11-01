@@ -1,26 +1,18 @@
-import numpy as np
-import scipy
-
 from deepface import DeepFace
 from deepface.models.FacialRecognition import FacialRecognition
-from deepface.modules.verification import find_threshold
 
 class FaceRecognizer(object):
 
-    def __init__(self, db_path, logger, model_name, detector_backend):
+    def __init__(self, logger, model_name, detector_backend):
         """
         Initialize face recognizer, and create embeddings in the intialization
         """
         self.logger = logger
-        self.db_path = db_path
         self.model_name = model_name
         self.detector_backend = detector_backend
 
         # build models once to store them in the memory
         self.model: FacialRecognition = DeepFace.build_model(model_name=model_name)
-
-        # find custom values for this input set
-        self.target_size = self.model.input_shape
 
         logger.info(f"facial recognition model {model_name} is just built")
 
@@ -42,7 +34,6 @@ class FaceRecognizer(object):
         """
         face_objs = DeepFace.extract_faces(
             img_path=img,
-            target_size=self.target_size,
             detector_backend=self.detector_backend,
             enforce_detection=False,
         )
