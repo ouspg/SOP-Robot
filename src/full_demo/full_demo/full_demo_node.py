@@ -3,8 +3,10 @@ from rclpy.node import Node
 
 from std_msgs.msg import String, Bool
 
-from face_tracker_msgs.msg import Faces
+from face_tracker_msgs.msg import Faces, Face
 from face_tracker_msgs.msg import Point2
+
+from time import time
 
 from enum import Enum
 
@@ -31,11 +33,19 @@ class FullDemoNode(Node):
 
         self.arm_action_publisher = self.create_publisher(String, "/arms/arm_action", 10)
 
+        # Get focused face from face_tracker_movement_node
+        self.focused_face_subscription = self.create_subscription(Face, "/face_tracker_movement/focused_face", self.focused_face_callback, 10)
+
         self.tts_ready = True
         # Turn off listening for now
         self.speech_recognizer_can_listen.publish(Bool(data=False))
         self.robot_state = State.IDLE
         self.get_logger().info("switched state to IDLE")
+
+        # Stores faces that have been greeted to not keep saying hello over and over again
+        self.face_greet_time = {}  # Store the last greet time for each face_id
+        self.last_greet_time = 0 # Store the time of the last hello
+
 
     def say_hello(self, msg):
         if self.tts_ready and self.robot_state == State.IDLE:
@@ -84,6 +94,44 @@ class FullDemoNode(Node):
             self.get_logger().info("switched state to THINKING")
             self.speech_recognizer_can_listen.publish(Bool(data=False))
             self.chatbot_input.publish(msg)
+    
+    def focused_face_callback(self, face):
+        '''
+        Callback function to decide what to do when a new face is focused.
+
+        If the face has been seen before, the person will be greeted again.
+        This can only occur once every 2 minutes per person.
+        '''
+        num_occurrences = len(face.occurances)
+    
+        self.get_logger().info(f"Occurrances: {num_occurrences}")
+        
+        current_time = time()
+
+        if num_occurrences > 1 and current_time - self.last_greet_time > 30:
+
+            if face.face_id in self.face_greet_time:
+                # Calculate time since the last greeting
+                elapsed_time = current_time - self.face_greet_time[face.face_id]
+                if elapsed_time < 120:
+                    self.get_logger().info(f"Already greeted {face.face_id} within the previous 2 minutes.")
+                    return
+
+            # Update the last greet time for this face_id
+            self.face_greet_time[face.face_id] = current_time
+            
+            # Say hello
+            self.get_logger().info(f"Saying hello to previously seen person: {face.face_id}")
+
+            # This is stolen from say_hello. Should be merged into a singular command or sent further along!
+            if self.tts_ready and self.robot_state == State.IDLE:
+                self.robot_state = State.LISTENING
+                self.get_logger().info("switched state to LISTENING")
+                self.tts_message_publisher.publish(String(data="Tervetuloa takaisin"))
+                # self.arm_action_publisher.publish(String(data="wave"))
+                self.t = self.create_timer(30, self.close_timer)
+                self.speech_recognizer_can_listen.publish(Bool(data=True))
+
 
 def main():
     rclpy.init()

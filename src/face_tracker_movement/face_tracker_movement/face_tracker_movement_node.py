@@ -11,7 +11,7 @@ from control_msgs.action import FollowJointTrajectory
 from control_msgs.msg import JointTrajectoryControllerState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
-from face_tracker_msgs.msg import Point2, Faces
+from face_tracker_msgs.msg import Point2, Faces, Face
 from std_msgs.msg import String, Float32
 
 
@@ -44,6 +44,8 @@ class FaceTrackerMovementNode(Node):
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/controller_state', self.eyes_state_callback, 5)
 
         self.head_gesture_subscription = self.create_subscription(String, '/face_tracker_movement/head_gesture_topic', self.head_gesture_callback, 10)
+
+        self.focused_face_publisher = self.create_publisher(Face, '/face_tracker_movement/focused_face', 10)
 
         # Set initial values
         if simulation:
@@ -252,8 +254,6 @@ class FaceTrackerMovementNode(Node):
         # if self.eyes_enabled:
             # self.send_eye_goal(self.get_random_eye_location()[0], self.eyes_center_position[1])
 
-        self.logger.info(f"Eye midpoint is: {self.eyes_center_position[0]}")
-
         # Eyes will be biased to look in the direction of the head
         # TODO Normal or Uniform distribution for eyes going up/down?
 
@@ -323,6 +323,8 @@ class FaceTrackerMovementNode(Node):
         # selected_face can be None
         if selected_face:
             if not self.previous_face or selected_face.face_id != self.previous_face.face_id:
+                # Publish selected face for other nodes to work with
+                self.focused_face_publisher.publish(selected_face)
                 self.logger.info(f"Tracking face with id={selected_face.face_id}")
             if not self.preferred_face_id:
                 self.add_preferred_face(selected_face)
