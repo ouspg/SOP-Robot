@@ -5,7 +5,7 @@ from rclpy.node import Node
 import rclpy
 
 from std_msgs.msg import String
-from tts_msgs.srv import StringToWav
+
 
 #import logging
 
@@ -41,7 +41,7 @@ class QaBotClientNode(Node):
         self.indexing_pipeline = TextIndexingPipeline(self.document_store)
         self.indexing_pipeline.run_batch(file_paths=self.files_to_index)
         self.retriever = BM25Retriever(document_store=self.document_store)
-        self.reader = FARMReader(model_name_or_path="timpal0l/mdeberta-v3-base-squad2", use_gpu=False)
+        self.reader = FARMReader(model_name_or_path="timpal0l/mdeberta-v3-base-squad2", use_gpu=True)
         self.pipe = ExtractiveQAPipeline(self.reader, self.retriever)
         self.greetings = ["terve", "hei", "päivää", "moi", "iltaa", "huomenta", "moikka"]
 
@@ -62,7 +62,7 @@ class QaBotClientNode(Node):
         )
         if(pred['answers'][0].score < 0.3):
             final_response_text = "Anteeksi, en tiedä vastausta"
-            self.get_logger().info("Retrieved score was %s for answer %s" % (pred['answers'][0].score, pred['answers'[0].answer]))
+            #self.get_logger().info("Retrieved score was %s for answer %s" % (pred['answers'][0].score, pred['answers'[0].answer]))
         else:
             final_response_text = pred['answers'][0].answer
             self.get_logger().info("Found answer: %s with score %s" % ((final_response_text), pred['answers'][0].score))
@@ -72,7 +72,7 @@ def main():
     rclpy.init()
     qaclient = QaBotClientNode()
     rclpy.spin(qaclient)
-    node.destroy_node()
+    qaclient.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':

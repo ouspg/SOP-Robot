@@ -13,6 +13,7 @@ class SpeechRecognizerNode(Node):
         super().__init__('speech_recognizer_node')
         self.publisher_ = self.create_publisher(String, 'recognized_speech', 10)
         self.subscription = self.create_subscription(Bool, "can_listen", self.callback, 10)
+        self.model="./src/speech_recognizer/resource/whisper-model.bin"
         self.r = sr.Recognizer()
         self.m  = sr.Microphone()
         with self.m as source:
@@ -27,9 +28,9 @@ class SpeechRecognizerNode(Node):
         
 
 
-    def listen(self, recognizer, audio):
+    def listen(self, recognizer: sr.Recognizer, audio: sr.AudioData):
             try:
-                text = recognizer.recognize_google(audio, language="fi" )
+                text = recognizer.recognize_whisper(audio,model=self.model, language="fi" )
                 print(f"You said: {text}")
                 req = String()
                 req.data = text
