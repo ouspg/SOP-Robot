@@ -29,7 +29,6 @@ class FullDemoNode(Node):
         self.chatbot_output = self.create_subscription(String, "chatbot/chatbot_response", self.on_chatbot_response,10)
 
         self.face_list_subscription = self.create_subscription(Faces, "/face_tracker/face_topic", self.update_face_count, 2)
-        self.new_face_subscription = self.create_subscription(Point2, "/face_tracker/face_location_topic", self.say_hello, 2)
 
         self.arm_action_publisher = self.create_publisher(String, "/arms/arm_action", 10)
 
@@ -44,15 +43,15 @@ class FullDemoNode(Node):
 
         # Stores faces that have been greeted to not keep saying hello over and over again
         self.face_greet_time = {}  # Store the last greet time for each face_id
-        self.last_greet_time = 0 # Store the time of the last hello
 
 
-    def say_hello(self, msg):
+    def say_hello(self, greeting):
         if self.tts_ready and self.robot_state == State.IDLE:
+            self.get_logger().info(f"Greeting person: {greeting}")
             self.robot_state = State.LISTENING
             self.get_logger().info("switched state to LISTENING")
-            self.tts_message_publisher.publish(String(data="Hei, kysy minulta mitä vaan"))
-            self.arm_action_publisher.publish(String(data="wave"))
+            self.tts_message_publisher.publish(String(data=greeting))
+            self.arm_action_publisher.publish(String(data="hold"))
             self.t = self.create_timer(30, self.close_timer)
             self.speech_recognizer_can_listen.publish(Bool(data=True))
     
@@ -82,6 +81,7 @@ class FullDemoNode(Node):
     def close_timer(self):
         self.destroy_timer(self.t)
         self.robot_state = State.IDLE
+        self.arm_action_publisher.publish(String(data="zer"))
         self.get_logger().info("switched state to IDLE")
 
 
@@ -108,39 +108,30 @@ class FullDemoNode(Node):
         
         current_time = time()
 
-        if num_occurrences > 1 and current_time - self.last_greet_time > 30 and face.occurances[-1].duration < 20:
+        if num_occurrences > 1:
+            if face.occurances[-1].duration < 20:
             
             # Check that at least one occurance is long enough
-            for occurance in face.occurances:
-                if occurance.duration > 15:
-                    break
-            else:
-                # All occurances are too short
-                return
-
-            if face.face_id in self.face_greet_time:
-                # Calculate time since the last greeting
-                elapsed_time = current_time - self.face_greet_time[face.face_id]
-                if elapsed_time < 120:
-                    self.get_logger().info(f"Already greeted {face.face_id} within the previous 2 minutes.")
+                for occurance in face.occurances:
+                    if occurance.duration > 6:
+                        break
+                else:
+                    # All occurances are too short
                     return
 
-            # Update the last greet time for this face_id
-            self.face_greet_time[face.face_id] = current_time
-            self.last_greet_time = current_time
+                if face.face_id in self.face_greet_time:
+                    # Calculate time since the last greeting
+                    elapsed_time = current_time - self.face_greet_time[face.face_id]
+                    if elapsed_time < 120:
+                        self.get_logger().info(f"Already greeted {face.face_id} within the previous 2 minutes.")
+                        return
 
-            # Say hello
-            self.get_logger().info(f"Saying hello to previously seen person: {face.face_id}")
+                # Update the last greet time for this face_id
+                self.face_greet_time[face.face_id] = current_time
 
-            # This is stolen from say_hello. Should be merged into a singular command or sent further along!
-            if self.tts_ready and self.robot_state == State.IDLE:
-                self.robot_state = State.LISTENING
-                self.get_logger().info("switched state to LISTENING")
-                self.tts_message_publisher.publish(String(data="Tervetuloa takaisin"))
-                # self.arm_action_publisher.publish(String(data="wave"))
-                self.t = self.create_timer(30, self.close_timer)
-                self.speech_recognizer_can_listen.publish(Bool(data=True))
-
+                self.say_hello(greeting="Tervetuloa takaisin")
+        else:
+            self.say_hello(greeting="Hei, kysy minulta mitä vaan")
 
 def main():
     rclpy.init()
