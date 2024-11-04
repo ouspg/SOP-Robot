@@ -323,8 +323,9 @@ class FaceTrackerMovementNode(Node):
         # selected_face can be None
         if selected_face:
             if not self.previous_face or selected_face.face_id != self.previous_face.face_id:
-                # Publish selected face for other nodes to work with
-                self.focused_face_publisher.publish(selected_face)
+                # Publish selected face if in near interaction for other nodes to work with
+                if selected_face.diagonal > self.near_interaction_treshold:
+                    self.focused_face_publisher.publish(selected_face)
                 self.logger.info(f"Tracking face with id={selected_face.face_id}")
             if not self.preferred_face_id:
                 self.add_preferred_face(selected_face)

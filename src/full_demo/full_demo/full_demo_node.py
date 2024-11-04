@@ -108,7 +108,15 @@ class FullDemoNode(Node):
         
         current_time = time()
 
-        if num_occurrences > 1 and current_time - self.last_greet_time > 30:
+        if num_occurrences > 1 and current_time - self.last_greet_time > 30 and face.occurances[-1].duration < 20:
+            
+            # Check that at least one occurance is long enough
+            for occurance in face.occurances:
+                if occurance.duration > 15:
+                    break
+            else:
+                # All occurances are too short
+                return
 
             if face.face_id in self.face_greet_time:
                 # Calculate time since the last greeting
@@ -119,7 +127,8 @@ class FullDemoNode(Node):
 
             # Update the last greet time for this face_id
             self.face_greet_time[face.face_id] = current_time
-            
+            self.last_greet_time = current_time
+
             # Say hello
             self.get_logger().info(f"Saying hello to previously seen person: {face.face_id}")
 
