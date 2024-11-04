@@ -15,7 +15,7 @@ from typing import List, Dict
 import numpy as np
 from scipy.spatial.distance import cosine
 
-CONVERSATION_TRESHOLD = 30  # Threshold value to determine that two conversations is same (s)
+CONVERSATION_TRESHOLD = 15  # Threshold value to determine that two conversations is same (s)
 
 class Subcluster:
     """Class for subclusters and edges between subclusters."""
