@@ -20,7 +20,6 @@ Joint -> Servo mappings are defined in two files. Configuration file connects se
   * `src/arm_pack`  - not use in current configuration
   * `src/eye_movement`  - runs action client to create eye motion commands based on the face tracking information
   * `src/face_tracker`  - tracks the faces using camera feed and calculates locations and distances of faces and detects mouth movement.
-  * `src/head_gestures`  - not use in current configuration
   * `src/inmoov_description`  - robot files, which define the robot geometry and configuration for simulation (URDF, SRDF & rviz configuration)
   * `src/robot`  - robot launch files & servo controller configurations
   * `src/robot_hardware`  - hardware interface for ros2_controller, communicates with U2D2 via dynamixel workbench
