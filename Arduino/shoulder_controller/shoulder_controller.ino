@@ -6,9 +6,9 @@ const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 const int ServoMins[NUM_SERVOS] = {10, 10, 20, 0, 0, 0, 0, 55, 0};
-const int ServoMax[NUM_SERVOS] = {60, 180, 100, 60, 180, 180, 100, 115, 180};
+const int ServoMax[NUM_SERVOS] = {80, 180, 100, 60, 180, 180, 100, 115, 180};
 
-
+// values based on manual measurements from each potentiometer
 const int PotMins[NUM_SERVOS] = {144, 140, 0, 0, 0, 0, 0, 0, 0};
 const int PotMax[NUM_SERVOS] = {360, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023};
 
@@ -54,15 +54,18 @@ void setup() {
 
   for (int i = 0; i < NUM_SERVOS; ++i) {
     
+    // Uncomment if you want to check if all servos are in default position on startup
+    /*
     //check if potentiometers have moved
     if (abs(expectedStartingPos[i] - currentPosL[i]) > 5) {
-      SerialUSB.println("Potentiometer misaligned on servo: ");
+      SerialUSB.println("Potentiometer misaligned on servo: ");sdd
       SerialUSB.print(SERVO_PINS[i]);
       SerialUSB.println();
 
       // stop execution to avoid dmg
       while(1);
     }
+    */
     
     // Write the starting positions, so servos don't move when attached
     servos[i].write(expectedStartingPos[i]);
@@ -76,7 +79,13 @@ void loop() {
     for (int i = 0; i < NUM_SERVOS; ++i) {
       servos[i].write(expectedStartingPos[i]);
     }
-    while(1);
+    SerialUSB.end();
+
+    // restart serial, and waits for connection
+    SerialUSB.begin(115200);
+    while (!SerialUSB) {
+      delay(500);
+    }
   }
 
   if (SerialUSB.available() > 0) {
@@ -111,7 +120,7 @@ void loop() {
     for (int i = 0; i < angleIndex; ++i) {
       int servoIndex = servosToMove[i] - 2;
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
-      servos[servoIndex].write(constrainedAngle);      
+      servos[servoIndex].write(constrainedAngle);
     }
 
     // Send back the received angles
