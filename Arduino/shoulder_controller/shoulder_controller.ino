@@ -3,8 +3,12 @@
 const int NUM_SERVOS = 9;
 
 const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
+
+// Servo pins are used as IDs, later logic subtracts 2 from the ID to get index
+// For this to work servo pin has to be >= 2
 const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
 
+// All mins and maxs need to have the same index as the corresponding servo pin
 const int ServoMins[NUM_SERVOS] = {10, 10, 20, 0, 0, 0, 0, 55, 0};
 const int ServoMax[NUM_SERVOS] = {80, 180, 100, 60, 180, 180, 100, 115, 180};
 
@@ -12,7 +16,7 @@ const int ServoMax[NUM_SERVOS] = {80, 180, 100, 60, 180, 180, 100, 115, 180};
 const int PotMins[NUM_SERVOS] = {144, 140, 0, 0, 0, 0, 0, 0, 0};
 const int PotMax[NUM_SERVOS] = {360, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023};
 
-// Set expected for 0 on empty servos, to not trigger potentiometer check
+// Set expected to 0 on empty servos, to not trigger potentiometer check
 const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
 
 /*
@@ -58,7 +62,7 @@ void setup() {
     /*
     //check if potentiometers have moved
     if (abs(expectedStartingPos[i] - currentPosL[i]) > 5) {
-      SerialUSB.println("Potentiometer misaligned on servo: ");sdd
+      SerialUSB.println("Unexpected starting position on servo: ");
       SerialUSB.print(SERVO_PINS[i]);
       SerialUSB.println();
 
@@ -81,7 +85,7 @@ void loop() {
     }
     SerialUSB.end();
 
-    // restart serial, and waits for connection
+    // Restart serial, and wait for connection
     SerialUSB.begin(115200);
     while (!SerialUSB) {
       delay(500);
@@ -118,7 +122,9 @@ void loop() {
 
     // set angles on specified servos
     for (int i = 0; i < angleIndex; ++i) {
+      // !! subtract 2 from the ID to get the index, servo pin has to be >= 2 !!
       int servoIndex = servosToMove[i] - 2;
+      // constrain to min and max per servo
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
       servos[servoIndex].write(constrainedAngle);
     }
