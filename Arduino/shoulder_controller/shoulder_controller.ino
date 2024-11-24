@@ -9,12 +9,12 @@ const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 // All mins and maxs need to have the same index as the corresponding servo pin
-const int ServoMins[NUM_SERVOS] = {10, 10, 20, 0, 0, 0, 0, 55, 0};
-const int ServoMax[NUM_SERVOS] = {80, 180, 100, 60, 180, 180, 100, 115, 180};
+const int ServoMins[NUM_SERVOS] = {10, 10,  20,  0,  0,   0,   0,   55,  0};
+const int ServoMax[NUM_SERVOS] = { 80, 180, 100, 60, 180, 180, 100, 115, 180};
 
 // values based on manual measurements from each potentiometer
-const int PotMins[NUM_SERVOS] = {144, 140, 0, 0, 0, 0, 0, 0, 0};
-const int PotMax[NUM_SERVOS] = {360, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023};
+const int PotMins[NUM_SERVOS] = {144, 140, 0,    0,    0,    0,    0,    0,    0};
+const int PotMax[NUM_SERVOS] = { 360, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023};
 
 // Set expected to 0 on empty servos, to not trigger potentiometer check
 const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
@@ -54,7 +54,17 @@ void setup() {
   }
 
   // Has to be NUM_SERVOS long, to not break loops
-  int currentPosL[NUM_SERVOS] = {potToDegree(analogRead(A0), 0), potToDegree(analogRead(A1), 1), 0, 0, 0, 0, 0, 0, 0};
+  int currentPosL[NUM_SERVOS] = {
+    potToDegree(analogRead(A0), 0),
+    potToDegree(analogRead(A1), 1),
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  };
 
   for (int i = 0; i < NUM_SERVOS; ++i) {
     
