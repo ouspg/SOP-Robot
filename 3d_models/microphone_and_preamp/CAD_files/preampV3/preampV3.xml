@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>E:\lipasto\preampV3\preampV3.kicad_sch</source>
+    <date>18/04/2024 17.51.24</date>
+    <tool>Eeschema 7.0.1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>preampV3.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>C_1206</value>
+      <footprint>fab:C_1206</footprint>
+      <datasheet>https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf</datasheet>
+      <libsource lib="fab" part="C_1206" description="Unpolarized capacitor, SMD, 1206"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, SMD, 1206"/>
+      <property name="ki_keywords" value="cap capacitor unpolarized 1206 C GRT31CC8YA106ME01L C3216X7R1H105K160AB C3216X7R2A104K160AA CC1206CRNPO9BN1R0 CC1206JRNPO9BN100 CC1206JRNPO9BN101 CC1206KKX7RCBB102 CC1206KRX7R9BB103"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1ab6a609-eb02-48ce-bb4e-9177dab208ba</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>C_1206</value>
+      <footprint>fab:C_1206</footprint>
+      <datasheet>https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf</datasheet>
+      <libsource lib="fab" part="C_1206" description="Unpolarized capacitor, SMD, 1206"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, SMD, 1206"/>
+      <property name="ki_keywords" value="cap capacitor unpolarized 1206 C GRT31CC8YA106ME01L C3216X7R1H105K160AB C3216X7R2A104K160AA CC1206CRNPO9BN1R0 CC1206JRNPO9BN100 CC1206JRNPO9BN101 CC1206KKX7RCBB102 CC1206KRX7R9BB103"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9b44ff21-56ba-426a-a87d-06f70131f92c</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>TTH_capacitor</value>
+      <footprint>fab:PinHeader_1x02_P2.54mm_Vertical_THT_D1.4mm</footprint>
+      <libsource lib="fab" part="Conn_PinHeader_1x02_P2.54mm_Vertical_THT_D1.4mm" description="Male connector, single row"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Male connector, single row"/>
+      <property name="ki_keywords" value="single row male connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>388b65f1-0c56-4e0d-b764-766bf9346448</tstamps>
+    </comp>
+    <comp ref="J3">
+      <value>5V input (optional)</value>
+      <footprint>fab:PinHeader_1x02_P2.54mm_Horizontal_SMD</footprint>
+      <libsource lib="fab" part="Conn_PinHeader_1x02_P2.54mm_Horizontal_SMD" description="Male connector, single row"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Male connector, single row"/>
+      <property name="ki_keywords" value="single row male connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a1ea095f-b7ee-4a05-80d7-f679f767504a</tstamps>
+    </comp>
+    <comp ref="J4">
+      <value>Microphone connector</value>
+      <footprint>fab:PinHeader_1x03_P2.54mm_Horizontal_SMD</footprint>
+      <libsource lib="fab" part="Conn_PinHeader_1x03_P2.54mm_Horizontal_SMD" description="Male connector, single row"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Male connector, single row"/>
+      <property name="ki_keywords" value="single row male connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b6aa9e84-f111-41e3-b344-5052cfc8d5a8</tstamps>
+    </comp>
+    <comp ref="mic_out2">
+      <value>Sound output</value>
+      <footprint>fab:PinHeader_1x01_P2.54mm_Horizontal_SMD</footprint>
+      <libsource lib="fab" part="Conn_PinHeader_1x01_P2.54mm_Horizontal_SMD" description="Connector pin header 2.54mm pitch horizontal SMD"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Connector pin header 2.54mm pitch horizontal SMD"/>
+      <property name="ki_keywords" value="Connector pin header 2.54mm pitch horizontal SMD GBC36SGSN-M89"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d2547b44-5afe-4a3c-8745-9181bf0121ee</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>2k</value>
+      <footprint>fab:R_1206</footprint>
+      <libsource lib="fab" part="R_1206" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor RC1206FR-074M99L RC1206FR-07499KL RC1206FR-0749K9L RC1206FR-0749R9L RC1206FR-074R99L ERJ-8BWJR100V RC1206FR-070RL RC1206FR-071RL RC1206FR-0710RL RC1206FR-07100RL RC1206FR-07499RL RC1206FR-071KL RC1206FR-074K99L RC1206FR-0710KL RC1206FR-07100KL RC1206FR-071ML RC1206FR-0710ML PT1206FR-070R1L"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6e95287f-4910-4f4e-ade8-7949378ab3d6</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>1k</value>
+      <footprint>fab:R_1206</footprint>
+      <libsource lib="fab" part="R_1206" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor RC1206FR-074M99L RC1206FR-07499KL RC1206FR-0749K9L RC1206FR-0749R9L RC1206FR-074R99L ERJ-8BWJR100V RC1206FR-070RL RC1206FR-071RL RC1206FR-0710RL RC1206FR-07100RL RC1206FR-07499RL RC1206FR-071KL RC1206FR-074K99L RC1206FR-0710KL RC1206FR-07100KL RC1206FR-071ML RC1206FR-0710ML PT1206FR-070R1L"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6459456d-552e-4b63-bd5f-5dbdd3fb5234</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>1k</value>
+      <footprint>fab:R_1206</footprint>
+      <libsource lib="fab" part="R_1206" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor RC1206FR-074M99L RC1206FR-07499KL RC1206FR-0749K9L RC1206FR-0749R9L RC1206FR-074R99L ERJ-8BWJR100V RC1206FR-070RL RC1206FR-071RL RC1206FR-0710RL RC1206FR-07100RL RC1206FR-07499RL RC1206FR-071KL RC1206FR-074K99L RC1206FR-0710KL RC1206FR-07100KL RC1206FR-071ML RC1206FR-0710ML PT1206FR-070R1L"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c145cddb-ef8e-42e0-9b66-26c5e27303db</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>0ohm</value>
+      <footprint>fab:R_1206</footprint>
+      <libsource lib="fab" part="R_1206" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor RC1206FR-074M99L RC1206FR-07499KL RC1206FR-0749K9L RC1206FR-0749R9L RC1206FR-074R99L ERJ-8BWJR100V RC1206FR-070RL RC1206FR-071RL RC1206FR-0710RL RC1206FR-07100RL RC1206FR-07499RL RC1206FR-071KL RC1206FR-074K99L RC1206FR-0710KL RC1206FR-07100KL RC1206FR-071ML RC1206FR-0710ML PT1206FR-070R1L"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cb104a69-5cb7-4417-94e0-efe26ff7a8ce</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>NMA0505SC</value>
+      <footprint>Converter_DCDC:Converter_DCDC_Murata_NMAxxxxSC_THT</footprint>
+      <datasheet>http://power.murata.com/data/power/ncl/kdc_nma.pdf</datasheet>
+      <libsource lib="Regulator_Switching" part="NMA0505SC" description="+/-100mA Isolated 1W Dual output DC/DC Converter Module, 5V Input Voltage, +/-5V Output Voltage, SIP3"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="+/-100mA Isolated 1W Dual output DC/DC Converter Module, 5V Input Voltage, +/-5V Output Voltage, SIP3"/>
+      <property name="ki_keywords" value="Murata isolated isolation dc-dc converter"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9376b10e-5d3b-47cc-badb-773305949dd1</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>NE5534</value>
+      <footprint>opamp:DIP794W45P254L959H508Q8</footprint>
+      <datasheet>http://www.ti.com/lit/ds/symlink/ne5534.pdf</datasheet>
+      <libsource lib="Amplifier_Operational" part="NE5534" description="Single Low-Noise Operational Amplifiers, DIP-8/SOIC-8"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="preampV3.kicad_sch"/>
+      <property name="ki_description" value="Single Low-Noise Operational Amplifiers, DIP-8/SOIC-8"/>
+      <property name="ki_keywords" value="single opamp"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b2dba627-685f-4f47-ad9c-9745799bfbb5</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Amplifier_Operational" part="NE5534">
+      <description>Single Low-Noise Operational Amplifiers, DIP-8/SOIC-8</description>
+      <docs>http://www.ti.com/lit/ds/symlink/ne5534.pdf</docs>
+      <footprints>
+        <fp>DIP*W7.62mm*</fp>
+        <fp>SOIC*3.9x4.9mm*P1.27mm*</fp>
+        <fp>TO?5*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">NE5534</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/ne5534.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="BAL" type="input"/>
+        <pin num="2" name="-" type="input"/>
+        <pin num="3" name="+" type="input"/>
+        <pin num="4" name="V-" type="power_in"/>
+        <pin num="5" name="COMP" type="input"/>
+        <pin num="6" name="" type="output"/>
+        <pin num="7" name="V+" type="power_in"/>
+        <pin num="8" name="C/B" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="Regulator_Switching" part="NMA0505SC">
+      <description>+/-100mA Isolated 1W Dual output DC/DC Converter Module, 5V Input Voltage, +/-5V Output Voltage, SIP3</description>
+      <docs>http://power.murata.com/data/power/ncl/kdc_nma.pdf</docs>
+      <footprints>
+        <fp>Converter*DCDC*Murata*NMAxxxxSC*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">NMA0505SC</field>
+        <field name="Footprint">Converter_DCDC:Converter_DCDC_Murata_NMAxxxxSC_THT</field>
+        <field name="Datasheet">http://power.murata.com/data/power/ncl/kdc_nma.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VIN+" type="power_in"/>
+        <pin num="2" name="VIN-" type="power_in"/>
+        <pin num="4" name="VOUT-" type="power_out"/>
+        <pin num="5" name="0V" type="power_out"/>
+        <pin num="6" name="VOUT+" type="power_out"/>
+      </pins>
+    </libpart>
+    <libpart lib="fab" part="C_1206">
+      <description>Unpolarized capacitor, SMD, 1206</description>
+      <docs>https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf</docs>
+      <footprints>
+        <fp>*C*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_1206</field>
+        <field name="Footprint">fab:C_1206</field>
+        <field name="Datasheet">https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="fab" part="Conn_PinHeader_1x01_P2.54mm_Horizontal_SMD">
+      <description>Connector pin header 2.54mm pitch horizontal SMD</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>*PinHeader*1x01*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_PinHeader_1x01_P2.54mm_Horizontal_SMD</field>
+        <field name="Footprint">fab:PinHeader_1x01_P2.54mm_Horizontal_SMD</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="fab" part="Conn_PinHeader_1x02_P2.54mm_Horizontal_SMD">
+      <description>Male connector, single row</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>*PinHeader*1x02*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_PinHeader_1x02_P2.54mm_Horizontal_SMD</field>
+        <field name="Footprint">fab:PinHeader_1x02_P2.54mm_Horizontal_SMD</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="fab" part="Conn_PinHeader_1x02_P2.54mm_Vertical_THT_D1.4mm">
+      <description>Male connector, single row</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>*PinHeader*1x02*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_PinHeader_1x02_P2.54mm_Vertical_THT_D1.4mm</field>
+        <field name="Footprint">fab:PinHeader_1x02_P2.54mm_Vertical_THT_D1.4mm</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="fab" part="Conn_PinHeader_1x03_P2.54mm_Horizontal_SMD">
+      <description>Male connector, single row</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>*PinHeader*1x03*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_PinHeader_1x03_P2.54mm_Horizontal_SMD</field>
+        <field name="Footprint">fab:PinHeader_1x03_P2.54mm_Horizontal_SMD</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="fab" part="R_1206">
+      <description>Resistor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>*R*1206*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R_1206</field>
+        <field name="Footprint">fab:R_1206</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Amplifier_Operational">
+      <uri>C:\Users\Toni\kicad7\7.0\share\kicad\symbols\/Amplifier_Operational.kicad_sym</uri>
+    </library>
+    <library logical="Regulator_Switching">
+      <uri>C:\Users\Toni\kicad7\7.0\share\kicad\symbols\/Regulator_Switching.kicad_sym</uri>
+    </library>
+    <library logical="fab">
+      <uri>C:/Users/Toni/Documents/KiCad/libraries/kicad/fab.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="+5V">
+      <node ref="J4" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="VOUT+" pintype="power_out"/>
+      <node ref="U2" pin="7" pinfunction="V+" pintype="power_in"/>
+    </net>
+    <net code="2" name="-5V">
+      <node ref="U1" pin="4" pinfunction="VOUT-" pintype="power_out"/>
+      <node ref="U2" pin="4" pinfunction="V-" pintype="power_in"/>
+    </net>
+    <net code="3" name="GND">
+      <node ref="J4" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="0V" pintype="power_out"/>
+    </net>
+    <net code="4" name="IN">
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="J4" pin="2" pinfunction="Pin_2" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(J1-Pin_2)">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="J1" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="U2" pin="6" pintype="output"/>
+    </net>
+    <net code="6" name="Net-(R1-Pad2)">
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(U2-+)">
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="U2" pin="3" pinfunction="+" pintype="input"/>
+    </net>
+    <net code="8" name="Net-(U2--)">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="-" pintype="input"/>
+    </net>
+    <net code="9" name="OUT">
+      <node ref="J1" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="mic_out2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+    </net>
+    <net code="10" name="USB+">
+      <node ref="J3" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="VIN+" pintype="power_in"/>
+    </net>
+    <net code="11" name="USB-">
+      <node ref="J3" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="VIN-" pintype="power_in"/>
+    </net>
+    <net code="12" name="unconnected-(U2-BAL-Pad1)">
+      <node ref="U2" pin="1" pinfunction="BAL" pintype="input"/>
+    </net>
+    <net code="13" name="unconnected-(U2-COMP-Pad5)">
+      <node ref="U2" pin="5" pinfunction="COMP" pintype="input"/>
+    </net>
+    <net code="14" name="unconnected-(U2-C{slash}B-Pad8)">
+      <node ref="U2" pin="8" pinfunction="C/B" pintype="input"/>
+    </net>
+  </nets>
+</export>
