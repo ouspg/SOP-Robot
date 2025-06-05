@@ -418,7 +418,7 @@ tiktoken==0.8.0
 tokenizers==0.15.2
 toml==0.10.2
 topic-monitor==0.20.5
-torch==2.4.1
+torch==2.7.1
 tqdm==4.66.5
 trajectory-msgs==4.2.4
 transformers==4.39.3
