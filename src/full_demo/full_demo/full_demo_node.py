@@ -19,7 +19,7 @@ class FullDemoNode(Node):
     def __init__(self):
         super().__init__("full_demo")
         # ROS topics
-        self.tts_message_publisher = self.create_publisher(String, "response", 10)
+        self.tts_message_publisher = self.create_publisher(String, "chatbot_response", 10)
         self.tts_can_listen_subscription = self.create_subscription(Bool, "can_listen", self.update_tts_ready,10)
 
         self.speech_recognizer_can_listen = self.create_publisher(Bool, "speech_recognizer/can_listen", 10)

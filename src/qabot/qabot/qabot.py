@@ -3,7 +3,7 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 
 import rclpy
-
+import random
 from std_msgs.msg import String
 
 
@@ -55,13 +55,15 @@ class QaBotClientNode(Node):
             pass
         
     def chatbot_worker_callback(self, data):
+        self.get_logger().info(data)
         if(data == "hei"):
             return("terve")
         pred = self.pipe.run(
             query=data, params={"Retriever": {"top_k": 10}, "Reader": {"top_k":5}}
         )
         if(pred['answers'][0].score < 0.3):
-            final_response_text = "Anteeksi, en tiedä vastausta"
+            #final_response_text = "Anteeksi, en tiedä vastausta"
+            final_response_text = random.choice(self.greetings)
             #self.get_logger().info("Retrieved score was %s for answer %s" % (pred['answers'][0].score, pred['answers'[0].answer]))
         else:
             final_response_text = pred['answers'][0].answer

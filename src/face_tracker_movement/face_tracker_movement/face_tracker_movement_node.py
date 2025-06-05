@@ -141,6 +141,9 @@ class FaceTrackerMovementNode(Node):
         self.head_enabled = True
         self.eyes_enabled = True
 
+        # slow down the robot tracking to not flood the robot module
+        self.last_published_tracking_goal = 0
+
         # Face info
         self.visible_face_amount = 0
         self.previous_face = None  # TODO: Not yet used
@@ -196,8 +199,11 @@ class FaceTrackerMovementNode(Node):
             if random.uniform(0, 1) <= glance_percentage:
                 self.glance()
                 return  # Consider current head position old
-
-            self.track_face(face)
+            
+            # Slow donw how often the goal is sent
+            if time.time() - self.last_published_tracking_goal > 0.1:
+                self.track_face(face)
+                self.last_published_tracking_goal = time.time()
 
         
     # Get the current state of head joints. Updated at 20 Hz (see robot.yaml)

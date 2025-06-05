@@ -7,3 +7,10 @@ sleep 5
 gnome-terminal --tab -- bash -c "ros2 run rqt_image_view rqt_image_view /face_tracker/image_face & ros2 launch face_tracker face_tracker.test.launch.py; exec bash"
 # Launch other ros2 nodes
 gnome-terminal --tab -- bash -c "ros2 run face_tracker_movement face_tracker_movement_node; exec bash"
+gnome-terminal --tab -- bash -c "ros2 run full_demo full_demo_node; exec bash"
+gnome-terminal --tab -- bash -c "ros2 run hand_gestures hand_gestures_node; exec bash"
+gnome-terminal --tab -- bash -c "ros2 run qabot client; exec bash"
+gnome-terminal --tab -- bash -c "ros2 run speech_recognizer speech_recognizer_node; exec bash"
+gnome-terminal --tab -- bash -c "python3 client/unified_arms_client.py; exec bash"
+gnome-terminal --tab -- bash -c ". .venv/bin/activate & ros2 run tts_package service; exec bash"
+

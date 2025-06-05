@@ -104,7 +104,7 @@ def generate_launch_description():
         #"jaw_controller",
         #"r_hand_controller",
         #"r_shoulder_controller",
-        #"l_hand_controller"
+        "l_hand_controller"
     ]
     
     controller_spawners = [

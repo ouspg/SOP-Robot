@@ -11,7 +11,7 @@ class TTSService(Node):
 
     def __init__(self):
         super().__init__('TTS_service')
-        self.subscription = self.create_subscription(String, "response", self.callback, 10)
+        self.subscription = self.create_subscription(String, "chatbot_response", self.callback, 10)
         self.publisher = self.create_publisher(Bool, "can_listen", 10)
         self.jaw = self.create_publisher(String, "jaw_topic", 10)
         self.can_listen = Bool(data = True)

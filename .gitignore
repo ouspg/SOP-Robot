@@ -25,3 +25,5 @@ temp_dynamixel_for_launch.yaml
 4913
 *.db
 *.prof
+.venv/*
+src/speech_recognizer/resource

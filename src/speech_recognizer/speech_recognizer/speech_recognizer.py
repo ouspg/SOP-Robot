@@ -17,12 +17,12 @@ class SpeechRecognizerNode(Node):
         self.r = sr.Recognizer()
         self.m  = sr.Microphone()
         with self.m as source:
-            self.r.adjust_for_ambient_noise(source)
-        self.stop_listening = self.r.listen_in_background(self.m, self.listen)
+            self.r.adjust_for_ambient_noise(source, duration=5)
+        self.stop_listening = self.r.listen_in_background(self.m, self.listen, phrase_time_limit=10)
 
     def callback(self, msg):
         if msg.data:
-            self.stop_listening = self.r.listen_in_background(self.m, self.listen)
+            self.stop_listening = self.r.listen_in_background(self.m, self.listen, phrase_time_limit=10)
         else:
             self.stop_listening()
         
