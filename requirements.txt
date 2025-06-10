@@ -301,7 +301,7 @@ rclpy==3.3.14
 rcutils==5.1.6
 regex==2024.9.11
 reportlab==3.6.8
-requests==2.32.3
+requests==2.32.4
 requests-cache==0.9.8
 requests-kerberos==0.12.0
 requests-ntlm==1.1.0
