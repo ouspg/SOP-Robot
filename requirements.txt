@@ -244,7 +244,7 @@ ply==3.11
 posthog==3.7.0
 progressbar==2.5
 prompthub-py==4.0.0
-protobuf==4.25.5
+protobuf==4.25.8
 psutil==5.9.0
 ptyprocess==0.7.0
 py==1.10.0
