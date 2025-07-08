@@ -421,7 +421,7 @@ topic-monitor==0.20.5
 torch==2.4.1
 tqdm==4.66.5
 trajectory-msgs==4.2.4
-transformers==4.39.3
+transformers==4.52.1
 triton==3.0.0
 tts-package==0.0.0
 turtlesim==1.4.2
