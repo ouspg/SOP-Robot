@@ -1,15 +1,11 @@
-import os
-
-from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
-#index should be lowest index for the camera as usb devices usually have multiple
-#index 0 is for first or only webcam like integrated laptop webcam for example
-#for virtual machines it is easiest to port thought only the camera you are going to use and changing the camera from virtual machine settings is easier.
-def generate_launch_description():
 
+# index should be lowest index for the camera as usb devices usually have multiple
+# index 0 is for first or only webcam like integrated laptop webcam for example
+# for virtual machines it is easiest to port thought only the camera you are going to use and changing the camera from virtual machine settings is easier.
+def generate_launch_description():
     tracker_node = Node(
         package="face_tracker",
         executable="face_tracker_node",
@@ -18,7 +14,7 @@ def generate_launch_description():
             {
                 "lip_movement_detection": False,
                 "face_recognition": True,
-                "correlation_tracking": False,
+                "correlation_tracking": True,
                 "cluster_similarity_threshold": 0.3,
                 "subcluster_similarity_threshold": 0.2,
                 "pair_similarity_maximum": 1.0,
@@ -40,7 +36,7 @@ def generate_launch_description():
         parameters=[
             {
                 "raw_image": "/image_raw",
-                "index": 0,
+                "index": 1,
                 "width": 1280,
                 "height": 960,
                 "fps": 30,

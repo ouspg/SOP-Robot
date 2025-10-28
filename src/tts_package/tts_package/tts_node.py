@@ -6,32 +6,35 @@ import simpleaudio as sa
 import rclpy
 
 
-
 class TTSService(Node):
-
     def __init__(self):
-        super().__init__('TTS_service')
-        self.subscription = self.create_subscription(String, "chatbot_response", self.callback, 10)
+        super().__init__("TTS_service")
+        self.subscription = self.create_subscription(
+            String, "chatbot_response", self.callback, 10
+        )
         self.publisher = self.create_publisher(Bool, "can_listen", 10)
         self.jaw = self.create_publisher(String, "jaw_topic", 10)
-        self.can_listen = Bool(data = True)
-        self.cant_listen = Bool(data = False)
+        self.can_listen = Bool(data=True)
+        self.cant_listen = Bool(data=False)
         self.synthetizer = TTS(
             model_path="./src/tts_package/resource/model.pth",
-            config_path="./src/tts_package/resource/config.json").synthesizer
+            config_path="./src/tts_package/resource/config.json",
+        ).synthesizer
         self.output = "./src/tts_package/resource/output.wav"
-
 
     def callback(self, msg):
         try:
             wav = self.synthetizer.tts(msg.data)
+            self.get_logger().info(f"Synthetized text: {msg.data}")
             self.synthetizer.save_wav(wav, self.output)
+            self.get_logger().info(f"Saved wav file to: {self.output}")
             self.play_audio(msg)
         except Exception:
             self.get_logger().info("Error happened")
         else:
-            self.get_logger().info("Incoming request to synthentize string: %s" % (msg.data))
-
+            self.get_logger().info(
+                "Incoming request to synthentize string: %s" % (msg.data)
+            )
 
     def play_audio(self, msg):
         self.publisher.publish(self.cant_listen)
@@ -39,8 +42,7 @@ class TTSService(Node):
         self.jaw.publish(msg)
         play_obj = wave_obj.play()
         play_obj.wait_done()
-        self.publisher.publish(self.can_listen) 
-    
+        self.publisher.publish(self.can_listen)
 
 
 def main():
@@ -54,6 +56,5 @@ def main():
     rclpy.shutdown()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

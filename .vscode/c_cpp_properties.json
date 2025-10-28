@@ -4,7 +4,7 @@
             "name": "ros",
             "includePath": [
                 "${workspaceFolder}/src/**",
-                "/opt/ros/foxy/include/",
+                "/opt/ros/jazzy/include/",
                 "${workspaceFolder}/install/**",
                 "/ros2_control_ws/install/hardware_interface/include/"
             ],

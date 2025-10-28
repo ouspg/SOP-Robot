@@ -231,7 +231,7 @@
           <limit effort="1000.0" lower="${r_thumb_joint_lower}" upper="${r_thumb_joint_upper}" velocity="${r_thumb_joint_velocity}" />
         </xacro:if>
       <origin rpy="${flip * 0.1} 0 0" xyz="0 ${flip * 0.029} -0.0577"/>
-      <mimic joint="${side}_thumb_joint" multiplier="${flip *0.75}" offset="0"/>
+      <!--<mimic joint="${side}_thumb_joint" multiplier="${flip *0.75}" offset="0"/>-->
       <parent link="${side}_hand_link"/>
       <child link="${side}_thumb1_link"/>
     </joint>
@@ -258,7 +258,7 @@
           <limit effort="1000.0" lower="${r_thumb_joint_lower}" upper="${r_thumb_joint_upper}" velocity="${r_thumb_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0 -0.035"/>
-      <mimic joint="${side}_thumb_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_thumb_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_thumb2_link"/>
       <child link="${side}_thumb3_link"/>
     </joint>
@@ -272,7 +272,7 @@
           <limit effort="1000.0" lower="${r_index_joint_lower}" upper="${r_index_joint_upper}" velocity="${r_index_joint_velocity}" />
         </xacro:if>
       <origin rpy="${flip * 0.1} 0 0" xyz="-0.0015 ${flip * 0.0342}  -0.119"/>
-      <mimic joint="${side}_index_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_index_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_hand_link"/>
       <child link="${side}_index1_link"/>
     </joint>
@@ -299,7 +299,7 @@
           <limit effort="1000.0" lower="${r_index_joint_lower}" upper="${r_index_joint_upper}" velocity="${r_index_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0 -0.024"/>
-      <mimic joint="${side}_index_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_index_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_index2_link"/>
       <child link="${side}_index3_link"/>
     </joint>
@@ -313,7 +313,7 @@
           <limit effort="1000.0" lower="${r_middle_joint_lower}" upper="${r_middle_joint_upper}" velocity="${r_middle_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="-0.00175 ${flip * 0.007}  -0.12325"/>
-      <mimic joint="${side}_middle_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_middle_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_hand_link"/>
       <child link="${side}_middle1_link"/>
     </joint>
@@ -340,7 +340,7 @@
           <limit effort="1000.0" lower="${r_middle_joint_lower}" upper="${r_middle_joint_upper}" velocity="${r_middle_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0.0005 -0.0259"/>
-      <mimic joint="${side}_middle_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_middle_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_middle2_link"/>
       <child link="${side}_middle3_link"/>
     </joint>
@@ -354,7 +354,7 @@
           <limit effort="1000.0" lower="${r_ring_joint_lower}" upper="${r_ring_joint_upper}" velocity="${r_ring_joint_velocity}" />
         </xacro:if>
       <origin rpy="${flip * 0.7} 0 0" xyz="0 ${flip * -0.00705} -0.0794"/>
-      <mimic joint="${side}_ring_joint" multiplier="${flip * -0.1}" offset="0"/>
+      <!--<mimic joint="${side}_ring_joint" multiplier="${flip * -0.1}" offset="0"/>-->
       <parent link="${side}_hand_link"/>
       <child link="${side}_ring1_link"/>
     </joint>
@@ -381,7 +381,7 @@
           <limit effort="1000.0" lower="${r_ring_joint_lower}" upper="${r_ring_joint_upper}" velocity="${r_ring_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0.0005 -0.0345"/>
-      <mimic joint="${side}_ring_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_ring_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_ring2_link"/>
       <child link="${side}_ring3_link"/>
     </joint>
@@ -395,7 +395,7 @@
           <limit effort="1000.0" lower="${r_ring_joint_lower}" upper="${r_ring_joint_upper}" velocity="${r_ring_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0.0004 -0.0229"/>
-      <mimic joint="${side}_ring_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_ring_joint" multiplier="1" offset="0"/>-->
       <parent link="${side}_ring3_link"/>
       <child link="${side}_ring4_link"/>
     </joint>
@@ -409,7 +409,7 @@
           <limit effort="1000.0" lower="${r_pinky_joint_lower}" upper="${r_pinky_joint_upper}" velocity="${r_pinky_joint_velocity}" />
         </xacro:if>
       <origin rpy="${flip * 0.7} 0 0" xyz="0 ${flip * -0.0270} -0.0555"/>
-      <mimic joint="${side}_pinky_joint" multiplier="${flip * -0.1}" offset="0"/>
+      <!--<mimic joint="${side}_pinky_joint" multiplier="${flip * -0.1}" offset="0"/>-->
       <parent link="${side}_hand_link"/>
       <child link="${side}_pinky1_link"/>
     </joint>
@@ -436,7 +436,7 @@
           <limit effort="1000.0" lower="${r_pinky_joint_lower}" upper="${r_pinky_joint_upper}" velocity="${r_pinky_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0.0005 -0.031"/>
-      <mimic joint="${side}_pinky_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_pinky_joint" multiplier="1" offset="0"/>-->         
       <parent link="${side}_pinky2_link"/>
       <child link="${side}_pinky3_link"/>
     </joint>
@@ -450,7 +450,7 @@
           <limit effort="1000.0" lower="${r_pinky_joint_lower}" upper="${r_pinky_joint_upper}" velocity="${r_pinky_joint_velocity}" />
         </xacro:if>
       <origin rpy="0 0 0" xyz="0 0.0004 -0.0208"/>
-      <mimic joint="${side}_pinky_joint" multiplier="1" offset="0"/>
+      <!--<mimic joint="${side}_pinky_joint" multiplier="1" offset="0"/>-->   
       <parent link="${side}_pinky3_link"/>
       <child link="${side}_pinky4_link"/>
     </joint>

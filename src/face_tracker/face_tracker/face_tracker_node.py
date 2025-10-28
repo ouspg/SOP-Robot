@@ -14,7 +14,8 @@ from typing import List
 from ament_index_python.packages import get_package_share_directory
 
 from rclpy.node import Node
-
+import numpy as np
+import g2opy as g2o
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2, Occurance
@@ -26,11 +27,15 @@ from .face_analyzer import FaceAnalyzer
 
 bridge = CvBridge()
 
+
 class WebcamError(Exception):
     """signal that webcam has stopped working"""
+
     pass
 
+
 # pr = cProfile.Profile()
+
 
 class FaceTrackerNode(Node):
     def __init__(self):
@@ -123,33 +128,38 @@ class FaceTrackerNode(Node):
                 )
             )
             lip_movement_detector_model = (
-                self.declare_parameter("lip_movement_detector", "1_32_False_True_0.25_lip_motion_net_model.h5")
+                self.declare_parameter(
+                    "lip_movement_detector",
+                    "1_32_False_True_0.25_lip_motion_net_model.h5",
+                )
                 .get_parameter_value()
                 .string_value
             )
-           # Initialize lip movement detector
-            self.logger.info('Initializing lip movement detector...')
+            # Initialize lip movement detector
+            self.logger.info("Initializing lip movement detector...")
             lip_movement_detector = LipMovementDetector(
                 os.path.join(
                     get_package_share_directory("face_tracker"),
                     "models",
                     lip_movement_detector_model,
                 ),
-                self.predictor
+                self.predictor,
             )
-            self.logger.info('Lip movement detector initialized.')
+            self.logger.info("Lip movement detector initialized.")
         else:
-            self.logger.info('Lip movement detection disabled.')
+            self.logger.info("Lip movement detection disabled.")
 
-        self.face_tracker = FaceAnalyzer(self.logger.get_child("Face_Analyzer"),
-                                        lip_movement_detector,
-                                        face_recognition,
-                                        correlation_tracking,
-                                        cluster_similarity_threshold,
-                                        subcluster_similarity_threshold,
-                                        pair_similarity_maximum,
-                                        face_recognition_model,
-                                        face_detection_model)
+        self.face_tracker = FaceAnalyzer(
+            self.logger.get_child("Face_Analyzer"),
+            lip_movement_detector,
+            face_recognition,
+            correlation_tracking,
+            cluster_similarity_threshold,
+            subcluster_similarity_threshold,
+            pair_similarity_maximum,
+            face_recognition_model,
+            face_detection_model,
+        )
 
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
@@ -189,32 +199,41 @@ class FaceTrackerNode(Node):
     def on_frame_received(self, img: Image):
         # convert ros img to opencv image
         cv2_bgr_img = bridge.imgmsg_to_cv2(img, "bgr8")
-
+        cam = g2o.VertexSCam()
+    
         msg_faces = []
         faces = self.face_tracker.on_frame_received(cv2_bgr_img)
         # loop through all faces
         for face in faces:
             occurances = []
             for i in face["previous_occurances"]:
-                occurance = Occurance(start_time=float(i["start_time"]), end_time=float(i["end_time"]), duration=float(i["duration"]))
+                occurance = Occurance(
+                    start_time=float(i["start_time"]),
+                    end_time=float(i["end_time"]),
+                    duration=float(i["duration"]),
+                )
                 occurances.append(occurance)
-            msg_face = FaceMsg(top_left=Point2(x=face["left"], y=face["top"]),
-                               bottom_right=Point2(x=face["right"], y=face["bottom"]),
-                               diagonal=face["diagonal"],
-                               face_id=face["face_id"],
-                               speaking=face["speaking"],
-                               occurances=occurances)
+            msg_face = FaceMsg(
+                top_left=Point2(x=face["left"], y=face["top"]),
+                bottom_right=Point2(x=face["right"], y=face["bottom"]),
+                diagonal=face["diagonal"],
+                face_id=face["face_id"],
+                speaking=face["speaking"],
+                occurances=occurances,
+            )
             msg_faces.append(msg_face)
 
         # Draw fps to the frame
-        cv2.putText(cv2_bgr_img,
-                    '%.2f' % self.fps.fps,
-                    (10, 20),
-                    self.font,
-                    0.5,
-                    (255, 255, 255),
-                    1,
-                    cv2.LINE_AA)
+        cv2.putText(
+            cv2_bgr_img,
+            "%.2f" % self.fps.fps,
+            (10, 20),
+            self.font,
+            0.5,
+            (255, 255, 255),
+            1,
+            cv2.LINE_AA,
+        )
 
         # publish faces
         try:
@@ -228,11 +247,13 @@ class FaceTrackerNode(Node):
 
         self.fps.update_fps()
 
+
 class FramesPerSecond:
     """
     Class for calculating real time fps of video stream. Code is based from stack owerflow thread:
     https://stackoverflow.com/questions/55154753/trouble-calculating-fps-on-output-video-stream
     """
+
     def __init__(self):
         self.startTime = None
         self.total_number_of_frames = 0
@@ -246,13 +267,16 @@ class FramesPerSecond:
     def update_fps(self):
         self.total_number_of_frames += 1
         self.counter += 1  # Count will increase until the if condition executes.
-        if self._elapsed_time() > self.frameRate:  # We measure the self only after 1 second has passed.
+        if (
+            self._elapsed_time() > self.frameRate
+        ):  # We measure the self only after 1 second has passed.
             self.fps = self.counter / self._elapsed_time()
             self.counter = 0  # reset the counter for next iteration.
             self.start()  # reset the start time.
 
     def _elapsed_time(self):
         return time.time() - self.startTime
+
 
 def main(args=None):
     # Initialize
@@ -265,6 +289,7 @@ def main(args=None):
     # Shutdown
     tracker.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == "__main__":
     main()

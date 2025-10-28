@@ -8,8 +8,8 @@ controller_manager:
     eyes_controller:
       type: joint_trajectory_controller/JointTrajectoryController
     
-    forward_head_controller:
-      type: forward_command_controller/ForwardCommandController
+    #forward_head_controller:
+     # type: forward_command_controller/ForwardCommandController
 
     jaw_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -41,11 +41,11 @@ joint_state_broadcaster:
     - r_thumb1_joint
     #- r_thumb_joint
     - r_thumb3_joint
-    #- r_index1_joint
-    - r_index_joint
+    - r_index1_joint
+    #- r_index_joint
     - r_index3_joint
-    #- r_middle1_joint
-    - r_middle_joint
+    - r_middle1_joint
+    #- r_middle_joint
     - r_middle3_joint
     - r_ring1_joint
     #- r_ring_joint
@@ -63,11 +63,11 @@ joint_state_broadcaster:
     - l_thumb1_joint
     #- l_thumb_joint
     - l_thumb3_joint
-    #- l_index1_joint
-    - l_index_joint
+    - l_index1_joint
+    #- l_index_joint
     - l_index3_joint
-    #- l_middle1_joint
-    - l_middle_joint
+    - l_middle1_joint
+    #- l_middle_joint
     - l_middle3_joint
     - l_ring1_joint
     #- l_ring_joint
@@ -83,8 +83,8 @@ r_hand_controller:
   ros__parameters:
     joints:
     - r_thumb_joint
-    - r_index1_joint
-    - r_middle1_joint
+    - r_index_joint
+    - r_middle_joint
     - r_ring_joint
     - r_pinky_joint
     write_op_modes:
@@ -108,8 +108,8 @@ l_hand_controller:
   ros__parameters:
     joints:
     - l_thumb_joint
-    - l_index1_joint
-    - l_middle1_joint
+    - l_index_joint
+    - l_middle_joint
     - l_ring_joint
     - l_pinky_joint
     write_op_modes:
@@ -134,14 +134,14 @@ head_controller:
   ros__parameters:
     joints:
     - head_pan_joint
-    - head_tilt_right_joint
-    - head_tilt_left_joint
-    - head_tilt_vertical_joint
+    #- head_tilt_right_joint
+    #- head_tilt_left_joint
+    #- head_tilt_vertical_joint
     write_op_modes:
     - head_pan_joint
-    - head_tilt_right_joint
-    - head_tilt_left_joint
-    - head_tilt_vertical_joint
+    #- head_tilt_right_joint
+    #- head_tilt_left_joint
+    #- head_tilt_vertical_joint
     allow_partial_joints_goal: true
     interface_name: position
 

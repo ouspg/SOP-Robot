@@ -1,8 +1,8 @@
 [submodule "src/dynamixel-workbench"]
 	path = src/dynamixel-workbench
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench.git
-	branch = humble-devel
+	branch = jazzy
 [submodule "src/dynamixel-workbench-msgs"]
 	path = src/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
-	branch = humble-devel
+	branch = jazzy

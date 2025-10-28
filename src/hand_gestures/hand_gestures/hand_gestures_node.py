@@ -50,8 +50,8 @@ class HandGestureNode(Node):
     def send_right_hand_goal(self, action, duration=Duration(sec=1)):
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=action, time_from_start=duration)
-        goal_msg.trajectory = JointTrajectory(joint_names=["r_thumb_joint", "r_index1_joint", "r_middle1_joint", "r_ring_joint", "r_pinky_joint"],
-                                              points=[trajectory_points])
+        goal_msg.trajectory = JointTrajectory(joint_names=["r_thumb_joint", "r_index_joint", "r_middle_joint", "r_ring_joint", "r_pinky_joint"],
+                                              points=[trajectory_points])   
 
         self.right_hand_action_client.wait_for_server()
 
@@ -61,7 +61,7 @@ class HandGestureNode(Node):
     def send_left_hand_goal(self, action, duration=Duration(sec=1)):
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=action, time_from_start=duration)
-        goal_msg.trajectory = JointTrajectory(joint_names=["l_thumb_joint", "l_index1_joint", "l_middle1_joint", "l_ring_joint", "l_pinky_joint"],
+        goal_msg.trajectory = JointTrajectory(joint_names=["l_thumb_joint", "l_index_joint", "l_middle_joint", "l_ring_joint", "l_pinky_joint"],
                                               points=[trajectory_points])
 
         self.left_hand_action_client.wait_for_server()

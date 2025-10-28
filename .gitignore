@@ -3,7 +3,6 @@
 *~
 .o
 *.pyc
-
 .vscode/*
 !.vscode/c_cpp_properties.json
 
@@ -26,4 +25,6 @@ temp_dynamixel_for_launch.yaml
 *.db
 *.prof
 .venv/*
-src/speech_recognizer/resource
+src/speech_recognizer/resource# pixi environments
+.pixi/*
+!.pixi/config.toml

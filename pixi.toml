@@ -1,0 +1,97 @@
+[workspace]
+name = "SOP-Robot"
+version = "0.1.0"
+channels = ["conda-forge", "https://prefix.dev/robostack-jazzy", "https://prefix.dev/pixi-build-backends"]
+platforms = ["linux-64"]
+[activation]
+# For activation scripts, we use bash for Unix-like systems
+scripts = ["install/setup.bash"]
+
+[tasks]
+build = "colcon build"
+
+
+# Dependencies used by all environments
+[dependencies]
+python = "3.12.*"
+pip = "*"
+# Build tools
+compilers = ">=1.11.0,<2"
+cmake = ">=4.1.2,<5"
+pkg-config = ">=0.29.2,<0.30"
+make = ">=4.4.1,<5"
+ninja = ">=1.13.1,<2"
+# ROS specific tools
+rosdep = "*"
+colcon-common-extensions = ">=0.3.0,<0.4"
+ffmpeg = "*"
+pixi-build-ros = ">=0.3.1.20251022.dfc54c7,<0.4"
+pixi-build-cmake = ">=0.3.4,<0.4"
+ros-jazzy-ament-cmake-auto = ">=2.5.0,<3"
+ros-jazzy-launch-ros = ">=0.26.5,<0.27"
+ros-jazzy-launch = ">=3.4.2,<4"
+ros-jazzy-desktop-full = ">=0.11.0,<0.12"
+setuptools = "==68.1.2"
+ros-jazzy-ros2-control = ">=4.33.0,<5"
+ros-jazzy-ros2-controllers = ">=4.28.0,<5"
+ros-jazzy-joint-state-publisher-gui = ">=2.4.0,<3"
+ros-jazzy-rviz2 = ">=14.1.12,<15"
+ros-jazzy-gz-ros2-control = ">=1.2.14,<2"
+ros-jazzy-gz-ros2-control-demos = ">=1.2.14,<2"
+ros-jazzy-realtime-tools = ">=3.7.0,<4"
+ros-jazzy-xacro = ">=2.0.13,<3"
+ros-jazzy-control-msgs = ">=5.4.1,<6"
+ros-jazzy-control-toolbox = ">=4.5.0,<5"
+
+[target.linux.dependencies]
+libgl-devel = "*"
+# Define all the different ROS environments
+# Each environment corresponds to a different ROS distribution
+# and can be activated using the `pixi run/shell -e <environment>` command.
+[environments]
+
+jazzy = { features = ["jazzy"] }
+
+
+
+
+### ROS Jazzy ####
+[feature.jazzy]
+
+[feature.jazzy.dependencies]
+ros-jazzy-desktop = "*"
+ros-jazzy-cv-bridge = "*"
+ros-jazzy-image-transport = "*"
+ros-jazzy-joint-state-publisher = "*"
+ros-jazzy-joint-state-publisher-gui = "*"
+ros-jazzy-robot-state-publisher = "*"
+ros-jazzy-xacro = "*"
+ros-jazzy-ros2-control = "*"
+ros-jazzy-ros2-controllers = "*"
+ros-jazzy-controller-manager = "*"
+ros-jazzy-dynamixel-sdk = "*"
+
+
+[system-requirements]
+cuda = "12"  
+
+[pypi-dependencies]
+
+
+opencv-contrib-python = "*"
+numpy = "*"
+keras = "*"
+tf-keras = "*"
+dlib = "*"
+simpleaudio = ">=1.0.4, <2"
+SpeechRecognition = "*"
+deepface= "==0.0.92"
+progressbar = "*"
+torch= { version = "==2.8.0", index = "https://download.pytorch.org/whl/cu126" }
+torchvision= { version = "==0.23.0", index = "https://download.pytorch.org/whl/cu126" }
+coqui-tts = { version = ">=0.27.2, <0.28", extras = ["all"] }
+torchaudio= { version = "==2.8.0", index = "https://download.pytorch.org/whl/cu126" }
+haystack-ai = ">=2.19.0, <3"
+transformers = ">=4.55.4, <5"
+lark = ">=1.1,<2"
+pyserial = ">=3.5, <4"

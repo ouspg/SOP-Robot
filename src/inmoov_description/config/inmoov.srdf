@@ -15,22 +15,22 @@
     </group>
     <group name="r_hand">
         <joint name="r_thumb_joint" />
-        <joint name="r_index1_joint" />
-        <joint name="r_middle1_joint" />
+        <joint name="r_index_joint" />
+        <joint name="r_middle_joint" />
         <joint name="r_ring_joint" />
         <joint name="r_pinky_joint" />
     </group>
     <group name="l_hand">
         <joint name="l_thumb_joint" />
-        <joint name="l_index1_joint" />
-        <joint name="l_middle1_joint" />
+        <joint name="l_index_joint" />
+        <joint name="l_middle_joint" />
         <joint name="l_ring_joint" />
         <joint name="l_pinky_joint" />
     </group>
     <group name="head">
-        <joint name="head_tilt_joint" />
+        <!--<joint name="head_tilt_joint" />-->
         <joint name="head_pan_joint" />
-        <joint name="head_roll_joint" />
+        <!--<joint name="head_roll_joint" />-->
     </group>
     <group name="eyes">
         <joint name="eyes_pan_joint" />
@@ -41,97 +41,97 @@
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="fist" group="r_hand">
         <joint name="r_thumb_joint" value="2" />
-        <joint name="r_index1_joint" value="2" />
-        <joint name="r_middle1_joint" value="2" />
+        <joint name="r_index_joint" value="2" />
+        <joint name="r_middle_joint" value="2" />
         <joint name="r_ring_joint" value="2" />
         <joint name="r_pinky_joint" value="2" />
     </group_state>
     <group_state name="scissors" group="r_hand">
         <joint name="r_thumb_joint" value="2" />
-        <joint name="r_index1_joint" value="0" />
-        <joint name="r_middle1_joint" value="0" />
+        <joint name="r_index_joint" value="0" />
+        <joint name="r_middle_joint" value="0" />
         <joint name="r_ring_joint" value="2" />
         <joint name="r_pinky_joint" value="2" />
     </group_state>
     <group_state name="flat" group="r_hand">
         <joint name="r_thumb_joint" value="0" />
-        <joint name="r_index1_joint" value="0" />
-        <joint name="r_middle1_joint" value="0" />
+        <joint name="r_index_joint" value="0" />
+        <joint name="r_middle_joint" value="0" />
         <joint name="r_ring_joint" value="0" />
         <joint name="r_pinky_joint" value="0" />
     </group_state>
     <group_state name="middlefing" group="r_hand">
         <joint name="r_thumb_joint" value="0" />
-        <joint name="r_index1_joint" value="2" />
-        <joint name="r_middle1_joint" value="0" />
+        <joint name="r_index_joint" value="2" />
+        <joint name="r_middle_joint" value="0" />
         <joint name="r_ring_joint" value="2" />
         <joint name="r_pinky_joint" value="2" />
     </group_state>
     <group_state name="thumbup" group="r_hand">
         <joint name="r_thumb_joint" value="0" />
-        <joint name="r_index1_joint" value="2" />
-        <joint name="r_middle1_joint" value="2" />
+        <joint name="r_index_joint" value="2" />
+        <joint name="r_middle_joint" value="2" />
         <joint name="r_ring_joint" value="2" />
         <joint name="r_pinky_joint" value="2" />
     </group_state>
     <group_state name="point" group="r_hand">
         <joint name="r_thumb_joint" value="2" />
-        <joint name="r_index1_joint" value="0" />
-        <joint name="r_middle1_joint" value="2" />
+        <joint name="r_index_joint" value="0" />
+        <joint name="r_middle_joint" value="2" />
         <joint name="r_ring_joint" value="2" />
         <joint name="r_pinky_joint" value="2" />
     </group_state>
     <group_state name="fist" group="l_hand">
         <joint name="l_thumb_joint" value="2" />
-        <joint name="l_index1_joint" value="2" />
-        <joint name="l_middle1_joint" value="2" />
+        <joint name="l_index_joint" value="2" />
+        <joint name="l_middle_joint" value="2" />
         <joint name="l_ring_joint" value="2" />
         <joint name="l_pinky_joint" value="2" />
     </group_state>
     <group_state name="scissors" group="l_hand">
         <joint name="l_thumb_joint" value="2" />
-        <joint name="l_index1_joint" value="0" />
-        <joint name="l_middle1_joint" value="0" />
+        <joint name="l_index_joint" value="0" />
+        <joint name="l_middle_joint" value="0" />
         <joint name="l_ring_joint" value="2" />
         <joint name="l_pinky_joint" value="2" />
     </group_state>
     <group_state name="flat" group="l_hand">
         <joint name="l_thumb_joint" value="0" />
-        <joint name="l_index1_joint" value="0" />
-        <joint name="l_middle1_joint" value="0" />
+        <joint name="l_index_joint" value="0" />
+        <joint name="l_middle_joint" value="0" />
         <joint name="l_ring_joint" value="0" />
         <joint name="l_pinky_joint" value="0" />
     </group_state>
     <group_state name="middlefing" group="l_hand">
         <joint name="l_thumb_joint" value="0" />
-        <joint name="l_index1_joint" value="2" />
-        <joint name="l_middle1_joint" value="0" />
+        <joint name="l_index_joint" value="2" />
+        <joint name="l_middle_joint" value="0" />
         <joint name="l_ring_joint" value="2" />
         <joint name="l_pinky_joint" value="2" />
     </group_state>
     <group_state name="thumbup" group="l_hand">
         <joint name="l_thumb_joint" value="0" />
-        <joint name="l_index1_joint" value="2" />
-        <joint name="l_middle1_joint" value="2" />
+        <joint name="l_index_joint" value="2" />
+        <joint name="l_middle_joint" value="2" />
         <joint name="l_ring_joint" value="2" />
         <joint name="l_pinky_joint" value="2" />
     </group_state>
     <group_state name="point" group="l_hand">
         <joint name="l_thumb_joint" value="2" />
-        <joint name="l_index1_joint" value="0" />
-        <joint name="l_middle1_joint" value="2" />
+        <joint name="l_index_joint" value="0" />
+        <joint name="l_middle_joint" value="2" />
         <joint name="l_ring_joint" value="2" />
         <joint name="l_pinky_joint" value="2" />
     </group_state>
     <group_state name="face_foward" group="head">
         <joint name="head_pan_joint" value="0" />
-        <joint name="head_roll_joint" value="0" />
-        <joint name="head_tilt_joint" value="0" />
+        <!--<joint name="head_roll_joint" value="0" />-->
+        <!--<joint name="head_tilt_joint" value="0" />-->
     </group_state>
     <group_state name="face_up" group="head">
         <joint name="head_pan_joint" value="0" />
-        <joint name="head_roll_joint" value="0" />
-        <joint name="head_tilt_joint" value="-0.349" />
+        <!--<joint name="head_roll_joint" value="0" />-->
+        <!--<joint name="head_tilt_joint" value="-0.349" />-->
     </group_state>
     <group_state name="jaw_open" group="jaw">
         <joint name="jaw_joint" value="0.0872" />
@@ -150,11 +150,11 @@
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
     <passive_joint name="l_elbow_flex_joint" />
     <passive_joint name="l_eye_pan_joint" />
-    <passive_joint name="l_index_joint" />
-    <!--passive_joint name="l_index1_joint" /-->
+    <!--<passive_joint name="l_index_joint" />-->   
+    <passive_joint name="l_index1_joint" />
     <passive_joint name="l_index3_joint" />
-    <passive_joint name="l_middle_joint" />
-    <!--passive_joint name="l_middle1_joint" /-->
+    <!--<passive_joint name="l_middle_joint" />-->   
+    <passive_joint name="l_middle1_joint" />
     <passive_joint name="l_middle3_joint" />
     <!--passive_joint name="l_pinky_joint" /-->
     <passive_joint name="l_pinky1_joint" />
@@ -172,11 +172,11 @@
     <passive_joint name="l_upper_arm_roll_joint" />
     <passive_joint name="l_wrist_roll_joint" />
     <passive_joint name="r_elbow_flex_joint" />
-    <passive_joint name="r_index_joint" />
+    <!--<passive_joint name="r_index_joint" />-->       
     <!--passive_joint name="r_index1_joint" /-->
     <passive_joint name="r_index3_joint" />
-    <passive_joint name="r_middle_joint" /-->
-    <!--passive_joint name="r_middle1_joint" /-->
+    <!--<passive_joint name="r_middle_joint" />-->   
+    <passive_joint name="r_middle1_joint" />
     <passive_joint name="r_middle3_joint" />
     <!--passive_joint name="r_pinky_joint" /-->
     <passive_joint name="r_pinky1_joint" />

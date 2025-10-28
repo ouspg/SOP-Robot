@@ -3,9 +3,9 @@ fake_joint_driver_node:
     start_position:
       joints:
         - head_pan_joint
-        - head_tilt_right_joint
-        - head_tilt_left_joint
-        - head_tilt_vertical_joint
+        #- head_tilt_right_joint
+        #- head_tilt_left_joint
+        #- head_tilt_vertical_joint
         - head_jaw_joint
         - eyes_shift_horizontal_joint
         - r_shoulder_lift_joint

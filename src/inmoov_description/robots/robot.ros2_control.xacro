@@ -14,31 +14,31 @@
           <param name="baud_rate">57600</param>
         </xacro:unless>
       </hardware>
-      <!--joint name="head_jaw_joint">
+      <joint name="head_jaw_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-      </joint-->
+      </joint>
       <joint name="head_pan_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="head_tilt_right_joint">
+      <!--<joint name="head_tilt_right_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-      </joint>
-      <joint name="head_tilt_left_joint">
+      </joint>--> 
+      <!--<joint name="head_tilt_left_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-      </joint>
-      <joint name="head_tilt_vertical_joint">
+      </joint>-->
+      <!--<joint name="head_tilt_vertical_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-      </joint>
+      </joint>-->
       <joint name="eyes_shift_horizontal_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
@@ -64,12 +64,13 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="r_index1_joint">
+      <joint name="r_index_joint">
+              
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="r_middle1_joint">
+      <joint name="r_middle_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
@@ -89,12 +90,12 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="l_index1_joint">
+      <joint name="l_index_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
-      <joint name="l_middle1_joint">
+      <joint name="l_middle_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
