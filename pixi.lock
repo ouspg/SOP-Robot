@@ -586,6 +586,7 @@ environments:
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-dummy-map-server-0.33.5-np126py312h3bd2861_9.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-dummy-robot-bringup-0.33.5-np126py312h3bd2861_9.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-dummy-sensors-0.33.5-np126py312h3bd2861_9.conda
+      - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-dynamixel-sdk-3.8.4-np126py312h3bd2861_9.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-effort-controllers-4.28.0-np126py312h3bd2861_9.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-eigen3-cmake-module-0.3.0-np126py312h3bd2861_9.conda
       - conda: https://prefix.dev/robostack-jazzy/linux-64/ros-jazzy-example-interfaces-0.12.0-np126py312h3bd2861_9.conda

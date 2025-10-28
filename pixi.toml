@@ -42,6 +42,7 @@ ros-jazzy-realtime-tools = ">=3.7.0,<4"
 ros-jazzy-xacro = ">=2.0.13,<3"
 ros-jazzy-control-msgs = ">=5.4.1,<6"
 ros-jazzy-control-toolbox = ">=4.5.0,<5"
+ros-jazzy-dynamixel-sdk = ">=3.8.4,<4"
 
 [target.linux.dependencies]
 libgl-devel = "*"
