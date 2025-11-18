@@ -1,5 +1,5 @@
 ---
-- name: Create folder for ros2_control for {{ ansible_env.USER }}
+- name: Create folder for ros2_control workspace
   become: true
   ansible.builtin.file:
     path: /home/{{ ansible_env.USER }}/ros2_control_ws/src
@@ -8,18 +8,17 @@
     group: "{{ ansible_env.USER }}"
     mode: "0755"
 
-- name: Making custom repo file
+- name: Import repositories via vcs
   ansible.builtin.shell: vcs import src < /home/{{ ansible_env.USER }}/SOP-Robot/ansible-scripts/ros2_control_ws.repos.yml
   args:
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws/
-    creates: /home/{{ ansible_env.USER }}/ros2_control_ws/src/angles/
 
-- name: Remove tricycle_controler directory
+- name: Remove tricycle_controller directory if present
   ansible.builtin.file:
     path: /home/{{ ansible_env.USER }}/ros2_control_ws/src/ros-controls/ros2_controllers/tricycle_controller
     state: absent
-    
-- name: Install dependencies from apt
+
+- name: Install ROS Humble dependencies from apt
   become: true
   ansible.builtin.apt:
     name:
@@ -33,32 +32,41 @@
     state: present
     update_cache: true
 
-- name: Checkout commit in control_toolbox repository
-  ansible.builtin.git:
-    repo: https://github.com/ros-controls/control_toolbox
-    dest: /home/{{ ansible_env.USER }}/ros2_control_ws/src/ros-controls/control_toolbox
-    version: 66687e7c1873a039600d78b370e2d4acd24924cd
+- name: Install other required system dependencies
+  become: true
+  ansible.builtin.apt:
+    name:
+      - python3-colcon-common-extensions
+      - python3-vcstool
+      - python3-rosdep
+    state: present
+    update_cache: true
 
-- name: Run rosdep install, runs every time
+- name: Initialize rosdep
+  become: true
   ansible.builtin.command:
-  args:
+    cmd: rosdep update
+    creates: /etc/ros/rosdep/sources.list.d
+  ignore_errors: yes
+
+- name: Install any missing dependencies via rosdep
+  ansible.builtin.command:
     cmd: rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
 
-- name: Run colcon build for ~/ros2_control_ws
-  # explicitly source the ros environment
-  ansible.builtin.shell: source /home/{{ ansible_env.USER }}/.bashrc_noninteractive && colcon build
+- name: Build workspace with colcon
+  ansible.builtin.shell: source /opt/ros/humble/setup.bash && colcon build --symlink-install
   args:
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
     executable: /bin/bash
 
-- name: Source ROS setup for {{ ansible_env.USER }}
+- name: Source workspace setup in .bashrc
   ansible.builtin.lineinfile:
     path: /home/{{ ansible_env.USER }}/.bashrc
     line: source /home/{{ ansible_env.USER }}/ros2_control_ws/install/local_setup.bash
     state: present
 
-- name: Source ROS setup for noninteractive bash for {{ ansible_env.USER }}
+- name: Source workspace setup for noninteractive shell
   ansible.builtin.lineinfile:
     path: /home/{{ ansible_env.USER }}/.bashrc_noninteractive
     line: source /home/{{ ansible_env.USER }}/ros2_control_ws/install/local_setup.bash
