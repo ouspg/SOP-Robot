@@ -115,7 +115,7 @@ face-tracker-movement==0.0.0
 face-tracker-msgs==0.0.0
 farm-haystack==1.26.3
 fasteners==0.14.1
-filelock==3.6.0
+filelock==3.20.1
 fire==0.7.0
 flake8==4.0.1
 Flask==3.0.3
