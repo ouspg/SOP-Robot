@@ -35,7 +35,7 @@ beniget==0.4.1
 blinker==1.8.2
 boilerpy3==1.0.7
 Brlapi==0.8.3
-Brotli==1.0.9
+Brotli==1.2.0
 builtin-interfaces==1.2.1
 catkin-pkg-modules==1.0.0
 cattrs==24.1.2
