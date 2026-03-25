@@ -248,7 +248,7 @@ protobuf==5.29.6
 psutil==5.9.0
 ptyprocess==0.7.0
 py==1.10.0
-pyasn1==0.4.8
+pyasn1==0.6.3
 pyasn1-modules==0.2.1
 PyAudio==0.2.11
 pycairo==1.20.1
