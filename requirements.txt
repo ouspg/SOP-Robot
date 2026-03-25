@@ -445,7 +445,7 @@ virtualenv==20.36.1
 visualization-msgs==4.2.4
 wadllib==1.3.6
 webencodings==0.5.1
-Werkzeug==3.1.5
+Werkzeug==3.1.6
 wrapt==1.16.0
 xacro==2.0.8
 xdg==5
