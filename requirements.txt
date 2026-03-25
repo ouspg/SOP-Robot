@@ -132,7 +132,7 @@ geometry-msgs==4.2.4
 google-pasta==0.2.0
 grpcio==1.66.2
 gunicorn==23.0.0
-h11==0.14.0
+h11==0.16.0
 h5py==3.12.1
 hand-gestures==0.0.0
 head-gestures==0.0.0
