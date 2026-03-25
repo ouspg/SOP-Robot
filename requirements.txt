@@ -376,7 +376,7 @@ selinux==3.3
 sensor-msgs==4.2.4
 sensor-msgs-py==4.2.4
 sentence-transformers==3.0.0
-sentencepiece==0.2.0
+sentencepiece==0.2.1
 service-identity==18.1.0
 shape-msgs==4.2.4
 simpleaudio==1.0.4
