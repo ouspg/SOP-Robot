@@ -1,7 +1,7 @@
 import math
-import sys
-import time
 import random
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 import rclpy
 from rclpy.action import ActionClient
@@ -11,8 +11,8 @@ from control_msgs.action import FollowJointTrajectory
 from control_msgs.msg import JointTrajectoryControllerState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
-from face_tracker_msgs.msg import Point2, Faces, Face
-from std_msgs.msg import String, Float32
+from face_tracker_msgs.msg import Faces, Face
+from std_msgs.msg import String
 
 
 class FaceTrackerMovementNode(Node):
@@ -33,10 +33,14 @@ class FaceTrackerMovementNode(Node):
         )
         
         self.logger = self.get_logger()
+        self.sequence_executor = ThreadPoolExecutor(max_workers=1)
 
         # Action clients for eye and head controllers
         self.eye_action_client = ActionClient(self, FollowJointTrajectory, '/eyes_controller/follow_joint_trajectory')
         self.head_action_client = ActionClient(self, FollowJointTrajectory, '/head_controller/follow_joint_trajectory')
+        self.eye_server_ready = False
+        self.head_server_ready = False
+        self.server_check_timer = self.create_timer(0.5, self.refresh_action_server_state)
 
         # ROS2 subscriptions
         self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/faces', self.face_list_callback, 2)
@@ -103,17 +107,45 @@ class FaceTrackerMovementNode(Node):
 
             self.simulation = False
 
-        self.camera_diagonal_fov = 1.19555054  # 60° In degrees
-        self.camera_resolution_x = 1280
-        self.camera_resolution_y = 960
+        self.camera_diagonal_fov = (
+            self.declare_parameter("camera_diagonal_fov", 1.19555054)
+            .get_parameter_value()
+            .double_value
+        )
+        self.camera_resolution_x = (
+            self.declare_parameter("camera_resolution_x", 1280)
+            .get_parameter_value()
+            .integer_value
+        )
+        self.camera_resolution_y = (
+            self.declare_parameter("camera_resolution_y", 960)
+            .get_parameter_value()
+            .integer_value
+        )
         self.angle_per_pixel = self.camera_diagonal_fov / math.sqrt(self.camera_resolution_x**2 + self.camera_resolution_y**2)
         self.logger.info(f"{self.angle_per_pixel=}")
 
         # camera angle to eye and head servo angle coeffs (servo_angle = camera_angle * coeff)
-        self.camera_angle_eye_vertical_coeff = 4.01489
-        self.camera_angle_eye_horizontal_coeff = -2.67659
-        self.camera_angle_head_vertical_coeff = -2.67659
-        self.camera_angle_head_pan_coeff = -1.04387
+        self.camera_angle_eye_vertical_coeff = (
+            self.declare_parameter("camera_angle_eye_vertical_coeff", 4.01489)
+            .get_parameter_value()
+            .double_value
+        )
+        self.camera_angle_eye_horizontal_coeff = (
+            self.declare_parameter("camera_angle_eye_horizontal_coeff", -2.67659)
+            .get_parameter_value()
+            .double_value
+        )
+        self.camera_angle_head_vertical_coeff = (
+            self.declare_parameter("camera_angle_head_vertical_coeff", -2.67659)
+            .get_parameter_value()
+            .double_value
+        )
+        self.camera_angle_head_pan_coeff = (
+            self.declare_parameter("camera_angle_head_pan_coeff", -1.04387)
+            .get_parameter_value()
+            .double_value
+        )
 
         # Calculate camera angle constraints for eyes and head
         self.camera_angle_eye_vertical_lower_limit = self.eye_vertical_lower_limit / self.camera_angle_eye_vertical_coeff
@@ -151,18 +183,39 @@ class FaceTrackerMovementNode(Node):
         self.preferred_face_tracking_start_time = None
 
         # TODO: Consider using non constant value for preferred face tracking time limit
-        self.preferred_face_tracking_timelimit = 10  # in seconds
+        self.preferred_face_tracking_timelimit = (
+            self.declare_parameter("preferred_face_tracking_timelimit", 10.0)
+            .get_parameter_value()
+            .double_value
+        )
 
         self.blocked_faces: list[dict] = []  # Includes face_id, block_start and block_duration
 
         # TODO: Consider using non constant value for face blocking time
-        self.blocked_faces_timeout = 20  # in seconds
+        self.blocked_faces_timeout = (
+            self.declare_parameter("blocked_faces_timeout", 20.0)
+            .get_parameter_value()
+            .double_value
+        )
 
         # Face tracking tresholds
         # TODO: Select good values
         # TODO: use ros arguments for the treshold values to be able to change these on runtime
-        self.ignore_small_faces_treshold = 50
-        self.near_interaction_treshold = 320
+        self.ignore_small_faces_treshold = (
+            self.declare_parameter("ignore_small_faces_threshold", 50)
+            .get_parameter_value()
+            .integer_value
+        )
+        self.near_interaction_treshold = (
+            self.declare_parameter("near_interaction_threshold", 320)
+            .get_parameter_value()
+            .integer_value
+        )
+        self.glance_probability = (
+            self.declare_parameter("glance_probability", 0.005)
+            .get_parameter_value()
+            .double_value
+        )
 
         if functionality.lower() == "head":
             self.logger.info('Eye movement is disabled.')
@@ -173,11 +226,22 @@ class FaceTrackerMovementNode(Node):
 
         self.center_eyes()
         self.send_head_goal(self.head_state[0], self.head_state[3], self.head_state[1])
-        time.sleep(1)
 
         self.idle_timer = self.create_timer(5, self.idle_timer_callback)
 
         self.logger.info('Face tracking movement client initialized.')
+
+    def refresh_action_server_state(self):
+        eye_ready = self.eye_action_client.wait_for_server(timeout_sec=0.0)
+        head_ready = self.head_action_client.wait_for_server(timeout_sec=0.0)
+
+        if eye_ready and not self.eye_server_ready:
+            self.logger.info("Eyes controller action server is ready")
+        if head_ready and not self.head_server_ready:
+            self.logger.info("Head controller action server is ready")
+
+        self.eye_server_ready = eye_ready
+        self.head_server_ready = head_ready
 
     # Main loop. Excecuted when face_tracker_node publishes faces.
     def face_list_callback(self, msg):
@@ -194,10 +258,9 @@ class FaceTrackerMovementNode(Node):
             self.idle_timer.reset()
             self.idling = False
 
-            glance_percentage = 0.005 # Chance of executing a glance on each frame where a face has been detected. TODO: Decide on a good value
             # Check if doing the glance or not
-            if random.uniform(0, 1) <= glance_percentage:
-                self.glance()
+            if random.uniform(0, 1) <= self.glance_probability:
+                self.sequence_executor.submit(self.glance)
                 return  # Consider current head position old
             
             # Slow donw how often the goal is sent
@@ -222,10 +285,11 @@ class FaceTrackerMovementNode(Node):
                 self.eyes_servo_state[i] = self.eyes_center_position[i]
                 self.logger.info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
             else:
-                # Servo angle
                 self.eyes_servo_state[i] = val
-                # Camera angle
-                self.eyes_state = [val[0] / self.camera_angle_eye_horizontal_coeff, val[1] / self.camera_angle_eye_vertical_coeff]
+        self.eyes_state = [
+            self.eyes_servo_state[0] / self.camera_angle_eye_horizontal_coeff,
+            self.eyes_servo_state[1] / self.camera_angle_eye_vertical_coeff,
+        ]
 
     def head_gesture_callback(self, msg):
         gesture = msg.data
@@ -242,11 +306,11 @@ class FaceTrackerMovementNode(Node):
                 args['duration_of_individual_movements'] = float(gesture[i][9:])
         gesture = gesture[0]
         if gesture == 'nod':
-            self.nod(**args)
+            self.sequence_executor.submit(self.nod, **args)
         elif gesture == 'shake':
-            self.head_shake(**args)
+            self.sequence_executor.submit(self.head_shake, **args)
         elif gesture == 'glance':
-            self.glance(**args)
+            self.sequence_executor.submit(self.glance, **args)
         else:
             self.logger.info("Gesture not implemented!")
 
@@ -308,7 +372,7 @@ class FaceTrackerMovementNode(Node):
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
         # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
         # TODO fine-tune timer on real robot to see what fits.
-        self.idle_timer.timer_period_ns = movement_time + random.uniform(750000000, 1500000000)
+        self.idle_timer.timer_period_ns = int(movement_time + random.uniform(750000000, 1500000000))
         self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
@@ -321,6 +385,9 @@ class FaceTrackerMovementNode(Node):
         Returns:
             face: The selected face object, or `None` if no suitable face is found.
         """
+        if not faces:
+            return None
+
         non_blocked_faces = []
         selected_face = None
     
@@ -518,10 +585,6 @@ class FaceTrackerMovementNode(Node):
         """
         if self.head_state:
             verticalTilt_start = self.head_state[3]
-            msg = Float32()
-            msg.data = delay * 3
-            # self.head_gesture_length_publisher.publish(msg)
-
             self.fixed_gaze_head_turn('up', magnitude / 2, duration_of_individual_movements)
             time.sleep(delay)
             self.fixed_gaze_head_turn('down', magnitude, duration_of_individual_movements)
@@ -539,9 +602,6 @@ class FaceTrackerMovementNode(Node):
         """
         if self.head_state:
             pan_start = self.head_state[0]
-            msg = Float32()
-            msg.data = delay * 3
-            # self.head_gesture_length_publisher.publish(msg)
             self.fixed_gaze_head_turn('left', magnitude / 2, duration_of_individual_movements)
             time.sleep(delay)
             self.fixed_gaze_head_turn('right', magnitude, duration_of_individual_movements)
@@ -569,7 +629,7 @@ class FaceTrackerMovementNode(Node):
             magnitude: The magnitude of the head turn.
             duration: The time in seconds it should take to finish the head turn.
         """
-        duration = Duration(sec=0, nanosec=int(duration * 100000000))
+        duration = Duration(sec=0, nanosec=int(duration * 1000000000))
         pan, _, _, verticalTilt = self.head_state
         eye_x, eye_y = self.eyes_servo_state
 
@@ -610,7 +670,11 @@ class FaceTrackerMovementNode(Node):
 
     def send_eye_goal(self, horizontal, vertical, duration=None):
         # The eyes lock up if they try to move too fast so it'll go a bit slower for longer movements (also faster for short movements)
-        if duration == None:
+        if not self.eye_server_ready:
+            self.logger.warning("Eyes controller action server is not ready")
+            return
+
+        if duration is None:
             horizontal_diff = abs(self.eyes_servo_state[0] - horizontal)
             duration = Duration(sec=0, nanosec=max(int(150000000 * horizontal_diff), 150000000))
 
@@ -620,33 +684,34 @@ class FaceTrackerMovementNode(Node):
         goal_msg.trajectory = JointTrajectory(joint_names=['eyes_shift_horizontal_joint', 'eyes_shift_vertical_joint'],
                                               points=[trajectory_points])
 
-        self.eye_action_client.wait_for_server()
-
         self.eye_action_client.send_goal_async(goal_msg)
         self.logger.info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
 
     def send_horizontal_tilt_goal(self, horizontalTilt):
+        if not self.head_server_ready:
+            self.logger.warning("Head controller action server is not ready")
+            return
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[-horizontalTilt, horizontalTilt], time_from_start=Duration(sec=1, nanosec=0))
         goal_msg.trajectory = JointTrajectory(joint_names=['head_tilt_left_joint', 'head_tilt_right_joint'],
                                               points=[trajectory_points])
-        
-        self.head_action_client.wait_for_server()
 
         self.head_action_client.send_goal_async(goal_msg)
         
     # TODO max time moved to 0.6s does this break anything?
     def send_pan_and_vertical_tilt_goal(self, pan, verticalTilt, duration=None):
-        if duration == None:
+        if not self.head_server_ready:
+            self.logger.warning("Head controller action server is not ready")
+            return
+
+        if duration is None:
             x_diff = abs(self.head_state[0] - pan)
-            duration = Duration(sec=0, nanosec=int(200000000 * x_diff))
+            duration = Duration(sec=0, nanosec=max(int(200000000 * x_diff), 150000000))
         self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
                                               points=[trajectory_points])
-
-        self.head_action_client.wait_for_server()
 
         self.head_action_client.send_goal_async(goal_msg)
 
@@ -689,7 +754,7 @@ class FaceTrackerMovementNode(Node):
         #pan = math.copysign(pan, -x_diff)
 
         # Vertical tilt
-        vertical_tilt = vertical_angle * self.camera_angle_eye_vertical_coeff + self.head_state[3]
+        vertical_tilt = vertical_angle * self.camera_angle_head_vertical_coeff + self.head_state[3]
         vertical_tilt = max(min(self.head_vertical_upper_limit, vertical_tilt), self.head_vertical_lower_limit)
 
         return pan, vertical_tilt
@@ -723,10 +788,12 @@ class FaceTrackerMovementNode(Node):
 
         return random_horizontal, random_vertical
 
+    def destroy_node(self):
+        self.sequence_executor.shutdown(wait=True, cancel_futures=False)
+        return super().destroy_node()
+
 
 def main(args=None):
-    print('Hi from face_tracker_movement.')
-
     rclpy.init(args=args)
 
     action_client = FaceTrackerMovementNode()

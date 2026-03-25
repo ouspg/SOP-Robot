@@ -4,7 +4,7 @@ package_name = 'jaw_movement'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.1.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -13,10 +13,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='vagrant',
-    maintainer_email='vagrant@todo.todo',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    maintainer='SOP Robot Team',
+    maintainer_email='sop-robot@example.org',
+    description='ROS2 jaw movement node for speech-synchronized mouth motion.',
+    license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

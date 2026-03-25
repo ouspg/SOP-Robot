@@ -1,6 +1,7 @@
 import rclpy
-import time
 import random
+import time
+from concurrent.futures import ThreadPoolExecutor
 import serial
 from std_msgs.msg import String
 from rclpy.node import Node
@@ -21,19 +22,36 @@ class UnifiedArms(Node):
     def __init__(self):
         #ShoulderController
         super().__init__('minimal_publisher')
+        self.logger = self.get_logger()
+
+        serial_port = (
+            self.declare_parameter("serial_port", SERIAL_PORT)
+            .get_parameter_value()
+            .string_value
+        )
+        baud_rate = (
+            self.declare_parameter("baud_rate", BAUD_RATE)
+            .get_parameter_value()
+            .integer_value
+        )
+        self.ids = list(
+            self.declare_parameter("servo_ids", [2, 3])
+            .get_parameter_value()
+            .integer_array_value
+        )
+        self.executor = ThreadPoolExecutor(max_workers=1)
 
         # Initialize the serial connection
         try:
-            self.serial = serial.Serial(SERIAL_PORT, BAUD_RATE)
-            print("Serial port opened")
-        except serial.SerialException:
+            self.serial = serial.Serial(serial_port, baud_rate)
+            self.logger.info(f"Serial port opened on {serial_port}")
+        except serial.SerialException as exc:
             self.serial = None
-            print("Could not open serial port. Assuming fake robot.")
+            self.logger.warning(f"Could not open serial port '{serial_port}': {exc}. Assuming fake robot.")
         # Create a ROS2 publisher for the feedback
         self.publisher                    = self.create_publisher(String, FEEDBACK_TOPIC_NAME, 10)
         self.left_hand_gesture_publisher  = self.create_publisher(String, "/l_hand/l_hand_topic", 10)
         self.right_hand_gesture_publisher = self.create_publisher(String, "/r_hand/r_hand_topic", 10)
-        self.ids = [2,3]
         self.pos = [45, 120]
         self.zero = [30, 90]
         self.hold = [70, 70]
@@ -103,11 +121,11 @@ class UnifiedArms(Node):
         }
 
         self.exit_commands = ["quit", "exit"]
-        self.logger = self.get_logger()
-
-
     def action_callback(self, msg):
         arg = msg.data
+        if not arg:
+            self.logger.warning("Received empty arm action")
+            return
         self.logger.info(f"arg: {arg}")
 
         # Action messages for hands can be eg. "l_hand_fist"
@@ -121,7 +139,7 @@ class UnifiedArms(Node):
 
         if arg in self.ACTION_PATTERNS:
             # Action is a pattern
-            self.perform_action_from_pattern(arg)
+            self.executor.submit(self.perform_action_from_pattern, arg)
         else:
             self.arm_gesture(arg)
 
@@ -140,7 +158,7 @@ class UnifiedArms(Node):
             if hand_or_arm == "hand":
                 self.hand_gesture(action, side)
             elif hand_or_arm == "arm":
-                self.arm_gesture
+                self.arm_gesture(action, side)
             time.sleep(sleep_after)
 
 
@@ -181,6 +199,16 @@ class UnifiedArms(Node):
             positions = self.zero
         elif action == "hold":
             positions = self.hold
+        else:
+            self.logger.warning(f"Unknown arm action '{action}'")
+            return
+
+        if len(positions) < len(self.ids):
+            self.logger.error(
+                f"Configured positions for action '{action}' are shorter than servo_ids. "
+                f"positions={positions}, servo_ids={self.ids}"
+            )
+            return
         angles = []
         for i in range(len(self.ids)):
             angles.append(f"{self.ids[i]}:{positions[i]}")
@@ -238,7 +266,7 @@ class UnifiedArms(Node):
 def main(args=None):
     rclpy.init(args=args)
     armController = UnifiedArms()
-    print("Arm controller ready for messages.")
+    armController.get_logger().info("Arm controller ready for messages.")
     rclpy.spin(armController)
 
 

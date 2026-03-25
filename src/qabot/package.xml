@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>qabot</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="vagrant@todo.todo">vagrant</maintainer>
-  <license>TODO: License declaration</license>
+  <version>0.1.0</version>
+  <description>Question-answer bot package for SOP Robot demos.</description>
+  <maintainer email="sop-robot@example.org">SOP Robot Team</maintainer>
+  <license>Apache-2.0</license>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>tts_msgs</exec_depend>

@@ -5,7 +5,7 @@
   <version>1.0.0</version>
   <description>Text-to-speech pacakge for synthetizing speech.</description>
   <maintainer email="klaurila20@student.oulu.fi">Konsta Laurila</maintainer>
-  <license>TODO: License declaration</license>
+  <license>Apache-2.0</license>
 
   <depend>python3-TTS</depend>
   <depend>python3-simpleaudio</depend>

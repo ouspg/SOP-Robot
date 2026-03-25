@@ -1,0 +1,5 @@
+*.stl binary
+*.dat binary
+*.h5 binary
+*.sqlite3 binary
+*.wav binary

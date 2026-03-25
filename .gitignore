@@ -19,11 +19,15 @@ install
 
 .vagrant
 
-temp_dynamixel_for_launch.yaml
 .goutputstream-FI3LZ1
 .goutputstream-GS9RZ1
 4913
 *.db
+*.sqlite3
 *.prof
 .venv/*
 src/speech_recognizer/resource
+src/chatbot/chatbot/db.sqlite3
+src/db.sqlite3
+*.wav
+*.bin

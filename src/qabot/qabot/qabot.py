@@ -1,8 +1,8 @@
-from rclpy.service import Service
-from rclpy.action import ActionClient
-from rclpy.node import Node
+from pathlib import Path
 
+from ament_index_python.packages import get_package_share_directory
 import rclpy
+from rclpy.node import Node
 import random
 from std_msgs.msg import String
 
@@ -15,9 +15,6 @@ from haystack.pipelines.standard_pipelines import TextIndexingPipeline
 from haystack.nodes import BM25Retriever
 from haystack.nodes import FARMReader
 from haystack.pipelines import ExtractiveQAPipeline
-
-from pprint import pprint
-from haystack.utils import print_answers
 
 #logging.basicConfig(level=logging.INFO)
 
@@ -36,8 +33,8 @@ class QaBotClientNode(Node):
             10)
         self.get_logger().info('Starting!')
         self.document_store = InMemoryDocumentStore(use_bm25=True)
-        self.doc_dir = "./src/qabot/resource/data/"
-        self.files_to_index = [self.doc_dir + "/" + f for f in os.listdir(self.doc_dir)]
+        self.doc_dir = Path(get_package_share_directory("qabot")) / "resource" / "data"
+        self.files_to_index = [str(self.doc_dir / filename) for filename in os.listdir(self.doc_dir)]
         self.indexing_pipeline = TextIndexingPipeline(self.document_store)
         self.indexing_pipeline.run_batch(file_paths=self.files_to_index)
         self.retriever = BM25Retriever(document_store=self.document_store)
