@@ -40,14 +40,17 @@
     version: 66687e7c1873a039600d78b370e2d4acd24924cd
 
 - name: Run rosdep install, runs every time
-  ansible.builtin.command:
+  ansible.builtin.shell: >
+    source /opt/ros/humble/setup.bash &&
+    rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
   args:
-    cmd: rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
+    executable: /bin/bash
 
 - name: Run colcon build for ~/ros2_control_ws
-  # explicitly source the ros environment
-  ansible.builtin.shell: source /home/{{ ansible_env.USER }}/.bashrc_noninteractive && colcon build
+  ansible.builtin.shell: >
+    source /opt/ros/humble/setup.bash &&
+    colcon build
   args:
     chdir: /home/{{ ansible_env.USER }}/ros2_control_ws
     executable: /bin/bash

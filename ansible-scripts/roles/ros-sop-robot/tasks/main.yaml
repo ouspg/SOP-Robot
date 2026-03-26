@@ -1,13 +1,18 @@
 ---
   - name: Run rosdep install
-    ansible.builtin.command:
+    ansible.builtin.shell: >
+      source /opt/ros/humble/setup.bash &&
+      source /home/{{ ansible_env.USER }}/ros2_control_ws/install/local_setup.bash &&
+      rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
     args:
-      cmd: rosdep install --from-paths src --ignore-src --rosdistro humble -r -y
       chdir: /home/{{ ansible_env.USER }}/SOP-Robot
+      executable: /bin/bash
 
   - name: Run colcon build for ~/SOP-Robot
-    # explicitly source the ros environment
-    ansible.builtin.shell: source /home/{{ ansible_env.USER }}/.bashrc_noninteractive && colcon build
+    ansible.builtin.shell: >
+      source /opt/ros/humble/setup.bash &&
+      source /home/{{ ansible_env.USER }}/ros2_control_ws/install/local_setup.bash &&
+      colcon build
     args:
       chdir: /home/{{ ansible_env.USER }}/SOP-Robot
       executable: /bin/bash

@@ -2,14 +2,15 @@
 - name: Add Key and repository for ROS
   become: true
   block:
-    - name: Adding ROS key
-      ansible.builtin.apt_key:
+    - name: Download ROS signing key
+      ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
-        state: present
+        dest: /usr/share/keyrings/ros-archive-keyring.asc
+        mode: "0644"
 
     - name: Adding ROS repository
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] http://packages.ros.org/ros2/ubuntu {{ ansible_distribution_release }} main"
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/ros-archive-keyring.asc] http://packages.ros.org/ros2/ubuntu {{ ansible_distribution_release }} main"
         state: present
 
 - name: Install additional packages and ROS
@@ -36,27 +37,11 @@
         state: present
         update_cache: true
     
-    - name: Install pip packages for keras
+    - name: Upgrade pip in virtualenv
       ansible.builtin.pip:
         name:
-          - keras
-        virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
-
-    - name: Install pip packages for testing into a virtualenv
-      ansible.builtin.pip:
-        name:
-          - argcomplete
-          - flake8-blind-except
-          - flake8-builtins
-          - flake8-class-newline
-          - flake8-comprehensions
-          - flake8-deprecated
-          - flake8-docstrings
-          - flake8-import-order
-          - flake8-quotes
-          - pytest-repeat
-          - pytest-rerunfailures
-          - pytest
+          - pip
+        state: latest
         virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
 
     - name: Install FAST-RTPS and Cyclone DDS dependencies
@@ -113,25 +98,32 @@
         state: present
         update_cache: true
 
-    - name: Install pip packages for SpeechRecognition
+    - name: Install all pip packages into virtualenv
       ansible.builtin.pip:
         name:
-          - tf-keras
+          - keras
+          - argcomplete
+          - flake8-blind-except
+          - flake8-builtins
+          - flake8-class-newline
+          - flake8-comprehensions
+          - flake8-deprecated
+          - flake8-docstrings
+          - flake8-import-order
+          - flake8-quotes
+          - pytest-repeat
+          - pytest-rerunfailures
+          - pytest
           - dlib
           - TTS
           - simpleaudio
           - SpeechRecognition
           - farm-haystack
           - farm-haystack[inference]
+          - opencv-python
+          - deepface==0.0.92
+          - progressbar
         virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
-
-- name: Install packages for face traking
-  ansible.builtin.pip:
-    name:
-      - opencv-python
-      - deepface==0.0.92
-      - progressbar
-    virtualenv: /home/{{ ansible_env.USER }}/SOP-Robot/.venv
 
 - name: Download dynamixel and trigger udev
   block:
