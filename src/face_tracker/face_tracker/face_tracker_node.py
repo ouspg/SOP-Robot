@@ -21,7 +21,6 @@ from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2, Occurance
 
 from cv_bridge import CvBridge, CvBridgeError
 
-from .lip_movement_net import LipMovementDetector
 from .face_analyzer import FaceAnalyzer
 
 bridge = CvBridge()
@@ -128,6 +127,7 @@ class FaceTrackerNode(Node):
                 .string_value
             )
            # Initialize lip movement detector
+            from .lip_movement_net import LipMovementDetector
             self.logger.info('Initializing lip movement detector...')
             lip_movement_detector = LipMovementDetector(
                 os.path.join(

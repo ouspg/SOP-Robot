@@ -18,27 +18,46 @@ class State(Enum):
 class FullDemoNode(Node):
     def __init__(self):
         super().__init__("full_demo")
-        # ROS topics
-        self.tts_message_publisher = self.create_publisher(String, "chatbot_response", 10)
-        self.tts_can_listen_subscription = self.create_subscription(Bool, "can_listen", self.update_tts_ready,10)
 
-        self.speech_recognizer_can_listen = self.create_publisher(Bool, "speech_recognizer/can_listen", 10)
-        self.speech_recognizer_result = self.create_subscription(String, "speech_recognizer/recognized_speech", self.on_speech_recognized,10)
+        # --- Voice chatbot integration (LLM-based) ---
+        # Publish greetings directly to voice_chatbot TTS (bypasses LLM)
+        self.tts_message_publisher = self.create_publisher(
+            String, "/voice_chatbot/assistant_text", 10
+        )
+        # Control STT listening via voice_chatbot's can_listen topic
+        self.stt_can_listen_publisher = self.create_publisher(
+            Bool, "/voice_chatbot/can_listen", 10
+        )
+        # Receive transcribed user speech from voice_chatbot STT
+        self.transcript_subscription = self.create_subscription(
+            String, "/voice_chatbot/transcript", self.on_speech_recognized, 10
+        )
+        # Monitor voice_chatbot status (speaking, listening, etc.)
+        self.voice_status_subscription = self.create_subscription(
+            String, "/voice_chatbot/status", self.on_voice_status, 10
+        )
+        # Listen for TTS done to know when the robot finished speaking
+        self.tts_done_subscription = self.create_subscription(
+            String, "/voice_chatbot/tts_done", self.on_tts_done, 10
+        )
+        # Global can_listen from TTS node (backward compat with jaw_movement etc.)
+        self.tts_can_listen_subscription = self.create_subscription(
+            Bool, "/can_listen", self.update_tts_ready, 10
+        )
 
-        self.chatbot_input = self.create_publisher(String, "chatbot/recognized_speech", 10)
-        self.chatbot_output = self.create_subscription(String, "chatbot/chatbot_response", self.on_chatbot_response,10)
-
-        self.face_list_subscription = self.create_subscription(Faces, "/face_tracker/face_topic", self.update_face_count, 2)
-
+        # --- Face tracking (unchanged) ---
+        self.face_list_subscription = self.create_subscription(
+            Faces, "/face_tracker/face_topic", self.update_face_count, 2
+        )
         self.arm_action_publisher = self.create_publisher(String, "/arms/arm_action", 10)
-
-        # Get focused face from face_tracker_movement_node
-        self.focused_face_subscription = self.create_subscription(Face, "/face_tracker_movement/focused_face", self.focused_face_callback, 10)
+        self.focused_face_subscription = self.create_subscription(
+            Face, "/face_tracker_movement/focused_face", self.focused_face_callback, 10
+        )
 
         self.tts_ready = True
-        # Turn off listening for now
-        self.speech_recognizer_can_listen.publish(Bool(data=False))
         self.robot_state = State.IDLE
+        # Start with listening disabled
+        self.stt_can_listen_publisher.publish(Bool(data=False))
         self.get_logger().info("switched state to IDLE")
 
         # Stores faces that have been greeted to not keep saying hello over and over again
@@ -50,51 +69,67 @@ class FullDemoNode(Node):
             self.get_logger().info(f"Greeting person: {greeting}")
             self.robot_state = State.LISTENING
             self.get_logger().info("switched state to LISTENING")
+            # Send greeting to voice_chatbot TTS
             self.tts_message_publisher.publish(String(data=greeting))
             self.arm_action_publisher.publish(String(data="hold"))
             self.t = self.create_timer(30, self.close_timer)
-            self.speech_recognizer_can_listen.publish(Bool(data=True))
-    
+            # Enable STT listening after greeting
+            self.stt_can_listen_publisher.publish(Bool(data=True))
+
     def update_face_count(self, message):
         self.face_count = len(message.faces)
-    
+
     def update_tts_ready(self, message):
         self.tts_ready = message.data
 
-    def on_chatbot_response(self, msg):
-        if self.tts_ready:
-            # Speak out the message and continue listening
-            self.tts_message_publisher.publish(msg)
-            self.speech_timer = self.create_timer(5, self.resume_listening)
+    def on_voice_status(self, msg):
+        """Monitor voice chatbot status for state coordination."""
+        status = msg.data
+        if status == "speaking":
+            self.tts_ready = False
+        elif status in ("ready", "listening"):
+            self.tts_ready = True
+
+    def on_tts_done(self, msg):
+        """Called when voice_chatbot TTS finishes speaking."""
+        self.tts_ready = True
+        if self.robot_state == State.THINKING:
+            # After LLM response is spoken, resume listening
+            self.resume_listening()
 
     def resume_listening(self):
-        self.destroy_timer(self.speech_timer)
-        if not self.tts_ready:
-            self.speech_timer = self.create_timer(1, self.resume_listening)
-        else:
-            self.robot_state = State.LISTENING
-            self.get_logger().info("switched state to LISTENING")
-            # Set timeout to return to IDLE if nothing else heard
-            self.t = self.create_timer(30, self.close_timer)
-            self.speech_recognizer_can_listen.publish(Bool(data=True))
+        self.robot_state = State.LISTENING
+        self.get_logger().info("switched state to LISTENING")
+        # Reset timeout to return to IDLE if nothing else heard
+        if hasattr(self, 't'):
+            self.destroy_timer(self.t)
+        self.t = self.create_timer(30, self.close_timer)
+        self.stt_can_listen_publisher.publish(Bool(data=True))
 
     def close_timer(self):
         self.destroy_timer(self.t)
         self.robot_state = State.IDLE
+        # Disable STT when going idle
+        self.stt_can_listen_publisher.publish(Bool(data=False))
         self.arm_action_publisher.publish(String(data="zer"))
         self.get_logger().info("switched state to IDLE")
 
 
     def on_speech_recognized(self, msg):
+        """Called when voice_chatbot STT transcribes user speech.
+
+        The LLM node automatically picks up user_text and generates a
+        response which flows to TTS. We just need to update state and
+        reset the timeout.
+        """
         if self.robot_state == State.LISTENING:
-            self.get_logger().info("Heard: "+msg.data)
-            self.destroy_timer(self.t)
-            # When speech recognized, stop listening
+            self.get_logger().info("Heard: " + msg.data)
+            if hasattr(self, 't'):
+                self.destroy_timer(self.t)
+            # The voice chatbot pipeline handles LLM -> TTS automatically
             self.robot_state = State.THINKING
             self.get_logger().info("switched state to THINKING")
-            self.speech_recognizer_can_listen.publish(Bool(data=False))
-            self.chatbot_input.publish(msg)
-    
+
     def focused_face_callback(self, face):
         '''
         Callback function to decide what to do when a new face is focused.
@@ -103,14 +138,14 @@ class FullDemoNode(Node):
         This can only occur once every 2 minutes per person.
         '''
         num_occurrences = len(face.occurances)
-    
+
         self.get_logger().info(f"Occurrances: {num_occurrences}")
-        
+
         current_time = time()
 
         if num_occurrences > 1:
             if face.occurances[-1].duration < 20:
-            
+
             # Check that at least one occurance is long enough
                 for occurance in face.occurances:
                     if occurance.duration > 6:
