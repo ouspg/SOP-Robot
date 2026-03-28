@@ -94,7 +94,7 @@ distlib==0.3.4
 distro==1.7.0
 distro-info==1.1+ubuntu0.2
 dlib==19.24.6
-dnspython==2.1.0
+dnspython==2.6.1
 docopt==0.6.2
 docutils==0.17.1
 domain-coordinator==0.10.0
