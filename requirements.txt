@@ -80,7 +80,7 @@ controller-manager==2.43.1
 controller-manager-msgs==2.43.1
 cov-core==1.15.0
 coverage==6.2
-cryptography==46.0.5
+cryptography==46.0.6
 cupshelpers==1.0
 cv-bridge==3.2.1
 cycler==0.11.0
