@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import serial
 from std_msgs.msg import String
 from rclpy.node import Node
+from rclpy.executors import ExternalShutdownException
 from trajectory_msgs.msg import JointTrajectoryPoint
 from trajectory_msgs.msg import JointTrajectory
 from control_msgs.action import FollowJointTrajectory
@@ -39,7 +40,7 @@ class UnifiedArms(Node):
             .get_parameter_value()
             .integer_array_value
         )
-        self.executor = ThreadPoolExecutor(max_workers=1)
+        self._pattern_executor = ThreadPoolExecutor(max_workers=1)
 
         # Initialize the serial connection
         try:
@@ -139,7 +140,7 @@ class UnifiedArms(Node):
 
         if arg in self.ACTION_PATTERNS:
             # Action is a pattern
-            self.executor.submit(self.perform_action_from_pattern, arg)
+            self._pattern_executor.submit(self.perform_action_from_pattern, arg)
         else:
             self.arm_gesture(arg)
 
@@ -261,13 +262,24 @@ class UnifiedArms(Node):
         time.sleep(2)
         self.send_gesture(random.choice(["open", "fist", "scissors"]))
 
+    def destroy_node(self):
+        self._pattern_executor.shutdown(wait=False, cancel_futures=True)
+        return super().destroy_node()
+
 
 
 def main(args=None):
     rclpy.init(args=args)
     armController = UnifiedArms()
     armController.get_logger().info("Arm controller ready for messages.")
-    rclpy.spin(armController)
+    try:
+        rclpy.spin(armController)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        armController.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":

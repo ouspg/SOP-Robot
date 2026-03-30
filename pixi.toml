@@ -9,6 +9,7 @@ platforms = ["linux-64"]
 # Python
 python = ">=3.10,<3.12"
 pip = "*"
+setuptools = ">=69.5,<80"
 numpy = ">=1.26,<2"
 
 # Build tools
@@ -30,6 +31,8 @@ ros-humble-geometry-msgs = "*"
 ros-humble-sensor-msgs = "*"
 ros-humble-rosidl-default-generators = "*"
 ros-humble-rosidl-default-runtime = "*"
+ros-humble-rviz2 = "*"
+ros-humble-rqt-image-view = "*"
 
 # ROS 2 control framework
 ros-humble-ros2-control = "*"
@@ -59,28 +62,34 @@ ros-humble-pluginlib = "*"
 # System libraries (espeak must be installed via apt: sudo apt install espeak)
 yaml-cpp = "*"
 bullet = "*"
+alsa-lib = "*"
+portaudio = "*"
+# Install the audio backend from conda-forge so Linux doesn't need to build
+# `simpleaudio` against local ALSA headers during `pixi install`.
+simpleaudio = "*"
 
 [pypi-options]
-extra-index-urls = ["https://download.pytorch.org/whl/cu128"]
+extra-index-urls = ["https://download.pytorch.org/whl/cu130"]
 
 [pypi-dependencies]
 # Voice chatbot pipeline
 voice-chatbot = { version = "*", extras = ["all"] }
 llama-cpp-python = "==0.3.19"
 transformers = ">=4.44,<4.46"
-torch = "==2.7.1"
-torchaudio = "==2.7.1"
+torch = "==2.10.0"
+torchaudio = "==2.10.0"
 
 # Face tracking / vision
 deepface = ">=0.0.92,<0.1"
 dlib = ">=19.24,<20.0"
 opencv-python = ">=4.10,<5.0"
 keras = ">=3.0,<4.0"
+tf-keras = ">=2.20,<2.21"
 h5py = ">=3.10,<4.0"
+ultralytics = ">=8.3,<9"
 
 # Speech & audio
 SpeechRecognition = ">=3.10,<4.0"
-simpleaudio = ">=1.0,<2.0"
 
 # NLP / translation
 langdetect = ">=1.0,<2.0"
@@ -93,6 +102,8 @@ progressbar2 = "*"
 
 [tasks]
 # ── Setup ──────────────────────────────────────────────────────────────
+ensure-setuptools-compat = { cmd = "python src/voice_chatbot_ros/tools/ensure_setuptools_compat.py", description = "Downgrade setuptools when needed so ROS 2 Humble colcon builds work with --symlink-install" }
+
 setup-models = { cmd = "python src/voice_chatbot_ros/tools/setup_models.py", description = "Download and cache all required models (LLM, STT, TTS, VAD)" }
 
 download-tts-model = { cmd = """
@@ -105,7 +116,7 @@ download-tts-model = { cmd = """
 init-submodules = { cmd = "git submodule update --init --recursive", description = "Initialize git submodules (dynamixel packages)" }
 
 # ── Build ──────────────────────────────────────────────────────────────
-build = { cmd = "colcon build --symlink-install", depends-on = ["init-submodules"], description = "Build all ROS 2 packages with colcon" }
+build = { cmd = "colcon build --symlink-install", depends-on = ["init-submodules", "ensure-setuptools-compat"], description = "Build all ROS 2 packages with colcon" }
 
 # ── Udev rules (requires sudo) ────────────────────────────────────────
 setup-udev = { cmd = """
@@ -115,8 +126,9 @@ setup-udev = { cmd = """
 """, description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 
 # ── Launch ─────────────────────────────────────────────────────────────
-ros-launch-robot = { cmd = "ros2 launch robot robot.launch.py", description = "Launch real robot hardware" }
-ros-launch-robot-fake = { cmd = "ros2 launch robot robot.fake.launch.py", description = "Launch simulated robot hardware" }
+ros-launch-robot = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.launch.py", description = "Launch real robot hardware" }
+ros-launch-robot-fake = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.fake.launch.py use_rviz:=false", description = "Launch simulated robot hardware" }
+ros-launch-robot-fake-rviz = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.fake.launch.py use_rviz:=true", description = "Launch simulated robot hardware with RViz" }
 ros-launch-voice = { cmd = "bash src/voice_chatbot_ros/tools/ros_launch_pixi.sh", description = "Launch voice chatbot (STT + LLM + TTS)" }
-ros-face-tracker = { cmd = "ros2 launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
-ros-full-demo = { cmd = "ros2 run full_demo full_demo_node", description = "Run full demo orchestrator" }
+ros-face-tracker = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
+ros-full-demo = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run full_demo full_demo_node", description = "Run full demo orchestrator" }
