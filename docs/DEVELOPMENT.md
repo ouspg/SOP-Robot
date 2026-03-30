@@ -4,12 +4,10 @@
 
 * [Visual Studio Code](https://code.visualstudio.com/)
 * [Git](https://git-scm.com/)
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+* [Pixi](https://pixi.sh/) — cross-platform package manager (installs ROS 2, Python deps, and build tools)
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (optional, for VM-based development)
   * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
-* [Ubuntu](https://releases.ubuntu.com/jammy/)
-   * Download Ubuntu 22.04 image to your computer
-
-**Note: after creating the machine, you will have to enable the USB controller in VM settings manually**
+* Ubuntu 22.04 (native or VM)
 
 If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
 
@@ -20,37 +18,73 @@ every development session.
 
 At the end of the project, create light documentation for your ROS package in english (document code, what dependencies it requires, how it should be used, how it integrates with ROS and does it require more development to be usable) in markdown.
 
-## Installing virtual machine
-1. Open up Virtual box and create a new virtual machine with the downloaded Ubuntu image. Once created launch the virtual machine and run the Ubuntu setup, create user account and setup root/admin password and reboot. 
-2. After setup is completed open at the terminal and install git and ansible:
-* `sudo apt update`
-* `sudo apt install software-properties-common`
-* `sudo add-apt-repository --yes --update ppa:ansible/ansible`
-* `sudo apt install git ansible`
-it is recommended to update packages to the newest versions from the start:
-* `sudo apt update`
-* `sudo apt upgrade`
-* Clone this repository to your home directory:
-* `git clone https://github.com/ouspg/SOP-Robot.git`
-and move to the cloned directory:
-* `cd SOP-Robot`
-* Run the ansible install script to install everything needed for the robot:
-* `ansible-playbook ansible-scripts/playbook.yml --ask-become-pass`
-this step can take few hours to complete.
-3. After install is completed run and test the virtual version of the robot by running the following commands while you are in SOP-Robot folder in your terminal:
-* `colcon build`
-* `source install/setup.bash`
-* `ros2 launch robot robot.fake.launch.py`
-* Open a new terminal tab on the same path for each or next commands:
-* `ros2 run hand_gestures hand_gestures_node`
-* `python3 client/unified_arms_client.py`
-* `python3 client/hand_client_tester.py`
-* You can now test the hand movements by typing commands to the
-hand_client_tester like for example:
-* l_hand_fist
-* r_hand_fist
-* l_hand_open
-* r_hand_open
+## Installation with Pixi
+
+1. Install pixi (if not already installed):
+   ```bash
+   curl -fsSL https://pixi.sh/install.sh | bash
+   ```
+
+2. Clone and enter the repository:
+   ```bash
+   git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
+   cd SOP-Robot
+   ```
+
+3. Install all dependencies (ROS 2 Humble, Python packages, build tools):
+   ```bash
+   pixi install
+   ```
+
+4. Build all ROS 2 packages:
+   ```bash
+   pixi run build
+   ```
+
+5. Download models (voice chatbot LLM, STT, TTS):
+   ```bash
+   pixi run setup-models
+   ```
+
+6. (Optional) Download legacy TTS model for `tts_package`:
+   ```bash
+   pixi run download-tts-model
+   ```
+
+7. (Optional) Install Dynamixel udev rules (requires sudo, only needed on real hardware):
+   ```bash
+   pixi run setup-udev
+   ```
+
+## Testing the simulated robot
+
+After installation, test the simulated robot:
+```bash
+pixi run ros-launch-robot-fake
+```
+
+Open new terminal tabs for each:
+```bash
+pixi shell
+ros2 run hand_gestures hand_gestures_node
+```
+```bash
+pixi shell
+python3 client/unified_arms_client.py
+```
+```bash
+pixi shell
+python3 client/hand_client_tester.py
+```
+
+You can now test hand movements by typing commands like `l_hand_fist`, `r_hand_fist`, `l_hand_open`, `r_hand_open`.
+
+## Legacy Installation (Ansible)
+
+The Ansible-based installation is still available in `ansible-scripts/` for reference or VM-based setups:
+
+1. Install ansible: `sudo apt install software-properties-common && sudo add-apt-repository --yes --update ppa:ansible/ansible && sudo apt install ansible`
+2. Run: `ansible-playbook ansible-scripts/playbook.yml --ask-become-pass`
 
 
 ## Setup vscode remote ssh

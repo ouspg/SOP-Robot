@@ -6,3 +6,6 @@
 	path = src/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
 	branch = humble-devel
+[submodule "src/voice_chatbot_ros"]
+	path = src/voice_chatbot_ros
+	url = https://github.com/Aapo2001/voice-chatbot-ros.git

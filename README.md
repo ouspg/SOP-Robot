@@ -60,6 +60,21 @@ Baud rate: 57600, Voltage: 7.5
 
 **Note: Be careful not to move joints too much, limits are not set yet**
 
+## Quick start
+
+```bash
+# Install pixi: https://pixi.sh/
+curl -fsSL https://pixi.sh/install.sh | bash
+
+git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
+cd SOP-Robot
+pixi install          # Install ROS 2 Humble + all dependencies
+pixi run build        # Build all ROS 2 packages
+pixi run setup-models # Download AI models (LLM, STT, TTS)
+```
+
+See `pixi run --list` for all available tasks.
+
 ## Next steps
 
 1. See [Development](./docs/DEVELOPMENT.md)
