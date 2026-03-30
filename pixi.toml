@@ -17,9 +17,19 @@ git = "*"
 colcon-common-extensions = "*"
 compilers = "*"
 
-# ROS 2 Humble core
-ros-humble-desktop = "*"
+# ROS 2 Humble core (ros-base avoids heavy GUI/OpenGL deps that break on WSL)
+ros-humble-ros-base = "*"
 ros-humble-ament-cmake = "*"
+ros-humble-launch = "*"
+ros-humble-launch-ros = "*"
+ros-humble-rclpy = "*"
+ros-humble-rclcpp = "*"
+ros-humble-std-msgs = "*"
+ros-humble-std-srvs = "*"
+ros-humble-geometry-msgs = "*"
+ros-humble-sensor-msgs = "*"
+ros-humble-rosidl-default-generators = "*"
+ros-humble-rosidl-default-runtime = "*"
 
 # ROS 2 control framework
 ros-humble-ros2-control = "*"
@@ -46,10 +56,9 @@ ros-humble-action-msgs = "*"
 ros-humble-hardware-interface = "*"
 ros-humble-pluginlib = "*"
 
-# System libraries
+# System libraries (espeak must be installed via apt: sudo apt install espeak)
 yaml-cpp = "*"
 bullet = "*"
-espeak-ng = "*"
 
 [pypi-options]
 extra-index-urls = ["https://download.pytorch.org/whl/cu128"]
