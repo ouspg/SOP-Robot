@@ -49,7 +49,7 @@ ros-humble-pluginlib = "*"
 # System libraries
 yaml-cpp = "*"
 bullet = "*"
-espeak = "*"
+espeak-ng = "*"
 
 [pypi-options]
 extra-index-urls = ["https://download.pytorch.org/whl/cu128"]
