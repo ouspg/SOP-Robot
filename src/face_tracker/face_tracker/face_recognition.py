@@ -16,6 +16,7 @@ class FaceRecognizer(object):
         """
         self.logger = logger
         self.prefer_gpu = prefer_gpu
+        self.cpu_detector_backend = detector_backend
         self.model_name, self.detector_backend = self._resolve_runtime_models(
             model_name=model_name,
             detector_backend=detector_backend,
@@ -169,7 +170,7 @@ class FaceRecognizer(object):
 
     def _has_ultralytics(self) -> bool:
         try:
-            import ultralytics  # noqa: F401
+            from ultralytics import YOLO  # noqa: F401
         except Exception as exc:
             self.logger.warning(
                 f"Ultralytics is not available for YOLO face detection: {exc}"
@@ -191,11 +192,27 @@ class FaceRecognizer(object):
 
         - "confidence" (float): The confidence score associated with the detected face.
         """
-        face_objs = self._deepface.extract_faces(
-            img_path=img,
-            detector_backend=self.detector_backend,
-            enforce_detection=False,
-        )
+        try:
+            face_objs = self._deepface.extract_faces(
+                img_path=img,
+                detector_backend=self.detector_backend,
+                enforce_detection=False,
+            )
+        except Exception as exc:
+            if self.detector_backend == self.cpu_detector_backend:
+                raise
+
+            failed_backend = self.detector_backend
+            self.detector_backend = self.cpu_detector_backend
+            self.logger.warning(
+                f"DeepFace detector '{failed_backend}' failed at runtime. "
+                f"Falling back to '{self.detector_backend}': {exc}"
+            )
+            face_objs = self._deepface.extract_faces(
+                img_path=img,
+                detector_backend=self.detector_backend,
+                enforce_detection=False,
+            )
         return [face_obj for face_obj in face_objs if face_obj["facial_area"]["w"] < img.shape[0] * 0.8]
     
     def represent(self, img):

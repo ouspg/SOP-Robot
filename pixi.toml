@@ -132,11 +132,11 @@ setup-udev = { cmd = """
 """, description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 
 # ── Launch ─────────────────────────────────────────────────────────────
-ros-launch-robot = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.launch.py", description = "Launch real robot hardware" }
-ros-launch-robot-fake = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.fake.launch.py use_rviz:=false", description = "Launch simulated robot hardware" }
-ros-launch-robot-fake-rviz = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.fake.launch.py use_rviz:=true", description = "Launch simulated robot hardware with RViz" }
-ros-launch-voice = { cmd = "bash src/voice_chatbot_ros/tools/ros_launch_pixi.sh", description = "Launch voice chatbot (STT + LLM + TTS)" }
-ros-face-tracker = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
-ros-full-demo = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run full_demo full_demo_node", description = "Run full demo orchestrator" }
-ros-start = { cmd = "bash src/voice_chatbot_ros/tools/ros_start_all.sh" }
+ros-launch-robot = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.launch.py", description = "Launch real robot hardware" }
+ros-launch-robot-fake = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.fake.launch.py use_rviz:=false", description = "Launch simulated robot hardware" }
+ros-launch-robot-fake-rviz = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch robot robot.fake.launch.py use_rviz:=true", description = "Launch simulated robot hardware with RViz" }
+ros-launch-voice = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_launch_pixi.sh", description = "Launch voice chatbot (STT + LLM + TTS)" }
+ros-face-tracker = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
+ros-full-demo = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run full_demo full_demo_node", description = "Run full demo orchestrator" }
+ros-start = { cmd = "env -u PIXI_PROJECT_MANIFEST bash src/voice_chatbot_ros/tools/ros_start_all.sh" }
 start_robot_head_simulation = { cmd = "./start_robot_head_simulation", description = "Start robot head simulation (fake hardware + voice chatbot + movement)" }
