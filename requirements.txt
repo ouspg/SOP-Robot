@@ -233,7 +233,7 @@ optree==0.13.0
 osrf-pycommon==2.0.2
 packaging==21.3
 pandas==2.2.3
-paramiko==2.9.3
+paramiko==3.4.0
 pcl-msgs==1.0.0
 pendulum-msgs==0.20.5
 pexpect==4.8.0
