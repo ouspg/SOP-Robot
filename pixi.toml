@@ -63,10 +63,16 @@ ros-humble-pluginlib = "*"
 yaml-cpp = "*"
 bullet = "*"
 alsa-lib = "*"
+alsa-plugins = "*"
 portaudio = "*"
 # Install the audio backend from conda-forge so Linux doesn't need to build
 # `simpleaudio` against local ALSA headers during `pixi install`.
 simpleaudio = "*"
+
+[target.linux-64.pypi-dependencies]
+nvidia-cublas-cu12 = "*"
+nvidia-cuda-runtime-cu12 = "*"
+nvidia-cudnn-cu12 = "==9.*"
 
 [pypi-options]
 extra-index-urls = ["https://download.pytorch.org/whl/cu130"]
@@ -103,7 +109,7 @@ progressbar2 = "*"
 [tasks]
 # ── Setup ──────────────────────────────────────────────────────────────
 ensure-setuptools-compat = { cmd = "python src/voice_chatbot_ros/tools/ensure_setuptools_compat.py", description = "Downgrade setuptools when needed so ROS 2 Humble colcon builds work with --symlink-install" }
-
+ensure-llm-cuda = { cmd = "python src/voice_chatbot_ros/tools/ensure_llama_cuda.py" }
 setup-models = { cmd = "python src/voice_chatbot_ros/tools/setup_models.py", description = "Download and cache all required models (LLM, STT, TTS, VAD)" }
 
 download-tts-model = { cmd = """
@@ -132,3 +138,5 @@ ros-launch-robot-fake-rviz = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_
 ros-launch-voice = { cmd = "bash src/voice_chatbot_ros/tools/ros_launch_pixi.sh", description = "Launch voice chatbot (STT + LLM + TTS)" }
 ros-face-tracker = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
 ros-full-demo = { cmd = "bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run full_demo full_demo_node", description = "Run full demo orchestrator" }
+ros-start = { cmd = "bash src/voice_chatbot_ros/tools/ros_start_all.sh" }
+start_robot_head_simulation = { cmd = "./start_robot_head_simulation", description = "Start robot head simulation (fake hardware + voice chatbot + movement)" }
