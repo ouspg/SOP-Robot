@@ -110,6 +110,7 @@ declare -A COMMANDS=(
     ["Movement"]="sleep 5 && bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run face_tracker_movement face_tracker_movement_node --ros-args -p simulation:=true"
     ["Full Demo"]="sleep 5 && bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run full_demo full_demo_node"
     ["Voice Chatbot"]="sleep 5 && bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh launch voice_chatbot_ros voice_chatbot.launch.py"
+    ["Chatbot App"]="sleep 7 && bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run voice_chatbot_ros voice_chatbot_ros_app"
     ["Jaw Movement"]="sleep 5 && bash src/voice_chatbot_ros/tools/ros_exec_pixi.sh run jaw_movement jaw_movement_node"
 )
 
@@ -120,6 +121,7 @@ TITLES=(
     "Movement"
     "Full Demo"
     "Voice Chatbot"
+    "Chatbot App"
     "Jaw Movement"
 )
 
