@@ -276,7 +276,7 @@ pyRFC3339==1.1
 pyrsistent==0.18.1
 pyserial==3.5
 PySocks==1.7.1
-pytest==6.2.5
+pytest==9.0.3
 pytest-cov==3.0.0
 python-apt==2.4.0+ubuntu4
 python-dateutil==2.9.0.post0
