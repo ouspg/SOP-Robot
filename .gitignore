@@ -31,3 +31,4 @@ src/chatbot/chatbot/db.sqlite3
 src/db.sqlite3
 *.wav
 *.bin
+pixi.lock

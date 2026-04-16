@@ -3,7 +3,7 @@ name = "sop-robot"
 version = "0.1.0"
 description = "SOP-Robot – ROS 2 Humble robotics platform with voice interaction, face tracking, and hardware control"
 channels = ["robostack-staging", "conda-forge"]
-platforms = ["linux-64"]
+platforms = ["linux-64", "win-64"]
 
 [dependencies]
 # Python
@@ -47,6 +47,9 @@ ros-humble-dynamixel-sdk = "*"
 ros-humble-xacro = "*"
 ros-humble-angles = "*"
 ros-humble-camera-calibration-parsers = "*"
+
+# Visualization
+ros-humble-rviz2 = "*"
 
 # Messaging
 ros-humble-test-msgs = "*"
@@ -95,19 +98,35 @@ progressbar2 = "*"
 # ── Setup ──────────────────────────────────────────────────────────────
 setup-models = { cmd = "python src/voice_chatbot_ros/tools/setup_models.py", description = "Download and cache all required models (LLM, STT, TTS, VAD)" }
 
-download-tts-model = { cmd = """
-  mkdir -p src/tts_package/resource && \
-  curl -L https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip -o /tmp/model.zip && \
-  unzip -o /tmp/model.zip -d src/tts_package/resource && \
-  rm /tmp/model.zip
-""", description = "Download legacy TTS model for tts_package" }
+download-tts-model = { cmd = "python -c \"import os,tempfile,urllib.request,zipfile; dst='src/tts_package/resource'; os.makedirs(dst,exist_ok=True); z=os.path.join(tempfile.gettempdir(),'model.zip'); urllib.request.urlretrieve('https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip',z); zipfile.ZipFile(z).extractall(dst); os.remove(z)\"", description = "Download legacy TTS model for tts_package (cross-platform)" }
 
 init-submodules = { cmd = "git submodule update --init --recursive", description = "Initialize git submodules (dynamixel packages)" }
 
 # ── Build ──────────────────────────────────────────────────────────────
-build = { cmd = "colcon build --symlink-install", depends-on = ["init-submodules"], description = "Build all ROS 2 packages with colcon" }
+build = { cmd = """
+  python -c "
+import subprocess, sys, sysconfig, os
+prefix = sys.prefix.replace(os.sep, '/')
+exe = sys.executable.replace(os.sep, '/')
+inc = sysconfig.get_path('include').replace(os.sep, '/')
+lib = prefix + '/libs/python311.lib'
+np_inc = prefix + '/Lib/site-packages/numpy/core/include'
+subprocess.run([
+    'colcon', 'build',
+    '--packages-skip', 'tts_package', 'dynamixel_workbench_toolbox', 'dynamixel_workbench', 'robot_hardware', 'robot',
+    '--cmake-args',
+    f'-DPython3_EXECUTABLE={exe}',
+    f'-DPython3_INCLUDE_DIR={inc}',
+    f'-DPython3_LIBRARY={lib}',
+    f'-DPython_EXECUTABLE={exe}',
+    f'-DPython_INCLUDE_DIR={inc}',
+    f'-DPython_LIBRARY={lib}',
+    f'-DPython_NumPy_INCLUDE_DIR={np_inc}',
+], check=True)
+"
+""", depends-on = ["init-submodules"], description = "Build all ROS 2 packages (hardware/driver C++ packages skipped on Windows)" }
 
-# ── Udev rules (requires sudo) ────────────────────────────────────────
+# ── Udev rules (Linux only, requires sudo) ────────────────────────────
 setup-udev = { cmd = """
   sudo cp src/dynamixel-workbench/99-dynamixel-workbench-cdc.rules /etc/udev/rules.d/ && \
   sudo udevadm control --reload-rules && \
@@ -120,3 +139,7 @@ ros-launch-robot-fake = { cmd = "ros2 launch robot robot.fake.launch.py", descri
 ros-launch-voice = { cmd = "bash src/voice_chatbot_ros/tools/ros_launch_pixi.sh", description = "Launch voice chatbot (STT + LLM + TTS)" }
 ros-face-tracker = { cmd = "ros2 launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
 ros-full-demo = { cmd = "ros2 run full_demo full_demo_node", description = "Run full demo orchestrator" }
+
+# ── Unified UI ────────────────────────────────────────────────────────
+ros-unified-ui = { cmd = "python src/voice_chatbot_ros/tools/run_unified_ui.py", description = "Launch unified UI (RViz + image viewer + voice chatbot)" }
+ros-start-all = { cmd = "src/voice_chatbot_ros/tools/ros_start_all.bat", description = "Launch all voice chatbot nodes + unified UI in Windows Terminal tabs" }
