@@ -23,7 +23,10 @@ class FaceAnalyzer:
                 subcluster_similarity_threshold=0.2,
                 pair_similarity_maximum=1.0,
                 face_recognition_model="SFace",
-                face_detection_model="yunet"):
+                face_detection_model="yunet",
+                prefer_gpu=True,
+                gpu_face_recognition_model="SFace",
+                gpu_face_detection_model="yolov8n"):
         self.logger = logger
         self.correlation_tracker_enabled = correlation_tracker
         self.lip_movement_detector = lip_movement_detector
@@ -32,7 +35,10 @@ class FaceAnalyzer:
         if face_recognizer:
             self.face_recognizer = FaceRecognizer(logger=self.logger,
                                                   model_name=face_recognition_model,
-                                                  detector_backend=face_detection_model)
+                                                  detector_backend=face_detection_model,
+                                                  prefer_gpu=prefer_gpu,
+                                                  gpu_face_recognition_model=gpu_face_recognition_model,
+                                                  gpu_face_detection_model=gpu_face_detection_model)
         else:
             self.face_recognizer = None
 

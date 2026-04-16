@@ -6,6 +6,8 @@ deepface>=0.0.92,<0.1
 dlib>=19.24,<20.0
 h5py>=3.10,<4.0
 keras>=3.0,<4.0
+tf-keras>=2.20,<2.21
+ultralytics>=8.3,<9
 langdetect>=1.0,<2.0
 numpy>=1.26,<3.0
 opencv-python>=4.10,<5.0
@@ -14,4 +16,3 @@ simpleaudio>=1.0,<2.0
 SpeechRecognition>=3.10,<4.0
 TTS>=0.22,<1.0
 translate>=3.6,<4.0
-

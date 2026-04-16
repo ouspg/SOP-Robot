@@ -84,6 +84,24 @@ class FaceTrackerNode(Node):
             .string_value
         )
 
+        prefer_gpu = (
+            self.declare_parameter("prefer_gpu", True)
+            .get_parameter_value()
+            ._bool_value
+        )
+
+        gpu_face_recognition_model = (
+            self.declare_parameter("gpu_face_recognition_model", "SFace")
+            .get_parameter_value()
+            .string_value
+        )
+
+        gpu_face_detection_model = (
+            self.declare_parameter("gpu_face_detection_model", "yolov8n")
+            .get_parameter_value()
+            .string_value
+        )
+
         image_topic = (
             self.declare_parameter("image_topic", "/image_raw")
             .get_parameter_value()
@@ -149,7 +167,10 @@ class FaceTrackerNode(Node):
                                         subcluster_similarity_threshold,
                                         pair_similarity_maximum,
                                         face_recognition_model,
-                                        face_detection_model)
+                                        face_detection_model,
+                                        prefer_gpu,
+                                        gpu_face_recognition_model,
+                                        gpu_face_detection_model)
 
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(

@@ -35,6 +35,8 @@ At the end of the project, create light documentation for your ROS package in en
    ```bash
    pixi install
    ```
+   On WSL2, the voice chatbot launch scripts will automatically switch to the
+   WSLg PulseAudio Unix socket for microphone and playback support.
 
 4. Build all ROS 2 packages:
    ```bash

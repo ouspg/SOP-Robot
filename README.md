@@ -73,6 +73,11 @@ pixi run build        # Build all ROS 2 packages
 pixi run setup-models # Download AI models (LLM, STT, TTS)
 ```
 
+On WSL2 with WSLg, the voice chatbot launch scripts now auto-route audio and
+microphone access through the local WSLg PulseAudio socket. If playback or mic
+capture still fails, restart WSL (`wsl --shutdown` in Windows PowerShell) and
+launch the project again from a fresh WSL terminal.
+
 See `pixi run --list` for all available tasks.
 
 ## Next steps

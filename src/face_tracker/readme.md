@@ -19,6 +19,9 @@ face_tracker_node:
 | pair_similarity_maximum   | pair_similarity_maximum parameter for face clustering                                | 1.0                                           |
 | face_recognition_model    | Face recognition model from deepface                                                 | "SFace"                                       |
 | face_detection_model      | Face detection model from deepface                                                   | "yunet"                                       |
+| prefer_gpu                | Use TensorFlow GPU when available, switching away from CPU-only OpenCV models        | True                                          |
+| gpu_face_recognition_model | Optional recognition model override for TensorFlow-capable systems                    | "SFace"                                       |
+| gpu_face_detection_model  | GPU-capable DeepFace detector used when `prefer_gpu` is enabled                      | "yolov8n"                                     |
 | image_topic               | Input rgb image                                                                      | /image_raw                                    |
 | image_face_topic          | Output image with faces surrounded by triangles and face landmarks shown as circle   | image_face                                    |
 | face_topic                | Output face and face landmark positions in the frame                                 | faces - face_tracker_msgs.msg.Faces           |
@@ -34,6 +37,7 @@ Webcam_node:
 | Name             | Description                                                   | Default    |
 | ---------------- | :-----------------------------------------------------------: | ---------: |
 | raw_image        | Raw image output topic                                        | /image_raw |
+| source           | Device index as text or network stream URL                    | "0"        |
 | index            | Device index, 0 for /dev/video0.                              | 0          |
 | width            | Device width in pixels. Specify 0 for default.                | 1280       |
 | height           | Device height in pixels. Specify 0 for default.               | 960        |
@@ -47,6 +51,12 @@ The following launches the camera and face detector nodes. By default, it uses t
 
 ```console
 ros2 launch face_tracker face_tracker.test.launch.py
+```
+
+To use a DroidCam stream instead of a local webcam device, pass the stream URL:
+
+```console
+ros2 launch face_tracker face_tracker.test.launch.py camera_source:=http://192.168.101.101:4747/video
 ```
 
 To view the camera feed, run: `ros2 run rqt_image_view rqt_image_view` and select the appropriate topic from the list.
