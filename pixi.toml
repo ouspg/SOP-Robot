@@ -51,8 +51,6 @@ ros-humble-xacro = "*"
 ros-humble-angles = "*"
 ros-humble-camera-calibration-parsers = "*"
 
-# Visualization
-ros-humble-rviz2 = "*"
 
 # Messaging
 ros-humble-test-msgs = "*"
@@ -65,12 +63,16 @@ ros-humble-pluginlib = "*"
 # System libraries (espeak must be installed via apt: sudo apt install espeak)
 yaml-cpp = "*"
 bullet = "*"
-alsa-lib = "*"
-alsa-plugins = "*"
 portaudio = "*"
 # Install the audio backend from conda-forge so Linux doesn't need to build
 # `simpleaudio` against local ALSA headers during `pixi install`.
 simpleaudio = "*"
+
+[target.linux-64.dependencies]
+alsa-lib = "*"
+alsa-plugins = "*"
+qt6-wayland = "==6.9.2"
+xcb-util-cursor = "*"
 
 [target.linux-64.pypi-dependencies]
 nvidia-cublas-cu12 = "*"
@@ -82,7 +84,10 @@ extra-index-urls = ["https://download.pytorch.org/whl/cu130"]
 
 [pypi-dependencies]
 # Voice chatbot pipeline
-voice-chatbot = { version = "*", extras = ["all"] }
+voice-chatbot = { version = "*", extras = ["llm", "stt", "tts", "vad"] }
+# Use the PyPI wheel for PySide6, but pin it to the Qt runtime version used by
+# RoboStack so the process does not mix incompatible Qt minor versions.
+pyside6 = "==6.9.2"
 llama-cpp-python = "==0.3.19"
 transformers = ">=4.44,<4.46"
 torch = "==2.10.0"
@@ -160,4 +165,4 @@ ros-full-demo = { cmd = "ros2 run full_demo full_demo_node", description = "Run 
 
 # ── Unified UI ────────────────────────────────────────────────────────
 ros-unified-ui = { cmd = "python src/voice_chatbot_ros/tools/run_unified_ui.py", description = "Launch unified UI (RViz + image viewer + voice chatbot)" }
-ros-start-all = { cmd = "src/voice_chatbot_ros/tools/ros_start_all.bat", description = "Launch all voice chatbot nodes + unified UI in Windows Terminal tabs" }
+ros-start-all = { cmd = "src/voice_chatbot_ros/tools/ros_start_all.sh", description = "Launch all voice chatbot nodes + unified UI in Windows Terminal tabs" }
