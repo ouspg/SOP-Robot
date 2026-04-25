@@ -78,7 +78,13 @@ class SpeechRecognizerNode(Node):
 
     def listen(self, recognizer: sr.Recognizer, audio: sr.AudioData):
         try:
-            text = recognizer.recognize_whisper(audio, model=self.model, language=self.language)
+            recognize_whisper = getattr(recognizer, "recognize_whisper", None)
+            if not callable(recognize_whisper):
+                raise RuntimeError(
+                    "speech_recognition.Recognizer.recognize_whisper is unavailable. "
+                    "Install a SpeechRecognition build with Whisper support."
+                )
+            text = recognize_whisper(audio, model=self.model, language=self.language)
             self.get_logger().info(f"Recognized speech: {text}")
             req = String()
             req.data = text
@@ -87,6 +93,8 @@ class SpeechRecognizerNode(Node):
             self.get_logger().warning("Could not understand audio")
         except sr.RequestError as exc:
             self.get_logger().error(f"Speech recognition request failed: {exc}")
+        except RuntimeError as exc:
+            self.get_logger().error(str(exc))
 
     def destroy_node(self):
         self.set_listening_enabled(False)

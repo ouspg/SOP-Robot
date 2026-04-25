@@ -24,11 +24,11 @@ class BestMatchAdapter(LogicAdapter):
 
         self.excluded_words = kwargs.get('excluded_words')
     
-    def process(self, input_statement, additional_response_selection_parameters=None):
-        search_results = self.search_algorithm.search(input_statement)
+    def process(self, statement, additional_response_selection_parameters=None):
+        search_results = self.search_algorithm.search(statement)
 
         # Use the input statement as the closest match if no other results are found
-        closest_match = next(search_results, input_statement)
+        closest_match = next(search_results, statement)
 
         # Search for the closest match to the input statement
         for result in search_results:
@@ -44,12 +44,12 @@ class BestMatchAdapter(LogicAdapter):
 
 
         self.chatbot.logger.info('Using "{}" as a close match to "{}" with a confidence of {}'.format(
-            closest_match.text, input_statement.text, closest_match.confidence
+            closest_match.text, statement.text, closest_match.confidence
         ))
 
         recent_repeated_responses = filters.get_recent_repeated_responses(
             self.chatbot,
-            input_statement.conversation
+            statement.conversation
         )
 
         for index, recent_repeated_response in enumerate(recent_repeated_responses):
@@ -65,7 +65,7 @@ class BestMatchAdapter(LogicAdapter):
 
         alternate_response_selection_parameters = {
             'search_in_response_to': self.chatbot.storage.tagger.get_bigram_pair_string(
-                input_statement.text
+                statement.text
             ),
             'exclude_text': recent_repeated_responses,
             'exclude_text_words': self.excluded_words
@@ -93,7 +93,7 @@ class BestMatchAdapter(LogicAdapter):
             )
 
             response = self.select_response(
-                input_statement,
+                statement,
                 response_list,
                 self.chatbot.storage
             )
@@ -111,7 +111,7 @@ class BestMatchAdapter(LogicAdapter):
                 )
             )
             response = self.select_response(
-                input_statement,
+                statement,
                 alternate_response_list,
                 self.chatbot.storage
             )
@@ -119,6 +119,6 @@ class BestMatchAdapter(LogicAdapter):
             response.confidence = closest_match.confidence
             self.chatbot.logger.info('Alternate response selected. Using "{}"'.format(response.text))
         else:
-            response = self.get_default_response(input_statement)
+            response = self.get_default_response(statement)
 
         return response

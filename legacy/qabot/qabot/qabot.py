@@ -1,20 +1,12 @@
 from pathlib import Path
+import importlib
+import os
+import random
 
 from ament_index_python.packages import get_package_share_directory
 import rclpy
 from rclpy.node import Node
-import random
 from std_msgs.msg import String
-
-
-#import logging
-
-from haystack.document_stores import InMemoryDocumentStore
-import os
-from haystack.pipelines.standard_pipelines import TextIndexingPipeline
-from haystack.nodes import BM25Retriever
-from haystack.nodes import FARMReader
-from haystack.pipelines import ExtractiveQAPipeline
 
 #logging.basicConfig(level=logging.INFO)
 
@@ -32,6 +24,18 @@ class QaBotClientNode(Node):
             self.tts_callback, 
             10)
         self.get_logger().info('Starting!')
+        document_stores = importlib.import_module("haystack.document_stores")
+        standard_pipelines = importlib.import_module(
+            "haystack.pipelines.standard_pipelines"
+        )
+        haystack_nodes = importlib.import_module("haystack.nodes")
+        haystack_pipelines = importlib.import_module("haystack.pipelines")
+
+        InMemoryDocumentStore = document_stores.InMemoryDocumentStore
+        TextIndexingPipeline = standard_pipelines.TextIndexingPipeline
+        BM25Retriever = haystack_nodes.BM25Retriever
+        FARMReader = haystack_nodes.FARMReader
+        ExtractiveQAPipeline = haystack_pipelines.ExtractiveQAPipeline
         self.document_store = InMemoryDocumentStore(use_bm25=True)
         self.doc_dir = Path(get_package_share_directory("qabot")) / "resource" / "data"
         self.files_to_index = [str(self.doc_dir / filename) for filename in os.listdir(self.doc_dir)]

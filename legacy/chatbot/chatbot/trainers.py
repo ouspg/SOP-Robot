@@ -7,10 +7,8 @@ import time
 from multiprocessing import Pool, Manager
 from dateutil import parser as date_parser
 from chatterbot.conversation import Statement
-from chatterbot.tagging import PosHypernymTagger
 from chatterbot import utils
 import json
-from chatterbot.conversation import Statement
 
 
 
@@ -44,7 +42,7 @@ class Trainer(object):
 
         return input_statement
 
-    def train(self, *args, **kwargs):
+    def train(self, *args, **kwargs) -> None:
         """
         This method must be overridden by a child class.
         """
@@ -219,11 +217,6 @@ class MSMARCOJSONTrainer(Trainer):
                 if statements_to_create:
                     print(f"Storing remaining statements, length:")
                     self.chatbot.storage.create_many(statements_to_create)
-                if test > 0:
-                    break
-
-
-
 class ChatterBotTXTTrainer(Trainer):
     """
     Training the chatbot with data from a .txt file in the format used by "Question_Answer_Dataset_v1.2"
@@ -513,7 +506,7 @@ class UbuntuCorpusTrainer(Trainer):
     def train(self):
         import glob
 
-        tagger = PosHypernymTagger(language=self.chatbot.storage.tagger.language)
+        tagger = self.chatbot.storage.tagger
 
         # Download and extract the Ubuntu dialog corpus if needed
         corpus_download_path = self.download(self.data_download_url)

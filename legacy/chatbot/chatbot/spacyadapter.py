@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 
 import spacy
-from chatterbot.logic import LogicAdapter
 from chatterbot import filters
 from chatterbot.conversation import Statement
-from sklearn.metrics.pairwise import cosine_similarity
-from chatterbot.conversation import Statement
+from chatterbot.logic import LogicAdapter
 import numpy as np
+
 
 class SpacyBestMatch(LogicAdapter):
     """
@@ -21,44 +20,41 @@ class SpacyBestMatch(LogicAdapter):
         self.excluded_words = kwargs.get('excluded_words')
         self.maximum_similarity_threshold = kwargs.get('maximum_similarity_threshold', 0.8)
 
-    def process(self, input_statement, additional_response_selection_parameters=None):
-        input_vec = self.nlp(input_statement.text).vector
+    def process(self, statement, additional_response_selection_parameters=None):
+        input_vec = np.asarray(self.nlp(statement.text).vector, dtype=np.float32)
+        input_norm = float(np.linalg.norm(input_vec))
+        if input_norm == 0.0:
+            return self.get_default_response(statement)
 
         closest_match = None
-        highest_confidence = 0
-        max_statements = 100
+        highest_confidence = 0.0
         
-        for statement in self.chatbot.storage.filter(in_response_to=None):
+        for candidate in self.chatbot.storage.filter(in_response_to=None):
+            statement_vec = np.asarray(self.nlp(candidate.text).vector, dtype=np.float32)
+            statement_norm = float(np.linalg.norm(statement_vec))
+            if statement_norm == 0.0:
+                continue
 
-            statement_vec = self.nlp(statement.text).vector
-
-            input_vec_normalized = input_vec / np.linalg.norm(input_vec)
-            statement_vec_normalized = statement_vec / np.linalg.norm(statement_vec)
-            confidence = cosine_similarity([input_vec_normalized], [statement_vec_normalized])[0][0]
+            confidence = float(np.dot(input_vec, statement_vec) / (input_norm * statement_norm))
 
             if confidence > highest_confidence:
                 highest_confidence = confidence
-                closest_match = statement
+                closest_match = candidate
 
                 if confidence >= 0.95:
                     break
 
         if closest_match is not None:
             self.chatbot.logger.info('Using "{}" as a close match to "{}" with a confidence of {}'.format(
-                closest_match.text, input_statement.text, highest_confidence
+                closest_match.text, statement.text, highest_confidence
             ))
         else:
             # If no closest match is found, return the default response
-            return self.get_default_response(input_statement)
-
-
-        self.chatbot.logger.info('Using "{}" as a close match to "{}" with a confidence of {}'.format(
-            closest_match.text, input_statement.text, highest_confidence
-        ))
+            return self.get_default_response(statement)
 
         recent_repeated_responses = filters.get_recent_repeated_responses(
             self.chatbot,
-            input_statement.conversation
+            statement.conversation
         )
 
         for index, recent_repeated_response in enumerate(recent_repeated_responses):
@@ -86,7 +82,7 @@ class SpacyBestMatch(LogicAdapter):
             )
 
             response = self.select_response(
-                input_statement,
+                statement,
                 response_list,
                 self.chatbot.storage
             )
@@ -94,11 +90,12 @@ class SpacyBestMatch(LogicAdapter):
             response.confidence = highest_confidence
             self.chatbot.logger.info('Response selected. Using "{}"'.format(response.text))
         else:
-            response = self.get_default_response(input_statement)
+            response = self.get_default_response(statement)
 
         return response
 
     def get_default_response(self, input_statement):
+        del input_statement
         default_response = Statement(text="I'm sorry, I don't have an answer for that.")
         default_response.confidence = 0
         return default_response
