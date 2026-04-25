@@ -1,12 +1,114 @@
+# Pixi manifest reference: https://pixi.prefix.dev/latest/
 [workspace]
 name = "sop-robot"
 version = "0.1.0"
 description = "SOP-Robot – ROS 2 Humble robotics platform with voice interaction, face tracking, and hardware control"
-channels = ["robostack-staging", "conda-forge"]
-platforms = ["linux-64", "win-64"]
+requires-pixi = ">=0.67.0"
+channels = ["https://prefix.dev/robostack-humble", "https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
+
+[activation.env]
+# Defaults shared by every `pixi run` and `pixi shell`. Shell-style values keep
+# caller-provided overrides while moving project defaults out of tools/*.sh.
+PYTHONIOENCODING = "utf-8"
+PYTHONNOUSERSITE = "1"
+TMPDIR = "${TMPDIR:-/tmp}"
+TMP = "${TMP:-$TMPDIR}"
+TEMP = "${TEMP:-$TMPDIR}"
+
+# Project paths and runtime config.
+SOP_ROBOT_ROOT = "${SOP_ROBOT_ROOT:-$PIXI_PROJECT_ROOT}"
+SOP_ROBOT_VOICE_CONFIG = "${SOP_ROBOT_VOICE_CONFIG:-$PIXI_PROJECT_ROOT/config/voice_chatbot.json}"
+SOP_ROBOT_AUDIO_ENV_QUIET = "${SOP_ROBOT_AUDIO_ENV_QUIET:-1}"
+
+# Device and monitoring defaults used by Pixi tasks.
+DROIDCAM_URL = "${DROIDCAM_URL:-http://192.168.101.101:4747/video}"
+DROIDCAM_PORT = "${DROIDCAM_PORT:-4747}"
+ADB = "${ADB:-adb}"
+ANDROID_SERIAL = "${ANDROID_SERIAL:-}"
+ROS2GRAPH_WEB_HOST = "${ROS2GRAPH_WEB_HOST:-127.0.0.1}"
+ROS2GRAPH_WEB_PORT = "${ROS2GRAPH_WEB_PORT:-8734}"
+ROS2GRAPH_UPDATE_INTERVAL = "${ROS2GRAPH_UPDATE_INTERVAL:-1.0}"
+
+# LLM benchmark and setup defaults shared by CPU and GPU environments.
+SOP_ROBOT_LLM_BENCH_N_CTX = "${SOP_ROBOT_LLM_BENCH_N_CTX:-2048}"
+SOP_ROBOT_LLM_BENCH_MAX_TOKENS = "${SOP_ROBOT_LLM_BENCH_MAX_TOKENS:-256}"
+SOP_ROBOT_LLM_BENCH_TEMPERATURE = "${SOP_ROBOT_LLM_BENCH_TEMPERATURE:-0.1}"
+LLAMA_CPP_PYTHON_VERSION = "${LLAMA_CPP_PYTHON_VERSION:-0.3.20}"
+CRISPASR_REPO_URL = "${CRISPASR_REPO_URL:-https://github.com/CrispStrobe/CrispASR.git}"
+CRISPASR_MODEL_URL = "${CRISPASR_MODEL_URL:-https://huggingface.co/cstr/parakeet-tdt-0.6b-v3-GGUF/resolve/main/parakeet-tdt-0.6b-v3-q4_k.gguf}"
+CRISPASR_ENABLE_CUDA = "${CRISPASR_ENABLE_CUDA:-auto}"
+CRISPASR_FORCE_REBUILD = "${CRISPASR_FORCE_REBUILD:-0}"
+CRISPASR_UPDATE = "${CRISPASR_UPDATE:-0}"
+CRISPASR_USE_SYSTEM_TOOLCHAIN = "${CRISPASR_USE_SYSTEM_TOOLCHAIN:-1}"
+
+[target.unix.activation]
+# Match Pixi's ROS/colcon pattern: after `pixi run build`, source the
+# workspace overlay automatically for every `pixi run` and `pixi shell`.
+# Before the first build, Pixi only warns that install/setup.sh is missing.
+scripts = ["install/setup.sh"]
+
+[target.unix.activation.env]
+# Unix runtime shared by CPU and GPU environments.
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib${CUDA_HOME:+:$CUDA_HOME/lib}${SOP_ROBOT_NVIDIA_LIB_PATHS:+:$SOP_ROBOT_NVIDIA_LIB_PATHS}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+XDG_RUNTIME_DIR = "${XDG_RUNTIME_DIR:-$(test -d /run/user/$(id -u) && printf /run/user/%s $(id -u))}"
+PULSE_SERVER = """${PULSE_SERVER:-$(if [[ -n ${WSL_DISTRO_NAME:-} ]] || uname -r | grep -qi microsoft; then for candidate in unix:/run/user/$(id -u)/pulse/native unix:/mnt/wslg/runtime-dir/pulse/native unix:/mnt/wslg/PulseServer; do if [[ $candidate == unix:* && -S ${candidate#unix:} ]]; then printf %s $candidate; break; fi; done; fi)}"""
+
+[feature.gpu.system-requirements]
+# This workspace uses the CUDA 13 PyTorch/NVIDIA wheel stack for local ML tasks.
+cuda = "13"
+
+[feature.gpu.activation.env]
+SOP_ROBOT_LLM_BENCH_REQUIRE_GPU = "${SOP_ROBOT_LLM_BENCH_REQUIRE_GPU:-1}"
+SOP_ROBOT_LLM_BENCH_N_GPU_LAYERS = "${SOP_ROBOT_LLM_BENCH_N_GPU_LAYERS:--1}"
+
+[feature.gpu.target.unix.activation.env]
+# CUDA runtime/build environment for the GPU environment only.
+CUDA_HOME = """${CUDA_HOME:-$(python - <<'PY'
+import sysconfig
+from pathlib import Path
+
+site = Path(sysconfig.get_paths()['purelib'])
+pixi_cuda = site / 'nvidia' / 'cu13'
+if (pixi_cuda / 'bin' / 'nvcc').is_file():
+    print(pixi_cuda)
+elif Path('/usr/local/cuda/bin/nvcc').is_file():
+    print('/usr/local/cuda')
+PY
+)}"""
+SOP_ROBOT_NVIDIA_LIB_PATHS = """$(python - <<'PY'
+import sysconfig
+from pathlib import Path
+
+nvidia_root = Path(sysconfig.get_paths()['purelib']) / 'nvidia'
+paths = [str(path.resolve()) for path in sorted(nvidia_root.glob('*/lib')) if path.is_dir()]
+print(':'.join(dict.fromkeys(paths)))
+PY
+)"""
+CUDAToolkit_ROOT = "${CUDAToolkit_ROOT:-$CUDA_HOME}"
+CUDACXX = "${CUDACXX:-${CUDA_HOME:+$CUDA_HOME/bin/nvcc}}"
+CUDAHOSTCXX = "${CUDAHOSTCXX:-/usr/bin/c++}"
+GGML_CUDA = "${GGML_CUDA:-1}"
+FORCE_CMAKE = "${FORCE_CMAKE:-1}"
+PATH = "${CUDA_HOME:+$CUDA_HOME/bin:}$PATH"
+LIBRARY_PATH = "${CUDA_HOME:+$CUDA_HOME/lib}${SOP_ROBOT_NVIDIA_LIB_PATHS:+:$SOP_ROBOT_NVIDIA_LIB_PATHS}${LIBRARY_PATH:+:$LIBRARY_PATH}"
+MESA_D3D12_DEFAULT_ADAPTER_NAME = "${MESA_D3D12_DEFAULT_ADAPTER_NAME:-$(command -v nvidia-smi >/dev/null 2>&1 && printf NVIDIA)}"
+
+[feature.cpu.activation.env]
+SOP_ROBOT_LLM_BENCH_REQUIRE_GPU = "${SOP_ROBOT_LLM_BENCH_REQUIRE_GPU:-0}"
+SOP_ROBOT_LLM_BENCH_N_GPU_LAYERS = "${SOP_ROBOT_LLM_BENCH_N_GPU_LAYERS:-0}"
+
+[feature.cpu.target.unix.activation.env]
+# Keep the CPU environment free of CUDA paths even when the host shell has them.
+CUDA_HOME = ""
+CUDAToolkit_ROOT = ""
+CUDACXX = ""
+SOP_ROBOT_NVIDIA_LIB_PATHS = ""
+GGML_CUDA = "0"
+FORCE_CMAKE = "0"
 
 [dependencies]
-# Python
+# Python runtime
 python = ">=3.10,<3.12"
 pip = "*"
 setuptools = ">=69.5,<80"
@@ -18,8 +120,8 @@ git = "*"
 colcon-common-extensions = "*"
 compilers = "*"
 
-# ROS 2 Humble core (ros-base avoids heavy GUI/OpenGL deps that break on WSL)
-ros-humble-ros-base = "*"
+# ROS 2 Humble desktop environment plus package-specific runtime dependencies
+ros-humble-desktop = "*"
 ros-humble-ament-cmake = "*"
 ros-humble-launch = "*"
 ros-humble-launch-ros = "*"
@@ -33,6 +135,8 @@ ros-humble-rosidl-default-generators = "*"
 ros-humble-rosidl-default-runtime = "*"
 ros-humble-rviz2 = "*"
 ros-humble-rqt-image-view = "*"
+ros-humble-rqt-console = "*"
+ros-humble-rqt-common-plugins = "*"
 
 # ROS 2 control framework
 ros-humble-ros2-control = "*"
@@ -46,11 +150,10 @@ ros-humble-generate-parameter-library = "*"
 # Dynamixel
 ros-humble-dynamixel-sdk = "*"
 
-# Robot description & utilities
+# Robot description and utilities
 ros-humble-xacro = "*"
 ros-humble-angles = "*"
 ros-humble-camera-calibration-parsers = "*"
-
 
 # Messaging
 ros-humble-test-msgs = "*"
@@ -60,40 +163,56 @@ ros-humble-action-msgs = "*"
 ros-humble-hardware-interface = "*"
 ros-humble-pluginlib = "*"
 
-# System libraries (espeak must be installed via apt: sudo apt install espeak)
+# Native libraries
+# espeak is intentionally installed through apt/rosdep; see tools/setup/rosdep_install.sh.
 yaml-cpp = "*"
 bullet = "*"
 portaudio = "*"
-# Install the audio backend from conda-forge so Linux doesn't need to build
-# `simpleaudio` against local ALSA headers during `pixi install`.
+# Keep simpleaudio from conda-forge so Linux does not need to compile it against local ALSA headers.
 simpleaudio = "*"
+pydantic-settings = ">=2.14.0,<3"
+pydantic = ">=2.13.3,<3"
 
 [target.linux-64.dependencies]
 alsa-lib = "*"
 alsa-plugins = "*"
 qt6-wayland = "==6.9.2"
 xcb-util-cursor = "*"
+xdotool = "*"
 
-[target.linux-64.pypi-dependencies]
-nvidia-cublas-cu12 = "*"
-nvidia-cuda-runtime-cu12 = "*"
-nvidia-cudnn-cu12 = "==9.*"
+[feature.gpu.target.linux-64.pypi-dependencies]
+# CUDA runtime/toolkit wheels used by Torch, llama-cpp, pywhispercpp, and CrispASR helpers.
+nvidia-cublas = "*"
+nvidia-cuda-runtime = "*"
+nvidia-cudnn-cu13 = "==9.*"
+nvidia-cuda-nvcc = "==13.*"
+nvidia-cuda-cccl = "==13.*"
+nvidia-cuda-crt = "==13.*"
+nvidia-nvvm = "==13.*"
 
 [pypi-options]
-extra-index-urls = ["https://download.pytorch.org/whl/cu130"]
+index-strategy = "unsafe-best-match"
 
 [pypi-dependencies]
-# Voice chatbot pipeline
-voice-chatbot = { version = "*", extras = ["llm", "stt", "tts", "vad"] }
-# Use the PyPI wheel for PySide6, but pin it to the Qt runtime version used by
-# RoboStack so the process does not mix incompatible Qt minor versions.
+# GUI and developer tooling
+# PySide6 is pinned to the Qt runtime version used by RoboStack to avoid mixed Qt minors.
 pyside6 = "==6.9.2"
-llama-cpp-python = "==0.3.19"
-transformers = ">=4.44,<4.46"
-torch = "==2.10.0"
-torchaudio = "==2.10.0"
+basedpyright = "*"
+pytest = "*"
+ruff = "*"
 
-# Face tracking / vision
+# Voice stack
+sounddevice = "*"
+faster-whisper = "*"
+pywhispercpp = "*"
+silero-vad = "*"
+huggingface-hub = "*"
+llama-cpp-python = "==0.3.20"
+transformers = ">=4.57,<5"
+torchcodec = "*"
+coqui-tts = ">=0.27.5,<0.28"
+
+# Face tracking and vision
 deepface = ">=0.0.92,<0.1"
 dlib = ">=19.24,<20.0"
 opencv-python = ">=4.10,<5.0"
@@ -102,67 +221,101 @@ tf-keras = ">=2.20,<2.21"
 h5py = ">=3.10,<4.0"
 ultralytics = ">=8.3,<9"
 
-# Speech & audio
-SpeechRecognition = ">=3.10,<4.0"
-
-# NLP / translation
-langdetect = ">=1.0,<2.0"
-translate = ">=3.6,<4.0"
-chatterbot = ">=1.2,<2.0"
-
-# Misc
+# Miscellaneous Python helpers
 PyYAML = ">=6.0,<7.0"
 progressbar2 = "*"
+pyserial = "*"
+
+[feature.gpu.pypi-dependencies]
+torch = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cu130" }
+torchaudio = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cu130" }
+
+[feature.cpu.pypi-dependencies]
+torch = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cpu" }
+torchaudio = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cpu" }
 
 [tasks]
 # ── Setup ──────────────────────────────────────────────────────────────
-ensure-setuptools-compat = { cmd = "python src/voice_chatbot_ros/tools/ensure_setuptools_compat.py", description = "Downgrade setuptools when needed so ROS 2 Humble colcon builds work with --symlink-install" }
-ensure-llm-cuda = { cmd = "python src/voice_chatbot_ros/tools/ensure_llama_cuda.py" }
-setup-models = { cmd = "python src/voice_chatbot_ros/tools/setup_models.py", description = "Download and cache all required models (LLM, STT, TTS, VAD)" }
+ensure-setuptools-compat = { cmd = "python tools/setup/ensure_setuptools_compat.py", description = "Downgrade setuptools when needed so ROS 2 Humble colcon builds work with --symlink-install" }
+setup-models = { cmd = "python tools/setup/setup_voice_models.py", description = "Download and warm the ASR, LLM, and TTS assets used by the in-tree voice stack" }
+bootstrap = { cmd = "bash tools/setup/bootstrap.sh", description = "Install Pixi deps, initialize submodules, warm models, and build the workspace" }
+rosdep-install = { cmd = "bash tools/setup/rosdep_install.sh", description = "Install non-Pixi Ubuntu/ROS dependencies via rosdep" }
+install-crispasr = { cmd = "bash tools/setup/install_crispasr.sh", description = "Clone, build, and verify the CrispASR Parakeet backend used by ASR" }
+droidcam-usb = { cmd = "bash tools/device/droidcam_usb_forward.sh", description = "Forward DroidCam's Android USB stream to http://127.0.0.1:4747/video using adb" }
+download-tts-model = { cmd = """
+python - <<'PY'
+import os
+import tempfile
+import urllib.request
+import zipfile
 
-download-tts-model = { cmd = "python -c \"import os,tempfile,urllib.request,zipfile; dst='src/tts_package/resource'; os.makedirs(dst,exist_ok=True); z=os.path.join(tempfile.gettempdir(),'model.zip'); urllib.request.urlretrieve('https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip',z); zipfile.ZipFile(z).extractall(dst); os.remove(z)\"", description = "Download legacy TTS model for tts_package (cross-platform)" }
+dst = "src/sop_robot_voice/tts_package/resource"
+os.makedirs(dst, exist_ok=True)
+archive = os.path.join(tempfile.gettempdir(), "sop_robot_tts_model.zip")
+urllib.request.urlretrieve(
+    "https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip",
+    archive,
+)
+with zipfile.ZipFile(archive) as zf:
+    zf.extractall(dst)
+os.remove(archive)
+PY
+""", description = "Download legacy TTS model for tts_package" }
+init-submodules = { cmd = "bash tools/setup/init_submodules.sh", description = "Initialize active git submodules from .gitmodules" }
 
-init-submodules = { cmd = "git submodule update --init --recursive", description = "Initialize git submodules (dynamixel packages)" }
+[feature.gpu.tasks]
+install-llama-cuda = { cmd = "bash tools/setup/install_llama_cuda.sh", description = "Rebuild llama-cpp-python with CUDA offload for the local NVIDIA GPU" }
+install-whispercpp-cuda = { cmd = "bash tools/setup/install_pywhispercpp_cuda.sh", description = "Rebuild or repair pywhispercpp CUDA support for the local NVIDIA GPU" }
 
-# ── Build ──────────────────────────────────────────────────────────────
-win_build = { cmd = """
-  python -c "
-import subprocess, sys, sysconfig, os
-prefix = sys.prefix.replace(os.sep, '/')
-exe = sys.executable.replace(os.sep, '/')
-inc = sysconfig.get_path('include').replace(os.sep, '/')
-lib = prefix + '/libs/python311.lib'
-np_inc = prefix + '/Lib/site-packages/numpy/core/include'
-subprocess.run([
-    'colcon', 'build',
-    '--packages-skip', 'tts_package', 'dynamixel_workbench_toolbox', 'dynamixel_workbench', 'robot_hardware', 'robot',
-    '--cmake-args',
-    f'-DPython3_EXECUTABLE={exe}',
-    f'-DPython3_INCLUDE_DIR={inc}',
-    f'-DPython3_LIBRARY={lib}',
-    f'-DPython_EXECUTABLE={exe}',
-    f'-DPython_INCLUDE_DIR={inc}',
-    f'-DPython_LIBRARY={lib}',
-    f'-DPython_NumPy_INCLUDE_DIR={np_inc}',
-], check=True)
-"
-""", depends-on = ["init-submodules"], description = "Build all ROS 2 packages (hardware/driver C++ packages skipped on Windows)" }
-build = { cmd = "colcon build --symlink-install", depends-on = ["init-submodules", "ensure-setuptools-compat"], description = "Build all ROS 2 packages with colcon" }
+# ── Build and checks ───────────────────────────────────────────────────
+build = { cmd = "colcon build --symlink-install", inputs = ["src"], outputs = ["install/setup.sh"], depends-on = ["init-submodules", "ensure-setuptools-compat"], description = "Build all active ROS 2 packages with colcon" }
+lint = { cmd = "bash tools/lint.sh", description = "Run repository-wide Ruff linting" }
+typecheck = { cmd = "bash tools/typecheck.sh", description = "Run basedpyright over the Python sources" }
+test = { cmd = "bash tools/test.sh", description = "Run the fast Python unit tests for the active workspace" }
+check = { cmd = "bash tools/check.sh", description = "Run lint, typecheck, and unit tests together" }
+
+# ── System and integration tests ───────────────────────────────────────
+test-robot-one-by-one = { cmd = "bash tools/with_ros_env.sh python testing/system/robot_stack_tester.py one-by-one", description = "Launch and validate each fake robot subsystem separately" }
+test-robot-all-at-once = { cmd = "bash tools/with_ros_env.sh python testing/system/robot_stack_tester.py all-at-once", description = "Launch and validate the full fake robot stack in one run" }
+test-joint-ranges = { cmd = "bash tools/with_ros_env.sh python testing/system/robot_joint_range_tester.py", description = "Center-check calibrated joints, sweep each full range, and return to center" }
+test-llm-knowledge = { cmd = "bash tools/with_ros_env.sh python testing/llm/knowledge_base_smoke.py", description = "Ingest local LLM knowledge data into SQLite and verify deterministic retrieval" }
+test-llm-knowledge-learning = { cmd = "bash tools/knowledge_learning_eval.sh --summary-only --expect-learned 5 --expect-after-accuracy 1.0", description = "Seed an Oulu/university KB, apply correction data, and verify learned answers improve" }
+test-llm-knowledge-correct = { cmd = "bash tools/knowledge_learning_eval.sh --summary-only --seed-data testing/fixtures/llm/oulu_university_correct.yml --corrections testing/fixtures/llm/oulu_university_correct.yml --expect-learned 0 --expect-before-accuracy 1.0 --expect-after-accuracy 1.0", description = "Verify already-correct Oulu/university KB data needs no learned corrections" }
+generate-llm-knowledge-eval = { cmd = "bash tools/with_ros_env.sh python testing/llm/knowledge_eval.py generate", description = "Generate mixed LLM knowledge-base evaluation JSONL from local knowledge data" }
+test-llm-knowledge-compare = { cmd = "bash tools/with_ros_env.sh python testing/llm/knowledge_eval.py compare", description = "Compare generated answers with and without SQLite knowledge-base arbitration" }
+test-llm-models = { cmd = "bash tools/with_ros_env.sh python testing/llm/knowledge_eval.py compare-models --summary-only", description = "Compare multiple LLM model commands with KB disabled and enabled" }
+
+# ── Benchmarks and model probes ────────────────────────────────────────
+try-llm-model = { cmd = "bash tools/try_llm_model.sh", description = "Send a prompt directly to one LLM model without KB retrieval, arbitration, or learning" }
+benchmark-face-tracker = { cmd = "bash tools/with_ros_env.sh python src/sop_robot_perception/face_tracker/benchmarks/benchmark_face_tracker_settings.py", description = "Benchmark face tracker settings against a fixed frame sample" }
+benchmark-face-tracker-gpu = { cmd = "bash tools/with_ros_env.sh python src/sop_robot_perception/face_tracker/benchmarks/benchmark_face_tracker_settings.py --gpu --processing-widths 480,640 --confidences 0.35,0.6 --yolo-imgsz 320,512,640 --correlation-intervals 3,5 --no-face-intervals 1,3 --publish-every 1", description = "Benchmark optional GPU/YOLO face tracker settings with isolated scenarios" }
+benchmark-llm-knowledge = { cmd = "bash tools/with_ros_env.sh python testing/benchmarks/llm/benchmark_knowledge_base.py", description = "Benchmark SQLite LLM knowledge retrieval methods, memory use, and optional model calls" }
+benchmark-llm-models = { cmd = "bash tools/benchmark_llm_models.sh --summary-only", description = "Benchmark multiple LLM model commands with KB disabled and enabled" }
+benchmark-llm-text-models = { cmd = "bash tools/benchmark_llm_models.sh --summary-only --model ahma=llama-cpp:models/Ahma-2-4B-Instruct.Q4_K_S.gguf --model llama31=llama-cpp:models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf --model gemma4=llama-cpp-hf:unsloth/gemma-4-E4B-it-GGUF:gemma-4-E4B-it-Q4_K_S.gguf", description = "Benchmark text-only local and Hugging Face GGUF LLMs with KB disabled and enabled" }
+
+# ── Monitoring ─────────────────────────────────────────────────────────
+monitor-topics = { cmd = "bash tools/with_ros_env.sh python tools/monitoring/ros_topic_monitor.py monitor", description = "Live ROS topic Hz/latency/bandwidth monitor" }
+topic-graph = { cmd = "bash tools/with_ros_env.sh python tools/monitoring/ros_topic_monitor.py graph", description = "Generate a static ROS topic relationship graph report" }
+topic-overview = { cmd = "bash tools/with_ros_env.sh python tools/monitoring/ros_topic_monitor.py overview", description = "Sample topic performance and generate an HTML topic relationship overview" }
+ros2graph-ui = { cmd = "bash tools/monitoring/launch_ros2graph_ui.sh", description = "Launch the ros2graph_explorer interactive web UI at http://127.0.0.1:8734" }
 
 # ── Udev rules (Linux only, requires sudo) ────────────────────────────
 setup-udev = { cmd = """
-  sudo cp src/dynamixel-workbench/99-dynamixel-workbench-cdc.rules /etc/udev/rules.d/ && \
+sudo cp src/vendor/dynamixel-workbench/99-dynamixel-workbench-cdc.rules /etc/udev/rules.d/ && \
   sudo udevadm control --reload-rules && \
   sudo udevadm trigger
 """, description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 
 # ── Launch ─────────────────────────────────────────────────────────────
-ros-launch-robot = { cmd = "ros2 launch robot robot.launch.py", description = "Launch real robot hardware" }
-ros-launch-robot-fake = { cmd = "ros2 launch robot robot.fake.launch.py", description = "Launch simulated robot hardware" }
-ros-launch-voice = { cmd = "bash src/voice_chatbot_ros/tools/ros_launch_pixi.sh", description = "Launch voice chatbot (STT + LLM + TTS)" }
-ros-face-tracker = { cmd = "ros2 launch face_tracker face_tracker.test.launch.py", description = "Launch face tracker" }
-ros-full-demo = { cmd = "ros2 run full_demo full_demo_node", description = "Run full demo orchestrator" }
+launch-robot = { cmd = "bash tools/launch_robot.sh", description = "Launch real robot hardware" }
+launch-robot-fake = { cmd = "bash tools/launch_robot_fake.sh", description = "Launch simulated robot hardware" }
+launch-robot-calibration = { cmd = "bash tools/launch_robot_calibration.sh", description = "Launch real robot controls with the dedicated joint calibration UI" }
+launch-robot-calibration-fake = { cmd = "bash tools/launch_robot_calibration_fake.sh", description = "Launch fake robot controls with the dedicated joint calibration UI" }
+calibrate-joints = { cmd = "bash tools/with_ros_env.sh ros2 run chatbot_app chatbot_app_calibration", description = "Open only the dedicated joint calibration UI against an already-running robot stack" }
 
-# ── Unified UI ────────────────────────────────────────────────────────
-ros-unified-ui = { cmd = "python src/voice_chatbot_ros/tools/run_unified_ui.py", description = "Launch unified UI (RViz + image viewer + voice chatbot)" }
-ros-start-all = { cmd = "src/voice_chatbot_ros/tools/ros_start_all.sh", description = "Launch all voice chatbot nodes + unified UI in Windows Terminal tabs" }
+
+
+[environments]
+default = ["gpu"]
+gpu = ["gpu"]
+cpu = ["cpu"]

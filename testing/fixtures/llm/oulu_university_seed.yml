@@ -1,0 +1,17 @@
+categories:
+- oulu_university_intentionally_mixed_seed
+# This fixture intentionally mixes correct, unrelated, and wrong answers.
+# It is only used to verify that correction data can replace bad KB rows.
+conversations:
+- - Missä Tampereen yliopiston Hervannan kampus sijaitsee?
+  - Hervannan kampus sijaitsee Tampereella.
+- - Mihin yliopistoon Hervannan kampus kuuluu?
+  - Hervannan kampus kuuluu Tampereen yliopistoon.
+- - Milloin Helsingin yliopisto perustettiin?
+  - Helsingin yliopisto perustettiin vuonna 1640.
+- - Minkä kaupungin maamerkki Toripolliisi on?
+  - Toripolliisi on Oulun kauppatorilla sijaitseva patsas.
+- - Missä Oulun yliopiston Linnanmaan kampus sijaitsee?
+  - Linnanmaan kampus sijaitsee Tampereella.
+- - Mikä joki virtaa Oulun keskustan läpi?
+  - Tammerkoski virtaa Oulun keskustan läpi.
