@@ -2,7 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/dynamixel-workbench" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/dynamixel-workbench-msgs" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/vendor/dynamixel-workbench" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/vendor/dynamixel-workbench-msgs" vcs="Git" />
   </component>
 </project>

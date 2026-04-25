@@ -4,7 +4,7 @@
     <list default="true" id="c939aa53-ca86-4a93-bb70-4b7eed3c2c49" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/config/dynamixel.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/dynamixel.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/eye_movement/eye_movement/eye_movement_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/eye_movement/eye_movement/eye_movement_node.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/face_tracker/face_tracker/face_tracker_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/face_tracker/face_tracker/face_tracker_node.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sop_robot_perception/face_tracker/face_tracker/face_tracker_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sop_robot_perception/face_tracker/face_tracker/face_tracker_node.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

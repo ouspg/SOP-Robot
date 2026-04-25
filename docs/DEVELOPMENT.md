@@ -1,112 +1,177 @@
-# Development Environment Setup
+# Development Setup
 
-## Prerequisites
+This workspace targets Ubuntu 22.04 with ROS 2 Humble.
 
-* [Visual Studio Code](https://code.visualstudio.com/)
-* [Git](https://git-scm.com/)
-* [Pixi](https://pixi.sh/) — cross-platform package manager (installs ROS 2, Python deps, and build tools)
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (optional, for VM-based development)
-  * Install Extension Pack for USB passthrough support (required for servo control, cameras, etc)
-* Ubuntu 22.04 (native or VM)
+## Dependency Ownership
 
-If you are not familiar with git, take a look at this tutorial: <https://www.tutorialspoint.com/git/index.htm>
+Dependency installation is split deliberately:
 
-Clone this repository, create a new branch and do your development there.
+- `pixi` owns Python, ML, Qt, and the bulk of the ROS user-space packages
+- `rosdep` is used only for Ubuntu-host dependencies that are intentionally left
+  outside Pixi
+- `colcon` builds the active workspace packages after both dependency layers are
+  in place
 
-Remember to `git commit` your changes and push them to remote after
-every development session.
+Today the main Ubuntu-host dependency left to `rosdep` is `espeak` for TTS.
 
-At the end of the project, create light documentation for your ROS package in english (document code, what dependencies it requires, how it should be used, how it integrates with ROS and does it require more development to be usable) in markdown.
+## Fresh Ubuntu 22.04 Setup
 
-## Installation with Pixi
+Install the system prerequisites:
 
-1. Install pixi (if not already installed):
-   ```bash
-   curl -fsSL https://pixi.sh/install.sh | bash
-   ```
-
-2. Clone and enter the repository:
-   ```bash
-   git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
-   cd SOP-Robot
-   ```
-
-3. Install all dependencies (ROS 2 Humble, Python packages, build tools):
-   ```bash
-   pixi install
-   ```
-   On WSL2, the voice chatbot launch scripts will automatically switch to the
-   WSLg PulseAudio Unix socket for microphone and playback support.
-
-4. Build all ROS 2 packages:
-   ```bash
-   pixi run build
-   ```
-
-5. Download models (voice chatbot LLM, STT, TTS):
-   ```bash
-   pixi run setup-models
-   ```
-
-6. (Optional) Download legacy TTS model for `tts_package`:
-   ```bash
-   pixi run download-tts-model
-   ```
-
-7. (Optional) Install Dynamixel udev rules (requires sudo, only needed on real hardware):
-   ```bash
-   pixi run setup-udev
-   ```
-
-## Testing the simulated robot
-
-After installation, test the simulated robot:
 ```bash
-pixi run ros-launch-robot-fake
+sudo apt update
+sudo apt install -y git curl python3-rosdep
+sudo rosdep init || true
+rosdep update
 ```
 
-Open new terminal tabs for each:
+Install Pixi:
+
 ```bash
-pixi shell
-ros2 run hand_gestures hand_gestures_node
-```
-```bash
-pixi shell
-python3 client/unified_arms_client.py
-```
-```bash
-pixi shell
-python3 client/hand_client_tester.py
+curl -fsSL https://pixi.sh/install.sh | bash
 ```
 
-You can now test hand movements by typing commands like `l_hand_fist`, `r_hand_fist`, `l_hand_open`, `r_hand_open`.
+Clone and bootstrap the workspace:
 
-## Legacy Installation (Ansible)
+```bash
+git clone --recurse-submodules <repo-url> SOP-Robot
+cd SOP-Robot
+pixi run bootstrap
+```
 
-The Ansible-based installation is still available in `ansible-scripts/` for reference or VM-based setups:
+If you prefer the steps explicitly:
 
-1. Install ansible: `sudo apt install software-properties-common && sudo add-apt-repository --yes --update ppa:ansible/ansible && sudo apt install ansible`
-2. Run: `ansible-playbook ansible-scripts/playbook.yml --ask-become-pass`
+```bash
+pixi install
+pixi run init-submodules
+pixi run rosdep-install
+pixi run install-llama-cuda
+pixi run install-whispercpp-cuda
+pixi run install-crispasr
+pixi run setup-models
+pixi run build
+pixi run test
+```
 
+If you are bringing up the real robot hardware, also install the Dynamixel udev
+rule:
 
-## Setup vscode remote ssh
-Follow the instructions of this article I found from the last 3 steps of section 1 to the end of section 2 titled "Accessing the VM from VS Code from your host machine": [VSCode Remote Development with VirtualBox](https://medium.com/nullifying-the-null/vscode-remote-development-with-virtualbox-aecd702d7933)
+```bash
+pixi run setup-udev
+```
 
-## About Virtualbox setup
+## Daily Workflow
 
-After the VM is created, remember to add USB device filters for the USB devices you are using with the robot in the VM settings (e.g., webcam, servo controller). Oracle VM VirtualBox Manager -> Select the created VM -> Settings -> USB -> Check the 'Enable USB Controller' box and choose USB 3.0 Controller -> Add filters for devices using the '+' button. Devices might not always automatically connect to VM even the filters are configured. You can connect them manually from the menu bar. Devices -> USB -> and you will get the list of usb devices. Just select one of them and Virtualbox attaches it to the VM. Tick appears next to the device when it is attached.
+Common developer commands:
 
-**Note: The Ubuntu in VM defaults to US keyboard layout. You can change the layout from Ubuntu's options.**
+```bash
+pixi run lint
+pixi run typecheck
+pixi run test
+pixi run check
+pixi run launch-robot-fake
+pixi run launch-robot
+```
 
-**Note: if your VM GUI freezes on resize, try changing the virtual machine graphics controller in the VirtualBox settings to VMSVGA**
+## LLM CUDA Offload
 
-**Note: If you have Hyper-V activated on Windows Host and decide to use Virtualbox as a hypervisor, Virtualbox will run very slowly. More information on [virtualbox forum](https://forums.virtualbox.org/viewtopic.php?t=99390) and [here](https://www.sysprobs.com/fixed-virtualbox-vms-too-slow-on-windows-host).**
+The voice LLM uses `llama-cpp-python`. Run this after `pixi install` on an
+NVIDIA WSL2 machine:
 
-## Create ROS package
+```bash
+pixi run install-llama-cuda
+```
 
-1. Open VSCode remote development session
-2. cd into `src/` and use `ros2 pkg create` as described [here](https://index.ros.org/doc/ros2/Tutorials/Creating-Your-First-ROS2-Package/)
-   * For Python, `ros2 pkg create --build-type ament_python --node-name <my_node_name> <my_package_name>`
-   * For C++, `ros2 pkg create --build-type ament_cmake --node-name <my_node_name> <my_package_name>`
+The task rebuilds `llama-cpp-python` against the Pixi CUDA 13 toolkit, detects
+the local GPU compute capability, and verifies that llama.cpp GPU offload is
+enabled. The runtime config uses `llm_n_gpu_layers: -1`, which requests all
+supported GGUF layers on CUDA.
 
-**Note: Package node name cannot contain hyphen (setup.py entrypoint). If it does, the package compilation fails!**
+## Whisper.cpp CUDA
+
+The pywhispercpp ASR backend uses whisper.cpp. Run this after `pixi install` on
+an NVIDIA machine:
+
+```bash
+pixi run install-whispercpp-cuda
+```
+
+The task rebuilds pywhispercpp with CUDA if the installed wheel has no CUDA
+backend, and repairs pywhispercpp wheels that vendor a `libcuda` stub by linking
+that bundled name to the real NVIDIA driver library. On WSL2 this is normally
+`/usr/lib/wsl/lib/libcuda.so.1`.
+
+## CrispASR CUDA
+
+The `crispasr` ASR backend uses a local build of
+`https://github.com/CrispStrobe/CrispASR` plus the Parakeet GGUF model. Run this
+after `pixi install`:
+
+```bash
+pixi run install-crispasr
+```
+
+The task reads the CrispASR paths from `config/voice_chatbot.json`, clones the
+repo to `/home/aapot/CrispASR` when it is missing, downloads
+`parakeet.gguf`, and builds with:
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=ON -DGGML_CUDA_ENABLE_UNIFIED_MEMORY=1 -DCMAKE_CUDA_ARCHITECTURES=<detected>
+cmake --build build --parallel "$(nproc)" --target crispasr
+```
+
+On this RTX 5070 WSL2 setup the detected CUDA architecture is `120`, matching
+the manual build command. Older CrispASR checkouts may still expose the target
+as `whisper-cli`; the installer detects either target. On a host without CUDA it
+builds CPU-only unless `CRISPASR_ENABLE_CUDA=1` is set. Use
+`CRISPASR_FORCE_REBUILD=1` to force a reconfigure/rebuild and
+`CRISPASR_UPDATE=1` to fast-forward an existing git checkout before building.
+
+The helper scripts under `tools/` now auto-enter the Pixi environment when
+needed, so these also work outside an already-activated Pixi shell:
+
+```bash
+bash tools/lint.sh
+bash tools/typecheck.sh
+bash tools/test.sh
+bash tools/launch_robot_fake.sh
+```
+
+## Runtime Config Files
+
+The runtime config split is:
+
+- `config/robot_stack.yaml`: stack-wide launch defaults and feature toggles
+- `config/voice_chatbot.json`: editable runtime voice config
+- `config/voice_chatbot.defaults.json`: shipped voice defaults
+- `models/sop_robot_llm_knowledge_base.sqlite3`: generated SQLite index for
+  `legacy/chatbot/chatbot/data`
+
+`robot.launch.py` merges explicit launch arguments with `config/robot_stack.yaml`
+and falls back to `src/sop_robot_bringup/robot/config/robot_stack.defaults.yaml` if the root config
+is missing.
+
+## Control Flow
+
+```mermaid
+flowchart TD
+  A[Fresh clone] --> B[pixi install]
+  B --> C[pixi run init-submodules]
+  C --> D[pixi run rosdep-install]
+  D --> E[pixi run install-llama-cuda]
+  E --> F[pixi run install-whispercpp-cuda]
+  F --> G[pixi run install-crispasr]
+  G --> H[pixi run setup-models]
+  H --> I[pixi run build]
+  I --> J[pixi run test]
+  J --> K[pixi run launch-robot-fake]
+  K --> L[pixi run launch-robot]
+```
+
+## Notes
+
+- The canonical launch pair is always `robot.launch.py` and `robot.fake.launch.py`.
+- Package-local launch files are for focused subsystem debugging, not primary bring-up.
+- Legacy `voice_chatbot_ros` code has been migrated into the split voice-stack
+  packages and removed. Other archived chatbot experiments remain excluded from
+  the active lint, typecheck, and colcon graph.

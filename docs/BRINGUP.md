@@ -1,296 +1,258 @@
-# Running the robot
+# Robot Bring-Up
 
-Open the terminal in VM and build the robot code with `colcon build`. This will take a while especially on first run.
+The project is brought up through one package and two launch files:
 
-Next you need to source the built environment with `source install/setup.bash`. In short, you need to run this every time you have fresh build for your robot. This is set up in ~/.bashrc, so you don't need to run it in every new terminal before launching the robot or other node.
+- `ros2 launch robot robot.launch.py`
+- `ros2 launch robot robot.fake.launch.py`
 
-Now continue instructions in [Bring-up fake (simulated) robot][] or [Bring-up real HW robot][].
+Equivalent wrappers:
 
-[Bring-up fake (simulated) robot]:#bring-up-fake-simulated-robot
-[Bring-up real HW robot]:#bring-up-real-hw-robot
+- `pixi run launch-robot`
+- `pixi run launch-robot-fake`
+- `bash tools/launch_robot.sh`
+- `bash tools/launch_robot_fake.sh`
 
-## Bring-up fake (simulated) robot
+## Stack Config
 
-If you just want to test that robot starts, send hand written commands or use the [hand action client][] you don't need to fulfill any other requirement. However, if you want to test the face tracking you need have some webcam hardware. See [Webcam setup in Virtualbox][].
+The canonical launch files read `config/robot_stack.yaml`.
 
-[Webcam setup in Virtualbox]:#webcam-setup-in-virtualbox
+That file controls:
 
-You can launch the fake robot in rviz using the launch file. Run the following command in a GUI environment:
+- which robot parts are enabled
+- which controllers are spawned in fake vs real mode
+- whether RViz starts
+- whether face tracking, face tracking movement, the voice stack, the GUI,
+  full-demo, hand gestures, and jaw movement are included
+- which voice config file is passed to the split voice stack
 
-```console
-ros2 launch robot robot.fake.launch.py
+The root config is merged with fallback defaults from
+`src/sop_robot_bringup/robot/config/robot_stack.defaults.yaml`.
+
+## Launch Arguments
+
+The main runtime arguments are:
+
+- `stack_config_path`: override the root stack config YAML
+- `robot_parts`: choose `head`, `arm`, or `all`
+- `enabled_controllers`: comma-separated controllers to spawn
+- `use_fake_hardware`: real launch only; fake launch forces this to `true`
+- `use_rviz`: enable standalone RViz from the robot launch. Keep this false when using the unified UI RViz panel.
+- `camera_source`: webcam index or stream URL
+- `face_tracker_max_processing_fps`: cap face tracker analysis FPS; `0` means unlimited
+- `face_tracker_processing_width`: downscale width for face analysis; `0` means original size
+- `face_image_publish_every_n_frames`: publish annotated face image every nth processed frame
+- `face_recognition_model`: DeepFace model used for identity embeddings
+- `face_detection_model`: detector backend; `yunet` uses direct OpenCV FaceDetectorYN
+- `face_tracker_prefer_gpu`: use the optional PyTorch/YOLO detector instead of OpenCV YuNet
+- `gpu_face_recognition_model`: recognition model used when GPU recognition is selected
+- `gpu_face_detection_model`: optional GPU detector model; `yolov8n` uses local `yolov8n-face.pt`
+- `face_detection_confidence`: minimum confidence for face detections
+- `face_detection_imgsz`: optional YOLO detector inference image size; lower is faster
+- `no_face_detection_interval_frames`: when no face is present, run detector only every nth processed frame; `1` disables this
+- `no_face_detection_warmup_frames`: detector frames to run before entering no-face scan mode
+- `face_correlation_tracking`: use dlib correlation tracking between detector passes
+- `face_detection_interval_frames`: run heavy face detection every nth processed frame
+- `face_tracker_async_processing`: process only the latest camera frame on a worker thread
+- `face_tracker_slow_frame_warning_seconds`: log slow tracker passes over this duration
+- `face_image_max_width`: maximum width for the annotated debug image topic; `0` means original size
+- `identity_store_max_identities`: maximum anonymous in-memory face identities for one run
+- `identity_store_ttl_seconds`: expire unseen in-memory identities after this many seconds
+- `webcam_width`: published webcam frame width; `0` means source/default width
+- `webcam_height`: published webcam frame height; `0` means source/default height
+- `webcam_fps`: requested webcam FPS and publish timer rate; `0` means default
+- `webcam_capture_buffer_size`: requested OpenCV capture buffer size
+- `webcam_read_warning_seconds`: log slow camera reads over this duration
+- `webcam_reconnect_cooldown_seconds`: minimum seconds between camera reconnect attempts
+- `webcam_status_log_interval_seconds`: log measured webcam publish FPS at this interval
+- `webcam_low_latency_stream`: request low-latency OpenCV/FFmpeg network stream options
+- `webcam_async_capture`: continuously drain the camera source into a latest-frame buffer
+- `enable_face_tracker`
+- `enable_face_tracker_movement`
+- `enable_voice_stack`
+- `enable_chatbot_ui`
+- `enable_full_demo`
+- `enable_hand_gestures`
+- `enable_jaw_movement`
+- `face_tracker_functionality`: `full`, `head`, or `eyes`
+- `voice_config_path`
+- `load_voice_config`
+- `runtime_log_level`: default ROS log level for runtime nodes; `warn` keeps repetitive INFO status and controller action logs out of the terminal
+
+## Voice Config
+
+The robot launch files pass `voice_config_path` to the split voice stack. Runtime
+ASR, LLM, retrieval, and TTS settings live in `config/voice_chatbot.json`:
+
+- `whisper_backend`: ASR backend, either `faster-whisper`, `pywhispercpp`, or `crispasr`
+- `whisper_cpp_model_filename` and `whisper_cpp_model_path`: local GGML Whisper model settings
+- `crispasr_python_path`, `crispasr_lib_path`, `crispasr_model_path`, and `crispasr_backend`: CrispASR binding/model settings
+- `llm_backend`: LLM backend, currently `llama-cpp`
+- `llm_knowledge_base_enabled`: enable SQLite retrieval from `legacy/chatbot/chatbot/data`
+- `llm_knowledge_base_path`: generated local SQLite database path
+- `llm_knowledge_base_direct_answer`: allow answer arbitration to return the local SQLite answer when it is closer than the generated answer
+- `tts_enabled` and `tts_gpu`: TTS runtime controls
+
+Use `pixi run install-crispasr`, `pixi run install-whispercpp-cuda`, and
+`pixi run install-llama-cuda` to prepare the optional CUDA-backed voice runtimes.
+
+## DroidCam USB
+
+The default `config/robot_stack.yaml` camera source is now the USB-forwarded
+DroidCam endpoint:
+
+```yaml
+camera_source: "http://127.0.0.1:4747/video"
 ```
 
-This setups fake servo controllers and joint state publishers, and the following window should popup:
-
-![](../img/inmoov_rviz.png)
-
-Term ["fake hardware"][] means that the hardware mirrors received commands to its states. Ros2 Foxy documentation uses term "fake" but latest releases uses term "mock" talking about same thing.
-
-### Launching the face tracker
-
-If you want to use also the face tracker you need to start it:
+Before launching the robot, connect the phone over USB, start DroidCam on the
+phone, enable USB debugging, then run:
 
 ```console
-ros2 launch face_tracker face_tracker.test.launch.py
+pixi run droidcam-usb
 ```
 
-If you want to see what the face detection does, run this:
+The helper uses `adb forward tcp:4747 tcp:4747`, so the ROS camera node reads
+DroidCam through localhost instead of Wi-Fi. If `adb` cannot see the phone from
+WSL, attach it from Windows PowerShell with `usbipd` first:
 
-```console
-ros2 run rqt_image_view rqt_image_view /face_tracker/image_face
+```powershell
+usbipd list
+usbipd bind --busid <BUSID>
+usbipd attach --wsl --busid <BUSID>
 ```
 
-This opens the view to see the camera feed and what face detection recognizes.
+DroidCam's phone app should be set to `Target FPS: 30 FPS` with `Minimum FPS:
+Match Target`. Keep `webcam_fps: 30` in `config/robot_stack.yaml` to match that
+setting and avoid blocked reads or uneven frame pacing.
 
-To get the eyes moving. (Don't be scared about eyes flipping awkwardly to the side. More about this at the end...)
+## CPU Affinity
 
-```console
-ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p functionality:=eyes -p simulation:=true 
+- `ros2_control_cpu_cores`: `taskset` CPU list for `ros2_control_node`
+- `rviz_cpu_cores`: `taskset` CPU list for `rviz2`
+- `face_tracker_cpu_cores`: `taskset` CPU list for `face_tracker_node`
+- `webcam_cpu_cores`: `taskset` CPU list for `webcam_node`
+- `asr_cpu_cores`: `taskset` CPU list for `asr_node`
+- `llm_cpu_cores`: `taskset` CPU list for `llm_node`
+- `tts_cpu_cores`: `taskset` CPU list for `tts_node`
+
+CPU affinity values use Linux CPU-list syntax such as `4`, `2,3`, or `2-5`.
+The root `config/robot_stack.yaml` may set defaults under `common.cpu_affinity`,
+and each launch argument can override the config value.
+
+The live camera topics use best-effort, depth-1 QoS so the UI and tracker drop
+stale frames instead of displaying them late.
+The unified UI renders camera topics on a fixed timer and samples only the newest
+image. Keep `face_image_publish_fps: 0` unless you explicitly want to cap the
+debug image ROS topic.
+
+When `enable_chatbot_ui` is true, keep `use_rviz: false` in the stack config and
+start RViz from the UI toolbar. The UI also tries to embed an existing RViz
+window if one is already open.
+
+The default face detector is OpenCV YuNet through `FaceDetectorYN`, with SFace
+kept for identity embeddings. The current Pixi OpenCV build reports zero CUDA
+devices through `cv2.cuda.getCudaEnabledDeviceCount()`, so OpenCV CUDA is not
+active in the default environment. If OpenCV is rebuilt with CUDA DNN support,
+the YuNet detector code automatically requests the OpenCV CUDA DNN backend.
+
+Example:
+
+```bash
+ros2 launch robot robot.launch.py face_tracker_cpu_cores:=2,3 llm_cpu_cores:=6,7
 ```
 
-Success! You are done. Eyes should "follow" your face. This implementation has a flaw that it is made for the real hardware, so the eye_movement node controls the eyes like it would have the real hardware. In other words, the eyes have different "zero" position in simulation compared to real hardware.
+Use `--show-args` to inspect the current descriptions directly from the launch files:
 
-Anyway, you are able to test the face tracking and eye movements like this.
-
-**Note: currently, only jaw, eyes, right hand & head pan movement can be simulated**
-
-### Launching text-to-speech service
-
-Text-to-speech works as a service which can be called from terminal utilizing the ros2 client in package.
-
-Run the service in a (new) terminal
-
-```console
-ros2 run tts_package service
+```bash
+ros2 launch robot robot.launch.py --show-args
+ros2 launch robot robot.fake.launch.py --show-args
 ```
 
-Call the service from terminal using client and synthetize speech
+## Runtime Control Flow
 
-```console
-ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
+```mermaid
+flowchart TD
+  A[robot.launch.py] --> B[Load robot_stack.yaml]
+  B --> C[Resolve real or fake mode]
+  C --> D[Merge common and mode-specific defaults]
+  D --> E[Build temporary Dynamixel config]
+  E --> F[Start ros2_control, state publisher, joint_state_broadcaster]
+  F --> G[Spawn requested controllers]
+  G --> H{enable_face_tracker}
+  H -->|true| I[Include face_tracker.test.launch.py]
+  H -->|false| J[Skip face tracker]
+  I --> K{enable_face_tracker_movement}
+  J --> K
+  K -->|true| L[Start face_tracker_movement_node]
+  K -->|false| M[Skip face tracker movement]
+  L --> N{enable_voice_stack}
+  M --> N
+  N -->|true| O[Include chatbot_app/voice_stack.launch.py]
+  N -->|false| P[Skip voice stack]
+  O --> Q{enable_chatbot_ui}
+  P --> Q
+  Q -->|true| R[Start chatbot_app_unified]
+  Q -->|false| S[Skip GUI]
+  R --> T{enable_jaw_movement}
+  S --> T
+  T -->|true| U[Start jaw_movement_node]
+  T -->|false| V[Skip jaw movement]
+  U --> W{enable_hand_gestures}
+  V --> W
+  W -->|true| X[Start hand_gestures_node]
+  W -->|false| Y[Skip hand gestures]
+  X --> Z{enable_full_demo}
+  Y --> Z
+  Z -->|true| AA[Start full_demo_node]
+  Z -->|false| AB[Bring-up complete]
 ```
 
-## Bring-up real HW robot
+`robot.fake.launch.py` is only a wrapper around `robot.launch.py` that forwards
+the same arguments and forces `use_fake_hardware=true`.
 
-### (0. Test servo communication)
+## ROS 2 Topic Flow
 
-We suggest using [Dynamixel Wizard 2.0][] to test the connection and functionality of the servos before trying to run the robot. This is optional but can save some time debugging if the servos or communication with them doesn't work.
+```mermaid
+flowchart LR
+  Camera[Camera / stream] -->|/image_raw| FaceTracker[face_tracker]
+  FaceTracker -->|/face_tracker/image_face| DebugView[rqt_image_view / GUI]
+  FaceTracker -->|/face_tracker/faces| FaceMovement[face_tracker_movement]
+  FaceMovement -->|/face_tracker_movement/focused_face| FullDemo[full_demo]
+  FaceMovement -->|/face_tracker_movement/head_gesture_topic| FaceMovement
 
-### 1a. Launching the robot head (Shell script)
+  Mic[Microphone] --> ASR[asr_package]
+  FullDemo -->|/voice_chatbot/can_listen| ASR
+  TTS[tts_package] -->|/voice_chatbot/tts_done| ASR
+  ASR -->|/voice_chatbot/transcript| FullDemo
+  ASR -->|/voice_chatbot/transcript| ChatbotUI[chatbot_app]
+  ASR -->|/voice_chatbot/user_text| LLM[llm_package]
+  ASR -->|/voice_chatbot/status| ChatbotUI
+  ASR -->|/voice_chatbot/log| ChatbotUI
+  LLM -->|/voice_chatbot/assistant_text| TTS
+  LLM -->|/voice_chatbot/assistant_text| ChatbotUI
+  LLM -->|/voice_chatbot/status| ChatbotUI
+  LLM -->|/voice_chatbot/log| ChatbotUI
+  ChatbotUI -->|/voice_chatbot/user_text| LLM
+  ChatbotUI -->|/voice_chatbot/clear_history| LLM
+  TTS -->|/voice_chatbot/status| ChatbotUI
+  TTS -->|/voice_chatbot/log| ChatbotUI
+  TTS -->|/can_listen| FullDemo
+  TTS -->|/jaw_topic| Jaw[ jaw_movement ]
 
-You can use the start_robot_head script file to quickly bring up the whole robot head. The script by default launches the face tracker and the ros2 nodes for the jaw, eye and head movement.
-
-To execute the script (in a terminal opened in /workspace):
-
-```console
-./start_robot_head
+  FullDemo -->|/voice_chatbot/assistant_text| TTS
+  FullDemo -->|/arms/arm_action| ArmBridge[chatbot_app arm bridge]
+  ChatbotUI -->|/arms/arm_action| ArmBridge
+  ArmBridge -->|/l_hand/l_hand_topic| HandGestures[hand_gestures]
+  ArmBridge -->|/r_hand/r_hand_topic| HandGestures
+  ArmBridge -->|serial shoulder commands| ShoulderServos[Arduino shoulder servos]
 ```
 
-This opens multiple terminal tabs in quick succession without checking if the programs actually launch correctly, so you might want to check the output of each one. Usually problems are caused by the first tab (robot.launch.py) not being able to arm or find a servo.
-
-### 1b. Launching the robot (Manual)
-
-You can launch the real robot using a launch file:
-
-```console
-ros2 launch robot robot.launch.py
-```
-
-This should launch the robot listening server and prints a lot of output. If not, check the [Troubleshooting][] part below. `robot.launch.py` file creates temporary file from [dynamixel_arm.yaml][] and [dynamixel_head.yaml][] to `config/` folder to allow launching the arm and head separately.
-
-[Troubleshooting]:#troubleshooting
-
-To launch only the **arm** hardware
-
-```console
-ros2 launch robot robot.launch.py robot_parts:=arm
-```
-
-To launch only the **head** hardware
-
-```console
-ros2 launch robot robot.launch.py robot_parts:=head
-```
-
-### 1.5 Starting the controllers (Not necessary)
-
-In general you can start the controllers with:
-
-```console
-ros2 control load_controller --set-state start <controller_name>
-```
-
-By default all controllers are started automatically by robot.launch.py. Remember to add new controllers you want to launch there. To add a controller you only need to add the controller name into the controllers_to_start-array in robot.launch.py (and rebuild).
-
-### 2. Launching the face tracker
-
-After the required controllers are active, you can start the face tracker and eye movement nodes.
-
-Start the face tracker
-
-```console
-ros2 launch face_tracker face_tracker.test.launch.py
-```
-
-If you want to see what the face detection does, run this:
-
-```console
-ros2 run rqt_image_view rqt_image_view /face_tracker/image_face
-```
-
-This opens the view to see the camera feed and what face detection recognizes.
-
-Finally, start the face tracking movement node in a new terminal window
-
-```console
-ros2 run face_tracker_movement face_tracker_movement_node
-```
-
-### 5. Launching text-to-speech service
-
-Text-to-speech works as a service which can be called from terminal utilizing the ros2 client in package.
-
-Run the service in a (new) terminal
-
-```console
-ros2 run tts_package service
-```
-
-Call the service from terminal using client and synthetize speech
-
-```console
-ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
-```
-
-**Todo: simplify bring up process (add the starting of the controllers to the launch file)**
-
-## Sending action goals manually
-
-The robot head joints doesn't have similar easy to use action client as the arm has. If you want to send action goals to the head you need to start the `head_controller` Then following actions and topics should be available:
-
-```console
-vagrant@vagrant-ros:/workspace$ ros2 action list
-/head_controller/follow_joint_trajectory
-
-vagrant@vagrant-ros:/workspace$ ros2 topic list
-/head_controller/joint_trajectory
-/joint_states
-```
-
-For example, if the joint `head_pan_joint` was configured correctly, it should move to position `0.5` when publishing the following action (other joints will also move to 0 positions if not already):
-
-```console
-ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
-  trajectory: {
-    joint_names: [head_pan_joint, head_tilt_right_joint, head_tilt_left_joint, head_tilt_vertical_joint],
-    points: [
-      { positions: [0.5, 0.0, 0.0, 0.0], time_from_start: { sec: 1, nanosec: 0 } }
-    ]
-  }
-}"
-```
-
-**Note: When driving the head_tilt_left/right joints, you must move the both servos simulatenously the same amount to the correct directions!**
-
-**Note: The head_tilt_vertical_joint is easily overloaded due to the weight of the head and stickiness of the drive screw, and the servo will stop responding. Requires mechanical improvement.**
-
-If you want to move only one joint at a time, it possible by omitting the other joints:
-
-```console
-ros2 action send_goal /head_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
-  trajectory: {
-    joint_names: [head_pan_joint],
-    points: [
-      { positions: [1.0], time_from_start: { sec: 2, nanosec: 0 } }
-    ]
-  }
-}"
-```
-
-The jaw can be controlled with jaw_controller. Value for closed jaw is 0.0 and for open 0.55.
-
-```console
-ros2 action send_goal /jaw_controller/follow_joint_trajectory control_msgs/action/FollowJointTrajectory "{
-  trajectory: {
-    joint_names: [head_jaw_joint],
-    points: [
-      { positions: [0.55], time_from_start: { sec: 1, nanosec: 0 } }
-    ]
-  }
-}"
-```
-
-`time_from_start` is the duration of the movement.
-
-**Note: acceleration and velocity is fixed for real servos currently, so these cannot be controlled. This would require adding velocity and acceleration command interfaces to the JointTrajectoryAction controller**
-
-## Webcam setup in Virtualbox
-
-If you have a integrated webcam in you laptop you can use it. You need to pass the webcam hardware to Ubuntu guest from menu "Devices->Webcam->..." and choose your hardware. If you are using the usb connected external webcam (e.g. the camera integrated to the robot eye) configure it inside the USB settings. Or just pass it to guest with "Devices->USB->..." and choose your webcam.
-
-**If you have issues connecting the camera to guest make sure that you have the matching version of guest additions installed in the guest os.**
-
-To test that OS detects the webcam run:
-
-```console
-lsusb -t
-```
-
-It should output something like this.
-
-```console
-vagrant@vagrant-ros:/workspace$ lsusb -t
-/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/6p, 5000M
-/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/8p, 480M
-    |__ Port 1: Dev 3, If 0, Class=Video, Driver=uvcvideo, 12M
-    |__ Port 1: Dev 3, If 1, Class=Video, Driver=uvcvideo, 12M
-```
-
-## Troubleshooting
-
-### Dynamixel ID X wasn't found?
-
-Check that [dynamixel_arm.yaml][] and [dynamixel_head.yaml][] have the right IDs and check that the baud rate of servos is set to 57600.
-
-All ID's that you have in the dynamixel_*.yaml files need to be connected for the launch script to work. Comment out all servo ID's that are not connected. No need to remove them from anywhere else.
-
-### But the servo(s) moved yet now doesn't move?!
-
-The servo is likely overloaded. You have to manually reset the servo for it to work again. You can do this by using Dynamixel Wizard to reboot the servo, or alternatively you can turn the power off and on again. You will have to redo the whole bringup in any case.
-
-### `colcon build` fails
-
-There are various failures that we have seen so far, but here are some of the most common ones
-
-#### 1. CMake clock skew error
-
-CMake compiles the c++ packages and it does not like if the timestamps of temporary files are in in the future. This is most likely due to file synchronization between the host and guest OSes. It least we have seen this happening on Windows and Mac hosts. If you use Virtualbox with Vagrant it uses the Shared Folders interface to synchronize the /workspace folder.
-
-You just need to try the `colcon build` build again. We have tried to make sure that the clocks on host and guest OS are synchronized without bulletproof results. Sometimes it helps you wait a while to compensate the time difference and run again `colcon build`.
-
-Our suggestion is to test how environment works when folders are not synced from host OS. In other words move the whole development environment to guest OSes virtual disk. 
-
-#### 2. Building just stops to random error
-
-Please, run the `colcon build` again couple times, it might help. If you want to do some cleaning following commands have been sometimes helpful.
-
-```console
-colcon build --cmake-clean-cache
-```
-
-After you have run that try again `colcon build`.
-
-#### 3. Build fails to dependency issue
-
-If you face package dependency failures during `colcon build` please run `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y`. It might request you to run `rosdep update` first. Run it first and then run the `rosdep install ...`. Then try to run `colcon build` again and it should be able to figure out those dependencies now.
-
-
-<!-- References -->
-
-[dynamixel_arm.yaml]:../config/dynamixel_arm.yaml
-[dynamixel_head.yaml]:../config/dynamixel_head.yaml
-[hand action client]:../client/README.md
-
-[Dynamixel Wizard 2.0]: https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/
-["fake hardware"]: https://control.ros.org/galactic/doc/ros2_control/hardware_interface/doc/fake_components_userdoc.html
+The voice topic/service names above are defined centrally in
+`src/sop_robot_voice/voice_stack_common/voice_stack_common/contracts.py`. The face-tracker and
+demo contracts are defined in `src/sop_robot_common/sop_robot_common/contracts.py`.
+
+## Subsystem Launches
+
+Package-local launch files still exist for focused debugging, for example
+`face_tracker.test.launch.py` and `voice_stack.launch.py`, but they are treated
+as subsystem launch fragments. The robot package owns the canonical operator path.
