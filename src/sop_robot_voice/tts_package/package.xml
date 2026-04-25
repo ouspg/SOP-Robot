@@ -2,15 +2,19 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>tts_package</name>
-  <version>1.0.0</version>
-  <description>Text-to-speech pacakge for synthetizing speech.</description>
+  <version>0.1.0</version>
+  <description>ROS2 text-to-speech playback node for the SOP Robot voice stack.</description>
   <maintainer email="klaurila20@student.oulu.fi">Konsta Laurila</maintainer>
   <license>Apache-2.0</license>
 
-  <depend>python3-TTS</depend>
-  <depend>python3-simpleaudio</depend>
-
-  <exec_depend>tts_msgs</exec_depend>
+  <depend>ament_index_python</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>voice_stack_common</depend>
+  <depend>sop_robot_common</depend>
+  <exec_depend>espeak</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

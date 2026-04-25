@@ -1,0 +1,39 @@
+"""Canonical ROS contracts for the SOP Robot voice stack."""
+
+VOICE_NAMESPACE = "/voice_chatbot"
+
+USER_TEXT_TOPIC = f"{VOICE_NAMESPACE}/user_text"
+TRANSCRIPT_TOPIC = f"{VOICE_NAMESPACE}/transcript"
+ASSISTANT_TEXT_TOPIC = f"{VOICE_NAMESPACE}/assistant_text"
+STATUS_TOPIC = f"{VOICE_NAMESPACE}/status"
+LOG_TOPIC = f"{VOICE_NAMESPACE}/log"
+TTS_DONE_TOPIC = f"{VOICE_NAMESPACE}/tts_done"
+CAN_LISTEN_TOPIC = f"{VOICE_NAMESPACE}/can_listen"
+CLEAR_HISTORY_SERVICE = f"{VOICE_NAMESPACE}/clear_history"
+
+GLOBAL_CAN_LISTEN_TOPIC = "/can_listen"
+JAW_TOPIC = "/jaw_topic"
+LEGACY_CHATBOT_RESPONSE_TOPIC = "chatbot_response"
+
+PARAM_CONFIG_PATH = "config_path"
+PARAM_LOAD_CONFIG_FILE = "load_config_file"
+
+STATUS_INITIALIZING = "initializing"
+STATUS_READY = "ready"
+STATUS_LISTENING = "listening"
+STATUS_SPEECH_DETECTED = "speech_detected"
+STATUS_TRANSCRIBING = "transcribing"
+STATUS_LLM_RESPONDING = "llm_responding"
+STATUS_SPEAKING = "speaking"
+STATUS_ERROR = "error"
+
+STATUS_VALUES = {
+    STATUS_INITIALIZING,
+    STATUS_READY,
+    STATUS_LISTENING,
+    STATUS_SPEECH_DETECTED,
+    STATUS_TRANSCRIBING,
+    STATUS_LLM_RESPONDING,
+    STATUS_SPEAKING,
+    STATUS_ERROR,
+}
