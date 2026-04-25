@@ -1,11 +1,11 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
-package_name = 'hand_gestures'
+package_name = 'jaw_movement'
 
 setup(
     name=package_name,
     version='0.1.0',
-    packages=[package_name],
+    packages=find_packages(include=[package_name, f"{package_name}.*"]),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -15,12 +15,11 @@ setup(
     zip_safe=True,
     maintainer='SOP Robot Team',
     maintainer_email='sop-robot@example.org',
-    description='ROS2 package for hand gesture command handling.',
+    description='ROS2 jaw movement node for speech-synchronized mouth motion.',
     license='Apache-2.0',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'hand_gestures_node = hand_gestures.hand_gestures_node:main'
+            'jaw_movement_node = jaw_movement.jaw_movement_node:main'
         ],
     },
 )

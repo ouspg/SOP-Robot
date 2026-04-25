@@ -49,7 +49,7 @@ target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
-  $ENV{HOME}/ros2_control_ws/install/hardware_interface/include/
+  SOP-Robot/.pixi/envs/default/include/hardware_interface/include/
 )
 
 ament_target_dependencies(
@@ -84,7 +84,7 @@ install(
 ament_export_include_directories(
   include
 )
-ament_export_libraries( 
+ament_export_libraries(
   ${PROJECT_NAME}
 )
 ament_export_dependencies(
@@ -93,4 +93,4 @@ ament_export_dependencies(
   rclcpp
 )
 
-ament_package() 
+ament_package()

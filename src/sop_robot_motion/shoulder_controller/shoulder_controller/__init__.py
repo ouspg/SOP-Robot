@@ -1,0 +1,1 @@
+"""Shoulder controller package."""

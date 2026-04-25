@@ -54,7 +54,37 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
+      <joint name="r_upper_arm_roll_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="r_elbow_flex_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
       <joint name="r_shoulder_out_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="l_shoulder_lift_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="l_upper_arm_roll_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="l_elbow_flex_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="l_shoulder_out_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
