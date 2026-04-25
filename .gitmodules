@@ -6,6 +6,3 @@
 	path = src/vendor/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
 	branch = humble-devel
-[submodule "src/vendor/ros2graph_explorer"]
-	path = src/vendor/ros2graph_explorer
-	url = https://github.com/nilseuropa/ros2graph_explorer.git
