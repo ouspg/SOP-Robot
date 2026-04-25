@@ -1,11 +1,11 @@
-[submodule "src/dynamixel-workbench"]
-	path = src/dynamixel-workbench
+[submodule "src/vendor/dynamixel-workbench"]
+	path = src/vendor/dynamixel-workbench
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench.git
 	branch = humble-devel
-[submodule "src/dynamixel-workbench-msgs"]
-	path = src/dynamixel-workbench-msgs
+[submodule "src/vendor/dynamixel-workbench-msgs"]
+	path = src/vendor/dynamixel-workbench-msgs
 	url = https://github.com/ROBOTIS-GIT/dynamixel-workbench-msgs.git
 	branch = humble-devel
-[submodule "src/voice_chatbot_ros"]
-	path = src/voice_chatbot_ros
-	url = https://github.com/Aapo2001/voice-chatbot-ros.git
+[submodule "src/vendor/ros2graph_explorer"]
+	path = src/vendor/ros2graph_explorer
+	url = https://github.com/nilseuropa/ros2graph_explorer.git
