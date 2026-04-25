@@ -94,6 +94,41 @@ in-place for reference and are excluded from the active workspace graph. The
 former `voice_chatbot_ros` submodule has been migrated into the split in-tree
 voice packages and removed.
 
+## Servo Table
+
+**Note: Servos can be configured using [Dynamixel Wizard 2.0](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/)**
+
+Baud rate: 57600, Voltage: 7.5
+
+**Note: You can use Dynamixel Wizard 2.0 to check that servos have enough voltage to operate normally.**
+
+| Servo ID | Model | Joint name                  | Description           |
+| -------- | ----- | --------------------------- | --------------------- |
+| 1        | XL430 | head_tilt_right_joint       | Head tilt right-side  |
+| 2        | XL430 | head_tilt_vertical_joint    | Head tilt up/down     |
+| 3        | XL430 | head_tilt_left_joint        | Head tilt left-side   |
+| 4        | XL430 | head_pan_joint              | Head turn left/right  |
+| 9        | XL320 | eyes_shift_horizontal_joint | Eyes shift left/right |
+| 11       | XL320 | eyes_shift_vertical_joint   | Eyes shift up/down    |
+| 12       | XL320 | head_jaw_joint              | Open/close jaw        |
+| 31       | XL320 | r_thumb_joint               | Open/close thumb      |
+| 34       | XL320 | r_index1_joint              | Open/close index      |
+| 37       | XL320 | r_middle1_joint             | Open/close middle     |
+| 40       | XL320 | r_ring_joint                | Open/close ring       |
+| 44       | XL320 | r_pinky_joint               | Open/close pinky      |
+| 47       | XL320 | unnamed joint               | Rotate wrist          |
+
+## Cautions
+**Note: head tilt range of motion is poor**
+
+**Note: wrist joint seems to overload very easily**
+
+- Reason for this detected during inspection of the mechanical assembly. The hand is installed wrong way to the wrist.
+
+**Note: servo angle limits are not configured**
+
+**Note: Be careful not to move joints too much, limits are not set yet**
+
 ## Documentation
 
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): Ubuntu 22.04 setup, Pixi/rosdep ownership, and developer workflow

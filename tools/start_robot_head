@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DROIDCAM_URL="${DROIDCAM_URL:-http://192.168.101.101:4747/video}"
 
-cd "$PROJECT_ROOT"
+cd "$ROOT_DIR"
 
-exec bash tools/with_ros_env.sh ros2 launch robot robot.launch.py \
+exec bash with_ros_env.sh ros2 launch robot robot.launch.py \
   camera_source:="$DROIDCAM_URL"
