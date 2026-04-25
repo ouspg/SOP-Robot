@@ -74,6 +74,6 @@
     - name: Download and unzip tts model
       ansible.builtin.unarchive:
         src: https://github.com/ouspg/SOP-Robot/releases/download/model/model.zip
-        dest: /home/{{ ansible_env.USER }}/SOP-Robot/src/tts_package/resource
+        dest: /home/{{ ansible_env.USER }}/SOP-Robot/src/sop_robot_voice/tts_package/resource
         remote_src: true
-        creates: /home/{{ ansible_env.USER }}/SOP-Robot/src/tts_package/resource/config.json
+        creates: /home/{{ ansible_env.USER }}/SOP-Robot/src/sop_robot_voice/tts_package/resource/config.json
