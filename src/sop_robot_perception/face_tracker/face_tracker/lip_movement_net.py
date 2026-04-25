@@ -500,7 +500,7 @@ def test_video(video_path, shape_predictor_file, model):
             continue
 
         # draw a box showing the detected face
-        for i, d in enumerate(dets):
+        for d in dets:
             # print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
             # 	i, d.left(), d.top(), d.right(), d.bottom()))
 
@@ -556,7 +556,7 @@ def test_video(video_path, shape_predictor_file, model):
                     break
 
             # redraw the label
-            for i, d in enumerate(dets):
+            for d in dets:
                 # draw the state label below the face
                 cv2.rectangle(img, (d.left(), d.bottom()), (d.right(), d.bottom() + 10), (0, 0, 255), cv2.FILLED)
                 cv2.putText(img, state, (d.left() + 2, d.bottom() + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
@@ -579,7 +579,7 @@ def get_facial_landmark_vectors_from_frame(frame):
         return (None, None)
     # assume only 1 face per frame
     facial_points = []
-    for k, d in enumerate(dets):
+    for d in dets:
         shape = shape_predictor(frame, d)
         if shape is None:
             continue
@@ -660,7 +660,7 @@ def train_in_grid_search_mode(path_to_grid_options_csv, path_to_grid_results_csv
     NUM_GRID_COMBINATIONS = 0
     fp_obj1 = open(path_to_grid_options_csv, 'r')
     reader = csv.reader(fp_obj1)
-    for grid_options in reader:
+    for _ in reader:
         NUM_GRID_COMBINATIONS += 1
     fp_obj1.close()
 
@@ -723,14 +723,14 @@ class LipMovementDetector(object):
         Also initializes output sequence to match the number of faces.
         """
         self.input_sequence = []
-        for face in range(num_of_faces):
+        for _ in range(num_of_faces):
             self.input_sequence.append(Queue(FRAME_SEQ_LEN))
         self.initialize_output_sequence(num_of_faces)
 
     def initialize_output_sequence(self, num_of_faces):
         self.output_sequence = []
         output_seq_len = 10
-        for face in range(num_of_faces):
+        for _ in range(num_of_faces):
             self.output_sequence.append(Queue(output_seq_len))
 
     def test_video_frame(self, frame, bounding_box, face_idx):
@@ -843,3 +843,4 @@ if __name__ == '__main__':
     if args['shape_predictor'] and args['video_file'] and args['model']:
         test_video(args['video_file'], args['shape_predictor'], args['model'])
         exit(0)
+# pyright: reportAttributeAccessIssue=false, reportPossiblyUnboundVariable=false, reportArgumentType=false, reportCallIssue=false, reportOptionalMemberAccess=false, reportFunctionMemberAccess=false, reportOptionalCall=false, reportIndexIssue=false

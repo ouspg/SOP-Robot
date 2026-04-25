@@ -7,6 +7,14 @@
   <maintainer email="sop-robot@example.org">SOP Robot Team</maintainer>
   <license>Apache-2.0</license>
 
+  <depend>builtin_interfaces</depend>
+  <depend>control_msgs</depend>
+  <depend>face_tracker_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>sop_robot_common</depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>

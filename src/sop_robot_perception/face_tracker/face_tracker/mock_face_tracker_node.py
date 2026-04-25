@@ -1,22 +1,20 @@
 import rclpy
-from ament_index_python.packages import get_package_share_directory
-
 from rclpy.node import Node
 
-from std_msgs.msg import String
 from face_tracker_msgs.msg import Point2
 
 
-class FaceTracker(Node):
+class MockFaceTracker(Node):
     def __init__(self):
         super().__init__("mock_face_tracker")
 
-        self.face_location_publisher = self.create_publisher(Point2, 'face_tracker/face_location_topic', 10)
+        self.face_location_publisher = self.create_publisher(
+            Point2, "face_tracker/face_location_topic", 10
+        )
 
         self.face_location = None  # Variable for face location
 
         self.get_logger().info("Mock face tracker initialized")
-
 
     def publish_face_location(self):
         # Check that there is a location to publish
@@ -27,13 +25,13 @@ class FaceTracker(Node):
             self.face_location = None
 
     def parse_coordinates(self, command):
-        if ',' in command:
-            x, y = command.split(',')
-        elif ' ' in command:
-            x, y = command.split(' ')
+        if "," in command:
+            x, y = command.split(",")
+        elif " " in command:
+            x, y = command.split(" ")
         else:
             return None
-        return [int(x), int(y)]      
+        return [int(x), int(y)]
 
     def send_coordinates(self, command):
         coordinates = self.parse_coordinates(command)
@@ -48,8 +46,8 @@ class FaceTracker(Node):
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    tracker = FaceTracker()
-    
+    tracker = MockFaceTracker()
+
     command = None
     print("Input coordinates")
     while command != "exit":
@@ -61,7 +59,7 @@ def main(args=None):
         except (ValueError, TypeError):
             print(
                 'Usage: Input the x- and y-coordinates on a single line separated by a comma or a space. The coordinates must be integers. Input the command "exit" to exit the program'
-                )
+            )
 
     # Shutdown
     tracker.destroy_node()

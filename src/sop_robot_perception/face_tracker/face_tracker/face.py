@@ -1,9 +1,22 @@
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
+
 import dlib
 import math
 from typing import List
 
 class Face():
-    def __init__(self, left, right, top, bottom, image, representation, cluster_dict):
+    def __init__(
+        self,
+        left,
+        right,
+        top,
+        bottom,
+        image,
+        representation,
+        cluster_dict,
+        last_recognition_time=0.0,
+        speaking=None,
+    ):
         self.left = left
         self.right = right
         self.top = top
@@ -13,11 +26,12 @@ class Face():
 
         self.image = image
         self.representation: List[float] = representation
+        self.last_recognition_time = last_recognition_time
 
         self.rect = dlib.rectangle(left, top, right, bottom)
         self.correlation_tracker = None # dlib correlation tracker
 
-        self.speaking = None
+        self.speaking = speaking
 
         self.concurrent_validations = 0
 
@@ -36,6 +50,8 @@ class Face():
         """
         Update face location with dlib correlation tracker.
         """
+        if self.correlation_tracker is None:
+            return
         self.correlation_tracker.update(frame)
         pos = self.correlation_tracker.get_position()
         

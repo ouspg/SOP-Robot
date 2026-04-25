@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportCallIssue=false, reportArgumentType=false
+
 """
 Original implementation is from here. Modifications are made to adjust it for SOP-Robot.
 
@@ -13,15 +15,27 @@ import uuid
 from typing import List, Dict
 
 import numpy as np
-from scipy.spatial.distance import cosine
 
 CONVERSATION_TRESHOLD = 15  # Threshold value to determine that two conversations is same (s)
+DEFAULT_LOGGER = logging.getLogger(__name__)
+
+
+def _cosine_similarity(vector1: np.ndarray, vector2: np.ndarray) -> float:
+    denominator = float(np.linalg.norm(vector1) * np.linalg.norm(vector2))
+    if denominator == 0.0:
+        return -np.inf
+    return float(np.dot(vector1, vector2) / denominator)
 
 class Subcluster:
     """Class for subclusters and edges between subclusters."""
 
-    def __init__(self, initial_vector: np.ndarray, store_vectors: bool=False, logger=logging.getLogger()):
-        self.logger = logger
+    def __init__(
+        self,
+        initial_vector: np.ndarray,
+        store_vectors: bool = False,
+        logger: logging.Logger | None = None,
+    ):
+        self.logger = logger or DEFAULT_LOGGER
 
         self.vectors = [initial_vector]
         self.centroid = initial_vector
@@ -51,7 +65,10 @@ class Subcluster:
                             self.vector_count * self.centroid \
                             + vector / self.vector_count
 
-        # Update time, when seen
+        self.touch()
+
+    def touch(self) -> None:
+        """Update the last-seen/conversation state without adding a vector."""
         now = time.time()
         if now - self.last_seen <= CONVERSATION_TRESHOLD:
             # conversation is still going
@@ -70,14 +87,18 @@ class Subcluster:
 
 class Cluster:
     """Class for clusters"""
-    def __init__(self, subcluster: Subcluster, logger=logging.getLogger()):
-        self.subclusters = [subcluster]
-        self.logger = logger
+    def __init__(
+        self,
+        subcluster: Subcluster | None,
+        logger: logging.Logger | None = None,
+    ):
+        self.subclusters = [] if subcluster is None else [subcluster]
+        self.logger = logger or DEFAULT_LOGGER
 
         self.id = str(uuid.uuid4())
 
     @classmethod
-    def from_dict(cls, dict, logger=logging.getLogger()):
+    def from_dict(cls, dict, logger: logging.Logger | None = None):
         cluster = cls(subcluster=None, logger=logger)
         cluster.id = dict["id"]
         cluster.subclusters = [Subcluster.from_dict(subcluster_dict) for subcluster_dict in dict["subclusters"]]
@@ -135,7 +156,6 @@ class Cluster:
 
     # @staticmethod
     def __combine_conversation_lists(self, conversation_lists: list):
-        self.logger.info(f"{conversation_lists=}")
         conversations = []
         # current_conversations = []
         for conversation_list in conversation_lists:
@@ -161,7 +181,7 @@ class LinksCluster:
                  subcluster_similarity_threshold: float,
                  pair_similarity_maximum: float,
                  store_vectors=False,
-                 logger=logging.getLogger()
+                 logger: logging.Logger | None = None,
                  ):
         self.clusters: List[Cluster] = []
         self.cluster_similarity_threshold = cluster_similarity_threshold
@@ -169,7 +189,7 @@ class LinksCluster:
         self.pair_similarity_maximum = pair_similarity_maximum
         self.store_vectors = store_vectors
 
-        self.logger=logger
+        self.logger = logger or DEFAULT_LOGGER
 
     def predict(self, new_vector: np.ndarray) -> dict:
         """Predict a cluster id for new_vector."""
@@ -178,41 +198,140 @@ class LinksCluster:
             self.clusters.append(Cluster(Subcluster(new_vector, store_vectors=self.store_vectors)))
             return self.clusters[0].as_dict()
 
-        best_subcluster = None
-        best_similarity = -np.inf
-        best_subcluster_cluster_id = None
-        best_subcluster_id = None
-        for cl_idx, cl in enumerate(self.clusters):
-            for sc_idx, sc in enumerate(cl.subclusters):
-                cossim = 1.0 - cosine(new_vector, sc.centroid)
-                if cossim > best_similarity:
-                    best_subcluster = sc
-                    best_similarity = cossim
-                    best_subcluster_cluster_id = cl_idx
-                    best_subcluster_id = sc_idx
+        (
+            best_subcluster_cluster_id,
+            best_subcluster_id,
+            best_subcluster,
+            best_similarity,
+        ) = self._best_subcluster(new_vector)
+
+        if (
+            best_subcluster is None
+            or best_subcluster_cluster_id is None
+            or best_subcluster_id is None
+        ):
+            assigned_cluster = Cluster(Subcluster(new_vector, store_vectors=self.store_vectors))
+            self.clusters.append(assigned_cluster)
+            return assigned_cluster.as_dict()
+
         if best_similarity >= self.subcluster_similarity_threshold:  # eq. (20)
             # Add to existing subcluster
             best_subcluster.add(new_vector)
             assigned_cluster = self.clusters[best_subcluster_cluster_id]
             self.update_cluster(best_subcluster_cluster_id, best_subcluster_id)
             # assigned_cluster.update(best_subcluster_id)
-            self.logger.info("Vector added to excisting sub cluster")
+            self.logger.debug("Vector added to existing subcluster")
         else:
             # Create new subcluster
             new_subcluster = Subcluster(new_vector, store_vectors=self.store_vectors)
-            cossim = 1.0 - cosine(new_subcluster.centroid, best_subcluster.centroid)
+            cossim = _cosine_similarity(new_subcluster.centroid, best_subcluster.centroid)
             if cossim >= self.sim_threshold(best_subcluster.vector_count, 1):  # eq. (21)
                 # New subcluster is part of existing cluster
                 self.add_edge(best_subcluster, new_subcluster)
                 self.clusters[best_subcluster_cluster_id].add_subcluster(new_subcluster)
                 assigned_cluster = self.clusters[best_subcluster_cluster_id]
-                self.logger.info("New subcluster created as part of existing cluster")
+                self.logger.debug("New subcluster created as part of existing cluster")
             else:
                 # New subcluster is a new cluster
                 assigned_cluster = Cluster(new_subcluster)
                 self.clusters.append(assigned_cluster)
-                self.logger.info("New subcluster created as a new cluster")
+                self.logger.info("New face cluster created")
         return assigned_cluster.as_dict()
+
+    def touch_cluster(self, cluster_id: str) -> dict | None:
+        """Update conversation timing for an already tracked cluster."""
+        cluster_index = self._find_cluster_index(cluster_id)
+        if cluster_index is None:
+            return None
+
+        cluster = self.clusters[cluster_index]
+        if not cluster.subclusters:
+            return cluster.as_dict()
+
+        most_recent = max(cluster.subclusters, key=lambda sc: sc.last_seen)
+        most_recent.touch()
+        return cluster.as_dict()
+
+    def update_known_cluster(
+        self,
+        cluster_id: str,
+        new_vector: np.ndarray,
+        min_similarity: float | None = None,
+    ) -> tuple[dict, bool]:
+        """Add a vector to a known identity only when it still matches that identity.
+
+        This prevents transient bad crops from creating new clusters for a face that is
+        already being tracked by location.
+        """
+        cluster_index = self._find_cluster_index(cluster_id)
+        if cluster_index is None:
+            return self.predict(new_vector), True
+
+        (
+            subcluster_index,
+            subcluster,
+            similarity,
+        ) = self._best_subcluster_in_cluster(cluster_index, new_vector)
+
+        threshold = self.subcluster_similarity_threshold
+        if min_similarity is not None:
+            threshold = min_similarity
+
+        if subcluster is None or subcluster_index is None or similarity < threshold:
+            cluster_dict = self.touch_cluster(cluster_id)
+            return cluster_dict or self.clusters[cluster_index].as_dict(), False
+
+        subcluster.add(new_vector)
+        self.update_cluster(cluster_index, subcluster_index)
+        return self.clusters[cluster_index].as_dict(), True
+
+    def _find_cluster_index(self, cluster_id: str) -> int | None:
+        for cluster_index, cluster in enumerate(self.clusters):
+            if cluster.id == cluster_id:
+                return cluster_index
+        return None
+
+    def _best_subcluster(
+        self,
+        new_vector: np.ndarray,
+    ) -> tuple[int | None, int | None, Subcluster | None, float]:
+        best_subcluster = None
+        best_similarity = -np.inf
+        best_subcluster_cluster_id = None
+        best_subcluster_id = None
+
+        for cl_idx, _cl in enumerate(self.clusters):
+            sc_idx, sc, similarity = self._best_subcluster_in_cluster(cl_idx, new_vector)
+            if similarity > best_similarity:
+                best_subcluster = sc
+                best_similarity = similarity
+                best_subcluster_cluster_id = cl_idx
+                best_subcluster_id = sc_idx
+
+        return (
+            best_subcluster_cluster_id,
+            best_subcluster_id,
+            best_subcluster,
+            best_similarity,
+        )
+
+    def _best_subcluster_in_cluster(
+        self,
+        cluster_index: int,
+        new_vector: np.ndarray,
+    ) -> tuple[int | None, Subcluster | None, float]:
+        best_subcluster = None
+        best_similarity = -np.inf
+        best_subcluster_id = None
+
+        for sc_idx, sc in enumerate(self.clusters[cluster_index].subclusters):
+            cossim = _cosine_similarity(new_vector, sc.centroid)
+            if cossim > best_similarity:
+                best_subcluster = sc
+                best_similarity = cossim
+                best_subcluster_id = sc_idx
+
+        return best_subcluster_id, best_subcluster, best_similarity
 
     @staticmethod
     def add_edge(sc1: Subcluster, sc2: Subcluster):
@@ -234,7 +353,7 @@ class LinksCluster:
                 True if the edge is valid
                 False if the edge is not valid
         """
-        cossim = 1.0 - cosine(sc1.centroid, sc2.centroid)
+        cossim = _cosine_similarity(sc1.centroid, sc2.centroid)
         threshold = self.sim_threshold(sc1.vector_count, sc2.vector_count)
         if cossim < threshold:
             try:
@@ -251,8 +370,6 @@ class LinksCluster:
 
     def merge_subclusters(self, cl_idx, sc_idx1, sc_idx2):
         """Merge subclusters with id's sc_idx1 and sc_idx2 of cluster with id cl_idx."""
-        sc2 = self.clusters[cl_idx].subclusters[sc_idx2]
-
         self.clusters[cl_idx].merge_subclusters(sc_idx1, sc_idx2)
         self.update_cluster(cl_idx, sc_idx1)
         # self.clusters[cl_idx].subclusters = self.clusters[cl_idx].subclusters[:sc_idx2] \
@@ -289,7 +406,7 @@ class LinksCluster:
             if connected_sc_idx is None:
                 raise ValueError(f"Connected subcluster of {sc_idx} "
                                  f"was not found in cluster list of {cl_idx}.")
-            cossim = 1.0 - cosine(updated_sc.centroid, connected_sc.centroid)
+            cossim = _cosine_similarity(updated_sc.centroid, connected_sc.centroid)
             if cossim >= self.subcluster_similarity_threshold:
                 self.merge_subclusters(cl_idx, sc_idx, connected_sc_idx)
             else:
@@ -301,8 +418,7 @@ class LinksCluster:
             if len(severed_sc.connected_subclusters) == 0:
                 for cluster_sc in self.clusters[cl_idx].subclusters:
                     if cluster_sc != severed_sc:
-                        cossim = 1.0 - cosine(cluster_sc.centroid,
-                                              severed_sc.centroid)
+                        cossim = _cosine_similarity(cluster_sc.centroid, severed_sc.centroid)
                         if cossim >= self.sim_threshold(cluster_sc.vector_count,
                                                         severed_sc.vector_count):
                             self.add_edge(cluster_sc, severed_sc)

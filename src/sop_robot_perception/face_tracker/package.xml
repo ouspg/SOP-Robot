@@ -8,12 +8,15 @@
   <maintainer email="jari.jaaskela@oulu.fi">Jari Jääskelä</maintainer>
   <license>MIT</license>
 
-  <depend>python3-keras</depend>
-  <depend>python-argparse</depend>
-  <depend>python3-sklearn</depend>
-  <depend>python-numpy</depend>
-  <depend>python3-progressbar</depend>
-  <depend>python-dlib</depend>
+  <depend>ament_index_python</depend>
+  <depend>cv_bridge</depend>
+  <depend>face_tracker_msgs</depend>
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>sop_robot_common</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

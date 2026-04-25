@@ -74,11 +74,11 @@ class TestLinksCluster:
         """Test clustering after adding within same subcluster."""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
+        _first_prediction = self.cluster.predict(vector)
         vector2 = self.rotate_vec(
             vector,
             0.1 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
         assert len(self.cluster.clusters[0].subclusters) == 1  # Should be one subcluster
@@ -87,11 +87,11 @@ class TestLinksCluster:
         """Test clustering after adding to new subcluster."""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
+        _first_prediction = self.cluster.predict(vector)
         vector2 = self.rotate_vec(
             vector,
             1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
         assert len(self.cluster.clusters[0].subclusters) == 2  # New subcluster created.
@@ -104,7 +104,7 @@ class TestLinksCluster:
         vector2 = self.rotate_vec(
             vector,
             2 * np.arccos(self.cluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         assert first_prediction == None
         # assert second_prediction == 1
         assert len(self.cluster.clusters) == 2
@@ -147,11 +147,11 @@ class TestLinksCluster:
         """Test that merging subclusters works as expected."""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
+        _first_prediction = self.cluster.predict(vector)
         vector2 = self.rotate_vec(
             vector,
             1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         # These asserts test that we have created 2 subclusters in the same cluster
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
@@ -205,11 +205,11 @@ class TestLinksCluster:
         """Test cluster calculate_time_info function"""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
+        _first_prediction = self.cluster.predict(vector)
         vector2 = self.rotate_vec(
             vector,
             1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
         assert len(self.cluster.clusters[0].subclusters) == 2  # New subcluster created.
@@ -261,11 +261,11 @@ class TestLinksCluster:
         """
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
+        _first_prediction = self.cluster.predict(vector)
         vector2 = self.rotate_vec(
             vector,
             1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         # These asserts test that we have created 2 subclusters in the same cluster
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
@@ -308,11 +308,11 @@ class TestLinksCluster:
         """
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
+        _first_prediction = self.cluster.predict(vector)
         vector2 = self.rotate_vec(
             vector,
             1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        _second_prediction = self.cluster.predict(vector2)
         # These asserts test that we have created 2 subclusters in the same cluster
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
@@ -470,3 +470,4 @@ class TestCluster:
         assert len(self.cluster.subclusters[0].vectors) == 2
         assert len(self.cluster.subclusters[0].connected_subclusters) == 1
         assert self.cluster.subclusters[0].connected_subclusters == {new_subcluster_1}
+# pyright: reportAttributeAccessIssue=false

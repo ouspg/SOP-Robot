@@ -12,6 +12,15 @@ from control_msgs.msg import JointTrajectoryControllerState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 from face_tracker_msgs.msg import Faces, Face
+from sop_robot_common.contracts import FACES_TOPIC, FOCUSED_FACE_TOPIC, HEAD_GESTURE_TOPIC
+from sop_robot_common.joint_calibration import (
+    EYES_SPEC,
+    HEAD_SPEC,
+    load_joint_calibration,
+    load_joint_specs,
+    parse_calibration_command,
+    parse_set_command,
+)
 from std_msgs.msg import String
 
 
@@ -31,6 +40,11 @@ class FaceTrackerMovementNode(Node):
             .get_parameter_value()
             ._bool_value
         )
+        self.calibration_mode = (
+            self.declare_parameter("calibration_mode", False)
+            .get_parameter_value()
+            .bool_value
+        )
         
         self.logger = self.get_logger()
         self.sequence_executor = ThreadPoolExecutor(max_workers=1)
@@ -43,13 +57,13 @@ class FaceTrackerMovementNode(Node):
         self.server_check_timer = self.create_timer(0.5, self.refresh_action_server_state)
 
         # ROS2 subscriptions
-        self.face_list_subscription = self.create_subscription(Faces, '/face_tracker/faces', self.face_list_callback, 2)
+        self.face_list_subscription = self.create_subscription(Faces, FACES_TOPIC, self.face_list_callback, 2)
         self.head_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/head_controller/controller_state', self.head_state_callback, 5)
         self.eyes_state_subscription = self.create_subscription(JointTrajectoryControllerState, '/eyes_controller/controller_state', self.eyes_state_callback, 5)
 
-        self.head_gesture_subscription = self.create_subscription(String, '/face_tracker_movement/head_gesture_topic', self.head_gesture_callback, 10)
+        self.head_gesture_subscription = self.create_subscription(String, HEAD_GESTURE_TOPIC, self.head_gesture_callback, 10)
 
-        self.focused_face_publisher = self.create_publisher(Face, '/face_tracker_movement/focused_face', 10)
+        self.focused_face_publisher = self.create_publisher(Face, FOCUSED_FACE_TOPIC, 10)
 
         # Set initial values
         if simulation:
@@ -70,8 +84,8 @@ class FaceTrackerMovementNode(Node):
             self.eye_horizontal_upper_limit = 0.6
 
             # starting states
-            self.start_head_state = [0, 0, 0, 1]                # Should not be modified in runtime.
-            self.eyes_center_position = [0, 0]                  # Should not be modified in runtime.
+            self.start_head_state = [0.0, 0.0, 0.0, 1.0]        # Should not be modified in runtime.
+            self.eyes_center_position = [0.0, 0.0]              # Should not be modified in runtime.
 
             # Set movement directions
             self.head_pan_multiplicator = -1
@@ -82,7 +96,7 @@ class FaceTrackerMovementNode(Node):
             self.simulation = True
 
         else:
-            self.logger.info(f"Running face_tracker_movement in hardware mode")
+            self.logger.info("Running face_tracker_movement in hardware mode")
 
             # Set initial values for actual robot
             # Movement limits
@@ -122,6 +136,35 @@ class FaceTrackerMovementNode(Node):
             .get_parameter_value()
             .integer_value
         )
+        calibration_path = (
+            self.declare_parameter("joint_calibration_path", "")
+            .get_parameter_value()
+            .string_value
+        )
+        use_max_limits = (
+            self.declare_parameter("joint_calibration_use_max_limits", False)
+            .get_parameter_value()
+            .bool_value
+        )
+        joint_specs = load_joint_specs(calibration_path, use_max_limits=use_max_limits)
+        self.head_spec = joint_specs[HEAD_SPEC.key]
+        self.eyes_spec = joint_specs[EYES_SPEC.key]
+        calibration = load_joint_calibration(calibration_path, joint_specs)
+        if calibration_path:
+            self.start_head_state = calibration[self.head_spec.key]
+            self.eyes_center_position = calibration[self.eyes_spec.key]
+        if use_max_limits or not simulation:
+            self.head_pan_lower_limit, self.head_pan_upper_limit = self.head_spec.limits[0]
+            self.head_vertical_lower_limit, self.head_vertical_upper_limit = (
+                self.head_spec.limits[3]
+            )
+            self.eye_horizontal_lower_limit, self.eye_horizontal_upper_limit = (
+                self.eyes_spec.limits[0]
+            )
+            self.eye_vertical_lower_limit, self.eye_vertical_upper_limit = (
+                self.eyes_spec.limits[1]
+            )
+
         self.angle_per_pixel = self.camera_diagonal_fov / math.sqrt(self.camera_resolution_x**2 + self.camera_resolution_y**2)
         self.logger.info(f"{self.angle_per_pixel=}")
 
@@ -227,7 +270,9 @@ class FaceTrackerMovementNode(Node):
         self.center_eyes()
         self.send_head_goal(self.head_state[0], self.head_state[3], self.head_state[1])
 
-        self.idle_timer = self.create_timer(5, self.idle_timer_callback)
+        self.idle_timer = None
+        if not self.calibration_mode:
+            self.idle_timer = self.create_timer(5, self.idle_timer_callback)
 
         self.logger.info('Face tracking movement client initialized.')
 
@@ -245,6 +290,8 @@ class FaceTrackerMovementNode(Node):
 
     # Main loop. Excecuted when face_tracker_node publishes faces.
     def face_list_callback(self, msg):
+        if self.calibration_mode:
+            return
         self.visible_face_amount = len(msg.faces)
 
         # TODO Propably not needed to update every time (as goal is 30fps). Consider moving this to own timer or something.
@@ -254,8 +301,9 @@ class FaceTrackerMovementNode(Node):
 
         if face:
             # Reset idle callback
-            self.idle_timer.timer_period_ns = 2000000000  # 2s
-            self.idle_timer.reset()
+            if self.idle_timer is not None:
+                self.idle_timer.timer_period_ns = 2000000000  # 2s
+                self.idle_timer.reset()
             self.idling = False
 
             # Check if doing the glance or not
@@ -294,6 +342,34 @@ class FaceTrackerMovementNode(Node):
     def head_gesture_callback(self, msg):
         gesture = msg.data
         self.logger.info(f"Head gesture: {gesture}")
+        head_positions = parse_set_command(self.head_spec, gesture)
+        if head_positions is not None:
+            self.send_head_positions_goal(head_positions)
+            return
+
+        eye_positions = parse_set_command(self.eyes_spec, gesture)
+        if eye_positions is not None:
+            self.send_eye_positions_goal(eye_positions)
+            return
+
+        head_centers = parse_calibration_command(self.head_spec, gesture)
+        if head_centers is not None:
+            self.start_head_state = head_centers
+            self.head_state = head_centers[:]
+            self.logger.info(f"Updated head center: {head_centers}")
+            return
+
+        eye_centers = parse_calibration_command(self.eyes_spec, gesture)
+        if eye_centers is not None:
+            self.eyes_center_position = eye_centers
+            self.eyes_servo_state = eye_centers[:]
+            self.eyes_state = [
+                self.eyes_servo_state[0] / self.camera_angle_eye_horizontal_coeff,
+                self.eyes_servo_state[1] / self.camera_angle_eye_vertical_coeff,
+            ]
+            self.logger.info(f"Updated eyes center: {eye_centers}")
+            return
+
         gesture = gesture.split(",")
         args = {}
         for i in range(1, len(gesture)):
@@ -316,6 +392,8 @@ class FaceTrackerMovementNode(Node):
 
     # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
+        if self.calibration_mode:
+            return
         if self.idling == False:
             self.logger.info("Start idling...")
         self.idling = True
@@ -372,8 +450,11 @@ class FaceTrackerMovementNode(Node):
             self.send_pan_and_vertical_tilt_goal(self.goal_pan, self.start_head_state[3], Duration(sec=0, nanosec = movement_time))
         # Reset idle timer to the length of movement + a random delay between 0.5s and 1.5s to make it feel more natural.
         # TODO fine-tune timer on real robot to see what fits.
-        self.idle_timer.timer_period_ns = int(movement_time + random.uniform(750000000, 1500000000))
-        self.idle_timer.reset()
+        if self.idle_timer is not None:
+            self.idle_timer.timer_period_ns = int(
+                movement_time + random.uniform(750000000, 1500000000)
+            )
+            self.idle_timer.reset()
 
     def select_face_to_track(self, faces):
         """
@@ -434,7 +515,11 @@ class FaceTrackerMovementNode(Node):
             selected_face = next((face for face in faces if face.face_id == self.preferred_face_id), None)
             # Track preferred face if 
             if selected_face:
-                if time.time() - self.preferred_face_tracking_start_time < self.preferred_face_tracking_timelimit:
+                if (
+                    self.preferred_face_tracking_start_time is not None
+                    and time.time() - self.preferred_face_tracking_start_time
+                    < self.preferred_face_tracking_timelimit
+                ):
                     # Select preferred face
                     pass
                 else:
@@ -687,6 +772,24 @@ class FaceTrackerMovementNode(Node):
         self.eye_action_client.send_goal_async(goal_msg)
         self.logger.info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
 
+    def send_eye_positions_goal(self, positions, duration=None):
+        if not self.eye_server_ready:
+            self.logger.warning("Eyes controller action server is not ready")
+            return
+        if duration is None:
+            duration = Duration(sec=1, nanosec=0)
+        goal_msg = FollowJointTrajectory.Goal()
+        trajectory_points = JointTrajectoryPoint(
+            positions=positions,
+            time_from_start=duration,
+        )
+        goal_msg.trajectory = JointTrajectory(
+            joint_names=list(self.eyes_spec.joint_names),
+            points=[trajectory_points],
+        )
+        self.eye_action_client.send_goal_async(goal_msg)
+        self.eyes_servo_state = list(positions)
+
     def send_horizontal_tilt_goal(self, horizontalTilt):
         if not self.head_server_ready:
             self.logger.warning("Head controller action server is not ready")
@@ -714,6 +817,24 @@ class FaceTrackerMovementNode(Node):
                                               points=[trajectory_points])
 
         self.head_action_client.send_goal_async(goal_msg)
+
+    def send_head_positions_goal(self, positions, duration=None):
+        if not self.head_server_ready:
+            self.logger.warning("Head controller action server is not ready")
+            return
+        if duration is None:
+            duration = Duration(sec=1, nanosec=0)
+        goal_msg = FollowJointTrajectory.Goal()
+        trajectory_points = JointTrajectoryPoint(
+            positions=positions,
+            time_from_start=duration,
+        )
+        goal_msg.trajectory = JointTrajectory(
+            joint_names=list(self.head_spec.joint_names),
+            points=[trajectory_points],
+        )
+        self.head_action_client.send_goal_async(goal_msg)
+        self.head_state = list(positions)
 
     # Horizontal tilt is done separately and slower because the joints easily get stuck when moving quickly.
     def send_head_goal(self, pan, verticalTilt, horizontalTilt):
@@ -766,7 +887,10 @@ class FaceTrackerMovementNode(Node):
     """
     Returns a random location coordinates which is far enough from the current state of the eyes to be called a glance. Uses servo values.
     """
-    def get_random_eye_location(self, distance_from_current_horizontal_position=0):
+    def get_random_eye_location(
+        self,
+        distance_from_current_horizontal_position: float = 0.0,
+    ):
         # Get random x location for eyes
         random_horizontal_list = list()
         if self.eye_horizontal_lower_limit < self.eyes_servo_state[0] - distance_from_current_horizontal_position:
