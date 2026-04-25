@@ -7,10 +7,9 @@
 .vscode/*
 !.vscode/c_cpp_properties.json
 
-src/tts_package/resource/*
-src/tts_package/resource/config.json
-src/tts_package/resource/model.pth
-src/tts_package/resource/output.wav
+src/sop_robot_voice/tts_package/resource/config.json
+src/sop_robot_voice/tts_package/resource/model.pth
+src/sop_robot_voice/tts_package/resource/output.wav
 
 build
 devel
@@ -26,11 +25,17 @@ install
 *.sqlite3
 *.prof
 .venv/*
-src/speech_recognizer/resource
-src/chatbot/chatbot/db.sqlite3
+.pixi/
+.cache/
+.pytest_cache/
+legacy/speech_recognizer/resource
+legacy/chatbot/chatbot/db.sqlite3
 src/db.sqlite3
 *.wav
 *.bin
 pixi.lock
 models/*
 .envrc
+benchmarks/
+test-results/
+reports/

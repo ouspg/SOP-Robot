@@ -1,0 +1,56 @@
+{
+  "include": [
+    "src/sop_robot_bringup",
+    "src/sop_robot_common",
+    "src/sop_robot_description",
+    "src/sop_robot_gui",
+    "src/sop_robot_motion",
+    "src/sop_robot_perception",
+    "src/sop_robot_voice",
+    "tools",
+    "testing"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/test/test_flake8.py",
+    ".pixi",
+    "build",
+    "install",
+    "log",
+    "legacy",
+    "src/vendor",
+    "benchmarks"
+  ],
+  "venvPath": ".pixi/envs",
+  "venv": "default",
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "standard",
+  "useLibraryCodeForTypes": true,
+  "reportMissingTypeStubs": false,
+  "reportUnknownMemberType": false,
+  "reportUnknownVariableType": false,
+  "reportUnknownArgumentType": false,
+  "reportUnknownParameterType": false,
+  "reportAny": false,
+  "reportUnannotatedClassAttribute": false,
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "src/sop_robot_common",
+        "src/sop_robot_voice/voice_stack_common",
+        "src/sop_robot_voice/asr_package",
+        "src/sop_robot_voice/llm_package",
+        "src/sop_robot_voice/tts_package",
+        "src/sop_robot_gui/chatbot_app",
+        "src/sop_robot_perception/face_tracker",
+        "src/sop_robot_perception/face_tracker_movement",
+        "src/sop_robot_bringup/full_demo",
+        "src/sop_robot_motion/hand_gestures",
+        "src/sop_robot_motion/jaw_movement",
+        "src/sop_robot_motion/shoulder_controller",
+        "install/face_tracker_msgs/lib/python3.11/site-packages"
+      ]
+    }
+  ]
+}

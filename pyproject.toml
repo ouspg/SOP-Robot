@@ -1,0 +1,20 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extend-exclude = [
+  ".pixi",
+  "build",
+  "install",
+  "log",
+  "legacy/chatbot",
+  "legacy/qabot",
+  "legacy/speech_recognizer",
+  "src/vendor",
+]
+
+[tool.ruff.lint]
+select = [
+  "E9",
+  "F",
+  "B",
+]
