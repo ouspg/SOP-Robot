@@ -1,0 +1,112 @@
+shoulder_center_degrees:
+- 30.0
+- 90.0
+- 10.0
+- 0.0
+- 34.0
+- 80.0
+- 10.0
+- 0.0
+shoulder_joints:
+  R_shoulder lift: 30.0
+  R_upper arm roll: 90.0
+  R_bicep: 10.0
+  R_shoulder out: 0.0
+  L_shoulder lift: 34.0
+  L_upper arm roll: 80.0
+  L_bicep: 10.0
+  L_shoulder out: 0.0
+head_center_positions:
+- 0.6
+- 0.5
+- -0.5
+- 1.2
+head_joints:
+  Head pan: 0.6
+  Head tilt right: 0.5
+  Head tilt left: -0.5
+  Head tilt vertical: 1.2
+eyes_center_positions:
+- -0.7
+- -0.75
+eyes_joints:
+  Eyes horizontal: -0.7
+  Eyes vertical: -0.75
+r_hand_center_positions:
+- -0.29670597283903605
+- -0.19198621771937624
+- -0.19198621771937624
+- 0.0
+- -0.29670597283903605
+r_hand_joints:
+  R thumb: -0.29670597283903605
+  R index: -0.19198621771937624
+  R middle: -0.19198621771937624
+  R ring: 0.0
+  R pinky: -0.29670597283903605
+l_hand_center_positions:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+l_hand_joints:
+  L thumb: 0.0
+  L index: 0.0
+  L middle: 0.0
+  L ring: 0.0
+  L pinky: 0.0
+r_hand_limits:
+- - -0.3
+  - 1.5
+- - -0.2
+  - 1.7
+- - -0.2
+  - 1.8
+- - 0.0
+  - 1.5
+- - -0.3
+  - 1.3
+r_hand_limit_degrees:
+  R thumb:
+  - -17.188733853924695
+  - 85.94366926962348
+  R index:
+  - -11.459155902616466
+  - 97.40282517223994
+  R middle:
+  - -11.459155902616466
+  - 103.13240312354819
+  R ring:
+  - 0.0
+  - 85.94366926962348
+  R pinky:
+  - -17.188733853924695
+  - 74.48451336700703
+l_hand_limits:
+- - 0.0
+  - 1.7976891295541595
+- - 0.0
+  - 2.1467549799530254
+- - 0.0
+  - 2.1467549799530254
+- - 0.0
+  - 2.129301687433082
+- - 0.0
+  - 2.181661564992912
+l_hand_limit_degrees:
+  L thumb:
+  - 0.0
+  - 103.0
+  L index:
+  - 0.0
+  - 123.00000000000001
+  L middle:
+  - 0.0
+  - 123.00000000000001
+  L ring:
+  - 0.0
+  - 122.0
+  L pinky:
+  - 0.0
+  - 125.00000000000001
