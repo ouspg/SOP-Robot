@@ -425,7 +425,7 @@ transformers==4.53.0
 triton==3.0.0
 tts-package==0.0.0
 turtlesim==1.4.2
-Twisted==24.7.0rc1
+Twisted==26.4.0rc2
 typeguard==4.3.0
 typing_extensions==4.12.2
 tzdata==2024.2
