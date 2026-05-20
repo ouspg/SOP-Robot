@@ -126,7 +126,7 @@ fsspec==2024.9.0
 full-demo==0.0.0
 future==1.0.0
 gast==0.6.0
-gdown==5.2.0
+gdown==5.2.2
 generate-parameter-library-py==0.3.8
 geometry-msgs==4.2.4
 google-pasta==0.2.0
