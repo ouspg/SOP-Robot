@@ -224,8 +224,12 @@ class FaceTrackerMovementNode(Node):
             else:
                 # Servo angle
                 self.eyes_servo_state[i] = val
-                # Camera angle
-                self.eyes_state = [val[0] / self.camera_angle_eye_horizontal_coeff, val[1] / self.camera_angle_eye_vertical_coeff]
+
+        # Camera angle
+        self.eyes_state = [
+            self.eyes_servo_state[0] / self.camera_angle_eye_horizontal_coeff,
+            self.eyes_servo_state[1] / self.camera_angle_eye_vertical_coeff,
+        ]
 
     def head_gesture_callback(self, msg):
         gesture = msg.data

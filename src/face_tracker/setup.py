@@ -16,7 +16,10 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob('launch/*')),
         (os.path.join('share', package_name, 'models'), glob('models/*'))
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'protobuf>=3.20.3,<5',
+    ],
     zip_safe=True,
     maintainer='vagrant',
     maintainer_email='vagrant@todo.todo',

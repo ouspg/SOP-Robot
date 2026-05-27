@@ -1,8 +1,22 @@
 # Running the robot
 
-Open the terminal in VM and build the robot code with `colcon build`. This will take a while especially on first run.
+Open a terminal in the repository and prepare the Pixi runtime once:
 
-Next you need to source the built environment with `source install/setup.bash`. In short, you need to run this every time you have fresh build for your robot. This is set up in ~/.bashrc, so you don't need to run it in every new terminal before launching the robot or other node.
+```console
+pixi run setup-runtime
+pixi run build
+```
+
+This will take a while on first run. Pixi launch tasks source the local ROS
+overlay for you.
+
+For manual ROS commands, either prefix the command with `pixi run` or enter an
+activated shell first:
+
+```console
+pixi shell
+source install/local_setup.sh
+```
 
 Now continue instructions in [Bring-up fake (simulated) robot][] or [Bring-up real HW robot][].
 
@@ -18,7 +32,7 @@ If you just want to test that robot starts, send hand written commands or use th
 You can launch the fake robot in rviz using the launch file. Run the following command in a GUI environment:
 
 ```console
-ros2 launch robot robot.fake.launch.py
+pixi run robot-fake
 ```
 
 This setups fake servo controllers and joint state publishers, and the following window should popup:
@@ -32,7 +46,7 @@ Term ["fake hardware"][] means that the hardware mirrors received commands to it
 If you want to use also the face tracker you need to start it:
 
 ```console
-ros2 launch face_tracker face_tracker.test.launch.py
+pixi run face-tracker
 ```
 
 If you want to see what the face detection does, run this:
@@ -46,7 +60,7 @@ This opens the view to see the camera feed and what face detection recognizes.
 To get the eyes moving. (Don't be scared about eyes flipping awkwardly to the side. More about this at the end...)
 
 ```console
-ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p functionality:=eyes -p simulation:=true 
+pixi run ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p functionality:=eyes -p simulation:=true
 ```
 
 Success! You are done. Eyes should "follow" your face. This implementation has a flaw that it is made for the real hardware, so the eye_movement node controls the eyes like it would have the real hardware. In other words, the eyes have different "zero" position in simulation compared to real hardware.
@@ -62,13 +76,13 @@ Text-to-speech works as a service which can be called from terminal utilizing th
 Run the service in a (new) terminal
 
 ```console
-ros2 run tts_package service
+pixi run tts
 ```
 
 Call the service from terminal using client and synthetize speech
 
 ```console
-ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
+pixi run ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
 ```
 
 ## Bring-up real HW robot
@@ -81,7 +95,7 @@ We suggest using [Dynamixel Wizard 2.0][] to test the connection and functionali
 
 You can use the start_robot_head script file to quickly bring up the whole robot head. The script by default launches the face tracker and the ros2 nodes for the jaw, eye and head movement.
 
-To execute the script (in a terminal opened in /workspace):
+To execute the script from the repository root:
 
 ```console
 ./start_robot_head
@@ -94,7 +108,7 @@ This opens multiple terminal tabs in quick succession without checking if the pr
 You can launch the real robot using a launch file:
 
 ```console
-ros2 launch robot robot.launch.py
+pixi run robot
 ```
 
 This should launch the robot listening server and prints a lot of output. If not, check the [Troubleshooting][] part below. `robot.launch.py` file creates temporary file from [dynamixel_arm.yaml][] and [dynamixel_head.yaml][] to `config/` folder to allow launching the arm and head separately.
@@ -104,13 +118,13 @@ This should launch the robot listening server and prints a lot of output. If not
 To launch only the **arm** hardware
 
 ```console
-ros2 launch robot robot.launch.py robot_parts:=arm
+pixi run ros2 launch robot robot.launch.py robot_parts:=arm
 ```
 
 To launch only the **head** hardware
 
 ```console
-ros2 launch robot robot.launch.py robot_parts:=head
+pixi run robot-head
 ```
 
 ### 1.5 Starting the controllers (Not necessary)
@@ -118,7 +132,7 @@ ros2 launch robot robot.launch.py robot_parts:=head
 In general you can start the controllers with:
 
 ```console
-ros2 control load_controller --set-state start <controller_name>
+pixi run ros2 control load_controller --set-state start <controller_name>
 ```
 
 By default all controllers are started automatically by robot.launch.py. Remember to add new controllers you want to launch there. To add a controller you only need to add the controller name into the controllers_to_start-array in robot.launch.py (and rebuild).
@@ -130,7 +144,7 @@ After the required controllers are active, you can start the face tracker and ey
 Start the face tracker
 
 ```console
-ros2 launch face_tracker face_tracker.test.launch.py
+pixi run face-tracker
 ```
 
 If you want to see what the face detection does, run this:
@@ -144,7 +158,7 @@ This opens the view to see the camera feed and what face detection recognizes.
 Finally, start the face tracking movement node in a new terminal window
 
 ```console
-ros2 run face_tracker_movement face_tracker_movement_node
+pixi run face-tracker-movement
 ```
 
 ### 5. Launching text-to-speech service
@@ -154,13 +168,13 @@ Text-to-speech works as a service which can be called from terminal utilizing th
 Run the service in a (new) terminal
 
 ```console
-ros2 run tts_package service
+pixi run tts
 ```
 
 Call the service from terminal using client and synthetize speech
 
 ```console
-ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
+pixi run ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
 ```
 
 **Todo: simplify bring up process (add the starting of the controllers to the launch file)**
@@ -170,10 +184,10 @@ ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
 The robot head joints doesn't have similar easy to use action client as the arm has. If you want to send action goals to the head you need to start the `head_controller` Then following actions and topics should be available:
 
 ```console
-vagrant@vagrant-ros:/workspace$ ros2 action list
+$ ros2 action list
 /head_controller/follow_joint_trajectory
 
-vagrant@vagrant-ros:/workspace$ ros2 topic list
+$ ros2 topic list
 /head_controller/joint_trajectory
 /joint_states
 ```
@@ -240,7 +254,7 @@ lsusb -t
 It should output something like this.
 
 ```console
-vagrant@vagrant-ros:/workspace$ lsusb -t
+$ lsusb -t
 /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/6p, 5000M
 /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/8p, 480M
     |__ Port 1: Dev 3, If 0, Class=Video, Driver=uvcvideo, 12M
@@ -259,31 +273,34 @@ All ID's that you have in the dynamixel_*.yaml files need to be connected for th
 
 The servo is likely overloaded. You have to manually reset the servo for it to work again. You can do this by using Dynamixel Wizard to reboot the servo, or alternatively you can turn the power off and on again. You will have to redo the whole bringup in any case.
 
-### `colcon build` fails
+### `pixi run build` fails
 
 There are various failures that we have seen so far, but here are some of the most common ones
 
 #### 1. CMake clock skew error
 
-CMake compiles the c++ packages and it does not like if the timestamps of temporary files are in in the future. This is most likely due to file synchronization between the host and guest OSes. It least we have seen this happening on Windows and Mac hosts. If you use Virtualbox with Vagrant it uses the Shared Folders interface to synchronize the /workspace folder.
+CMake compiles the C++ packages and it does not like if temporary file timestamps are in the future. This is most likely due to file synchronization between the host and guest OSes. We have seen this on Windows and Mac hosts with shared VM folders.
 
-You just need to try the `colcon build` build again. We have tried to make sure that the clocks on host and guest OS are synchronized without bulletproof results. Sometimes it helps you wait a while to compensate the time difference and run again `colcon build`.
+Try `pixi run build` again. Sometimes it helps to wait a while for the time difference to settle.
 
 Our suggestion is to test how environment works when folders are not synced from host OS. In other words move the whole development environment to guest OSes virtual disk. 
 
 #### 2. Building just stops to random error
 
-Please, run the `colcon build` again couple times, it might help. If you want to do some cleaning following commands have been sometimes helpful.
+Run `pixi run build` again. If you want to clean first:
 
 ```console
-colcon build --cmake-clean-cache
+pixi run clean
+pixi run build --cmake-clean-cache
 ```
 
-After you have run that try again `colcon build`.
+After that, try `pixi run build` again.
 
 #### 3. Build fails to dependency issue
 
-If you face package dependency failures during `colcon build` please run `rosdep install --from-paths src --ignore-src --rosdistro foxy -r -y`. It might request you to run `rosdep update` first. Run it first and then run the `rosdep install ...`. Then try to run `colcon build` again and it should be able to figure out those dependencies now.
+Pixi owns the ROS and Python dependency set for this repository. Add missing
+packages to `pixi.toml`, then run `pixi run build` again. Do not use `rosdep`
+inside the Pixi environment.
 
 
 <!-- References -->

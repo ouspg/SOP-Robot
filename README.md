@@ -6,6 +6,35 @@ The robot uses ROS2 (Robot Operating System 2). Read the [ROS2 wiki!](https://do
 Read also [controller](https://control.ros.org/master/index.html) documentation to understand why certain controllers are needed and how they control the motion.
 [Here](https://github.com/ros-controls/ros2_control_demos) are ros2 control demo repositories and more documentation about controllers.
 
+## Quick start
+
+SOP-Robot uses [Pixi](https://pixi.prefix.dev/latest/) to install ROS 2 Humble,
+Python packages, and build tools into a local `.pixi/` environment.
+
+```console
+sudo apt update
+sudo apt install -y git curl espeak
+curl -fsSL https://pixi.sh/install.sh | bash
+git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
+cd SOP-Robot
+pixi run setup-runtime
+pixi run build
+pixi run robot-fake
+```
+
+For real Dynamixel hardware, install the U2D2 udev rule once:
+
+```console
+pixi run setup-udev
+```
+
+The launch tasks source `install/local_setup.sh` for you. If you enter
+`pixi shell` for manual ROS commands, source the overlay first:
+
+```console
+source install/local_setup.sh
+```
+
 ## The Robot
 
 The robot uses dynamixel servos. Servos are controlled via the `robot_hardware` ROS node, which implements the hardware interface for [ros2_control](https://github.com/ros-controls/ros2_control). `robot` package contains the servo controller configurations for the robot. See [robot.yaml](src/robot/controllers/robot.yaml), for example. The head supports `joint_trajectory_controller`. When using this controller, joints can be controlled by sending action messages to the trajectory controller. See [bring up](./docs/BRINGUP.md) for an example of action message.

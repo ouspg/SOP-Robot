@@ -1,0 +1,131 @@
+[workspace]
+name = "sop-robot"
+version = "0.1.0"
+description = "ROS 2 Humble workspace for the SOP Dynamixel robot"
+requires-pixi = ">=0.67.0"
+channels = ["https://prefix.dev/robostack-humble", "https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
+
+[activation.env]
+PYTHONIOENCODING = "utf-8"
+PYTHONNOUSERSITE = "1"
+SOP_ROBOT_ROOT = "${SOP_ROBOT_ROOT:-$PIXI_PROJECT_ROOT}"
+ROS_DISTRO = "humble"
+ROS_PYTHON_VERSION = "3"
+ROS_VERSION = "2"
+
+[target.unix.activation.env]
+AMENT_PREFIX_PATH = "$CONDA_PREFIX"
+CMAKE_PREFIX_PATH = "$CONDA_PREFIX:$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"
+COLCON_PREFIX_PATH = ""
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$CONDA_PREFIX/opt/rviz_ogre_vendor/lib"
+PYTHONPATH = "$CONDA_PREFIX/lib/python3.12/site-packages:$CONDA_PREFIX/lib/python312/site-packages"
+ROS_PACKAGE_PATH = ""
+
+[dependencies]
+# Python and build tooling
+python = ">=3.12,<3.13"
+pip = "*"
+setuptools = ">=69.5,<80"
+wheel = "*"
+cmake = ">=3.22,<4"
+compilers = "*"
+make = "*"
+ninja = "*"
+pkg-config = "*"
+git = "*"
+curl = "*"
+unzip = "*"
+colcon-common-extensions = "*"
+
+# ROS 2 Humble and packages that used to come from apt/rosdep.
+ros-humble-desktop = "*"
+ros-humble-ament-cmake-gtest = "*"
+ros-humble-ament-lint-auto = "*"
+ros-humble-ament-lint-common = "*"
+ros-humble-camera-calibration-parsers = "*"
+ros-humble-control-msgs = "*"
+ros-humble-cv-bridge = "*"
+ros-humble-dynamixel-sdk = "*"
+ros-humble-hardware-interface = "*"
+ros-humble-image-view = "*"
+ros-humble-joint-trajectory-controller = "*"
+ros-humble-pluginlib = "*"
+ros-humble-ros2-control = "*"
+ros-humble-ros2-controllers = "*"
+ros-humble-rosidl-default-generators = "*"
+ros-humble-test-msgs = "*"
+ros-humble-xacro = "*"
+
+# Native and Python runtime packages.
+alsa-lib = "*"
+alsa-plugins = "*"
+dlib = ">=19.24,<21"
+numpy = ">=1.26,<2"
+opencv = ">=4.10,<5"
+portaudio = "*"
+pyaudio = "*"
+pyserial = "*"
+scikit-learn = "*"
+scipy = "*"
+simpleaudio = ">=1.0.4,<2"
+speechrecognition = "==3.10.4"
+yaml-cpp = "*"
+
+[pypi-options]
+index-strategy = "unsafe-best-match"
+
+[pypi-dependencies]
+"boilerpy3" = "==1.0.7"
+"coqui-tts" = ">=0.27.5,<0.28"
+"deepface" = "==0.0.92"
+"Events" = "==0.5"
+"httpx" = "*"
+"jsonschema" = "==3.2.0"
+"lazy-imports" = "==0.3.1"
+"more-itertools" = "*"
+"networkx" = "*"
+"pandas" = "*"
+"pillow" = "*"
+"platformdirs" = "*"
+"posthog" = ">=3,<4"
+"progressbar" = "==2.5"
+"prompthub-py" = "==4.0.0"
+"pydantic" = "==1.10.18"
+"quantulum3" = "==0.9.2"
+"rank-bm25" = "==0.2.2"
+"requests-cache" = "==0.9.8"
+"sentence-transformers" = "==3.0.0"
+"sentencepiece" = "==0.2.1"
+"spacy" = { version = "==3.7.5", extras = ["ja"] }
+"sseclient-py" = "==1.8.0"
+"tenacity" = ">=8,<10"
+"tensorflow" = ">=2.19,<2.20"
+"tiktoken" = "*"
+"tf-keras" = ">=2.19,<2.20"
+"torch" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
+"torchaudio" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
+"torchcodec" = ">=0.12,<0.14"
+"transformers" = ">=4.57,<5"
+
+[tasks]
+sync-submodules = { cmd = "git submodule update --init --recursive src/dynamixel-workbench src/dynamixel-workbench-msgs", description = "Fetch source dependencies checked into .gitmodules" }
+build = { cmd = "colcon build --symlink-install", depends-on = ["sync-submodules"], inputs = ["src"], outputs = ["install/setup.sh"], description = "Build the ROS 2 workspace" }
+test = { cmd = "colcon test --event-handlers console_direct+ && colcon test-result --verbose", description = "Run ROS 2 package tests" }
+clean = { cmd = "rm -rf build install log", description = "Remove colcon build outputs" }
+
+robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
+robot-head = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=head'", description = "Launch the real robot head only" }
+robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
+robot-demo = { cmd = "bash launch_demo.sh", description = "Launch the full robot demo in separate terminal windows" }
+face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.test.launch.py'", description = "Launch the face tracker" }
+face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
+tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package service'", description = "Launch the text-to-speech service" }
+speech-recognizer = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run speech_recognizer speech_recognizer_node'", description = "Launch the speech recognizer node" }
+qabot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run qabot client'", description = "Launch the Q&A bot client" }
+
+setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
+download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
+
+install-haystack = { cmd = "python -c \"import importlib.util, subprocess, sys; sys.exit(0 if importlib.util.find_spec('haystack') else subprocess.call([sys.executable, '-m', 'pip', 'install', '--no-deps', 'farm-haystack==1.26.3']))\"", description = "Install farm-haystack without its incompatible transitive pins" }
+setup-runtime = { depends-on = ["sync-submodules", "download-tts-model", "install-haystack"], description = "Fetch runtime assets and no-deps Python package installs" }

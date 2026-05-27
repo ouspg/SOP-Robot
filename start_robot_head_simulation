@@ -1,9 +1,21 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
+set -e
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_Q="$(printf "%q" "$ROOT")"
+
+run_tab() {
+  local command_q
+  command_q="$(printf "%q" "source install/local_setup.sh && $*")"
+  gnome-terminal --tab -- bash -lc "cd $ROOT_Q && pixi run bash -lc $command_q; exec bash"
+}
+
 # Start main robot script
-gnome-terminal --tab -- bash -c "ros2 launch robot robot.fake.launch.py; exec bash"
+run_tab ros2 launch robot robot.fake.launch.py
 # Give the robot time to load up the controllers and such before continuing
 sleep 5
 # Launch face tracker and tracking preview window
-gnome-terminal --tab -- bash -c "ros2 run rqt_image_view rqt_image_view /face_tracker/image_face & ros2 launch face_tracker face_tracker.test.launch.py; exec bash"
+run_tab ros2 launch face_tracker face_tracker.test.launch.py
+run_tab ros2 run rqt_image_view rqt_image_view /face_tracker/image_face
 # Launch other ros2 nodes
-gnome-terminal --tab -- bash -c "ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p simulation:=true ; exec bash"
+run_tab ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p simulation:=true
