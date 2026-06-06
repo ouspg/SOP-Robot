@@ -48,16 +48,12 @@ class FACSNode(Node):
         self.declare_parameter("command_topic", "/i2head/joint_commands")
         self.declare_parameter("publish_rate", 10.0)
         self.declare_parameter("neutral_after_sec", 3.0)
-        self.declare_parameter("idle_expression_chance", 0.0)
-        self.declare_parameter("idle_interval_sec", 8.0)
 
         config_path = self.get_parameter("facs_config").value
         au_topic = self.get_parameter("au_topic").value
         expr_topic = self.get_parameter("expression_topic").value
         cmd_topic = self.get_parameter("command_topic").value
         self.neutral_after_sec = self.get_parameter("neutral_after_sec").value
-        self.idle_chance = self.get_parameter("idle_expression_chance").value
-        self.idle_interval = self.get_parameter("idle_interval_sec").value
 
         # AU definitions: au_id → {servo_name: {neutral, activated}}
         self.au_defs: Dict[int, dict] = {}
@@ -79,9 +75,6 @@ class FACSNode(Node):
         self.cmd_pub = self.create_publisher(JointTrajectory, cmd_topic, 10)
         self.create_subscription(FacsAU, au_topic, self.au_callback, 10)
         self.create_subscription(String, expr_topic, self.expression_callback, 10)
-
-        if self.idle_chance > 0:
-            self.create_timer(self.idle_interval, self._idle_timer_callback)
 
         expr_list = ", ".join(sorted(self.expr_defs.keys()))
         self.get_logger().info(
@@ -147,13 +140,9 @@ class FACSNode(Node):
         self.get_logger().info(
             f"AU {msg.au_id}: intensity={msg.intensity:.2f}, priority={msg.priority}"
         )
-
-        if msg.intensity <= 0.0:
-            self.active_aus.pop(msg.au_id, None)
-        else:
-            self.active_aus[msg.au_id] = ActiveAU(
-                msg.au_id, min(1.0, msg.intensity), msg.priority, msg.duration_ns
-            )
+        
+        self.active_aus[msg.au_id] = ActiveAU(
+            msg.au_id, min(1.0, msg.intensity), msg.priority, msg.duration_ns)
 
         self._blend_and_publish()
 
@@ -184,7 +173,7 @@ class FACSNode(Node):
         self.active_aus.clear()
         duration_ns = int(duration_sec * 1e9)
         for au_id, intensity in au_map.items():
-            if au_id in self.au_defs and intensity > 0:
+            if au_id in self.au_defs:
                 self.active_aus[au_id] = ActiveAU(au_id, intensity, 2, duration_ns)
         self._blend_and_publish()
 
@@ -237,20 +226,14 @@ class FACSNode(Node):
         for au in priority_groups[top_priority]:
             cfg = self.au_defs.get(au.au_id)
             if not cfg:
+                self.get_logger().info(f"AU config not found for: {au.au_id}")
                 continue
             for srv, scfg in cfg.get("servos", {}).items():
-                neutral = scfg.get("neutral", 90.0)
-                activated = scfg.get("activated", neutral)
+                neutral = float(scfg.get("neutral", 90.0))
+                activated = float(scfg.get("activated", neutral))
                 if srv not in blended:
                     blended[srv] = neutral
                 blended[srv] += (activated - neutral) * au.intensity
-
-        # Dampen transitions to avoid abrupt servo snaps
-        for name in list(blended.keys()):
-            current = self.current_angles.get(name, blended[name])
-            diff = blended[name] - current
-            blended[name] = current + diff * 0.5
-            self.current_angles[name] = blended[name]
 
         if not blended:
             return
@@ -279,26 +262,12 @@ class FACSNode(Node):
         if self._neutral_timer:
             self._neutral_timer.cancel()
             self._neutral_timer = None
-        self.active_aus.clear()
+
+        for au in self.active_aus.values():
+            au.intensity = 0
         self._blend_and_publish()
-
-    def _idle_timer_callback(self):
-        """Periodically trigger a random expression when no AU is active."""
-        if self.active_aus:
-            return
-        if random.random() >= self.idle_chance:
-            return
-
-        candidates = [n for n in self.expr_defs if n not in ("neutral", "blink")]
-        if not candidates:
-            return
-
-        chosen = random.choice(candidates)
-        self.get_logger().info(f"Idle expression: {chosen}")
-        msg = String()
-        msg.data = chosen
-        self.expression_callback(msg)
-
+        self.active_aus.clear()
+        
 
 def main(args=None):
     run_node(FACSNode)

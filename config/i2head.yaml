@@ -169,7 +169,7 @@ servos:
     model: "PDI-1109MG"
     pulse_min: 600
     pulse_max: 2400
-    angle_min: 80
+    angle_min: 60
     angle_max: 120
     home: 90
     reversed: true
@@ -179,7 +179,7 @@ servos:
     model: "PDI-1109MG"
     pulse_min: 600
     pulse_max: 2400
-    angle_min: 80
+    angle_min: 60
     angle_max: 120
     home: 90
     reversed: false
@@ -190,7 +190,7 @@ servos:
     model: "PDI-1109MG"
     pulse_min: 600
     pulse_max: 2400
-    angle_min: 0
-    angle_max: 180
+    angle_min: 90
+    angle_max: 105
     home: 90
     reversed: false

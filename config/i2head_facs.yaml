@@ -18,43 +18,49 @@ facs:
     au_1:
       description: "Inner brow raiser"
       servos:
-        left_inner_brow: {neutral: 90, activated: 100}
-        right_inner_brow: {neutral: 90, activated: 100}
+        left_inner_brow: {neutral: 90, activated: 80}
+        right_inner_brow: {neutral: 90, activated: 80}
 
     au_2:
       description: "Outer brow raiser"
       servos:
-        left_inner_brow: {neutral: 90, activated: 80}
-        right_inner_brow: {neutral: 90, activated: 80}
+        left_brow: {neutral: 90, activated: 120}
+        right_brow: {neutral: 90, activated: 120}
 
-    # au_4:
-    #   description: "Brow lowerer"
-    #   servos:
-    #     left_brow: {neutral: 90, activated: 115}
-    #     right_brow: {neutral: 90, activated: 115}
-    # 
-    # au_6:
-    #   description: "Cheek raiser (orbicularis oculi)"
-    #   servos:
-    #     left_eyelid_lower: {neutral: 90, activated: 70}
-    #     right_eyelid_lower: {neutral: 90, activated: 70}
+    au_4:
+      description: "Brow lowerer"
+      servos:
+        left_brow: {neutral: 90, activated: 60}
+        right_brow: {neutral: 90, activated: 60}
+     
+    au_7:
+      description: "Lid tightener"
+      servos:
+        left_inner_brow: {neutral: 90, activated: 100}
+        right_inner_brow: {neutral: 90, activated: 100}
 
+    au_10:
+      description: "Upper lip raiser"
+      servos:
+        upper_lip: {neutral: 90, activated: 105}
+        
     au_12:
       description: "Lip corner puller (zygomaticus) – smile"
       servos:
-        left_mouth_corner: {neutral: 90, activated: 80}
-        right_mouth_corner: {neutral: 90, activated: 80}
+        left_mouth_corner: {neutral: 90, activated: 120}
+        right_mouth_corner: {neutral: 90, activated: 120}
 
     au_15:
       description: "Lip corner depressor (depressor anguli oris) – sad"
       servos:
-        left_mouth_corner: {neutral: 90, activated: 120}
-        left_mouth_corner_right: {neutral: 90, activated: 120}
+        left_mouth_corner: {neutral: 90, activated: 60}
+        right_mouth_corner: {neutral: 90, activated: 60}
+
     au_26:
       description: "Jaw drop"
       servos:
-        upper_lip: {neutral: 90, activated: 180}
-        
+        mouth_jaw: {neutral: 30, activated: 90}
+
     #au_45:
     #  description: "Blink – eye closure (levator palpebrae)"
     #  servos:
@@ -70,23 +76,26 @@ facs:
     neutral:
       description: "Neutral resting face"
       duration: 0.5
-      aus: {}
+      aus:
+        1: 0
+        2: 0
+        12: 0
+        15: 0
+        26: 0
 
     smile:
       description: "Happy / friendly"
       duration: 0.3
       aus:
-        4: 0.0
-        6: 0.4
+        10: 1.0
         12: 0.8
-        15: 0.0
 
     sad:
       description: "Sad / disappointed"
       duration: 0.4
       aus:
         1: 0.5
-        4: 0.2
+        2: 0.8
         15: 0.6
         26: 0.2
         
@@ -94,15 +103,17 @@ facs:
       description: "Angry / frustrated"
       duration: 0.3
       aus:
-        4: 0.8
-        15: 0.15
+        4: 1.0
+        7: 1.0
+        10: 0.5
+        15: 0.5
 
     surprised:
       description: "Surprised"
       duration: 0.25
       aus:
-        1: 0.8
-        2: 0.8
+        1: 1.0
+        2: 1.0
         26: 1.0
         
     #blink:
