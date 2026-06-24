@@ -107,6 +107,9 @@ index-strategy = "unsafe-best-match"
 "torchaudio" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
 "torchcodec" = ">=0.12,<0.14"
 "transformers" = ">=4.57,<5"
+faster-whisper = ">=1.2.1, <2"
+sounddevice = ">=0.5.5, <0.6"
+webrtcvad-wheels = ">=2.0.14, <3"
 
 [tasks]
 sync-submodules = { cmd = "git submodule update --init --recursive src/dynamixel-workbench src/dynamixel-workbench-msgs", description = "Fetch source dependencies checked into .gitmodules" }
@@ -123,7 +126,7 @@ face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2
 tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package service'", description = "Launch the text-to-speech service" }
 speech-recognizer = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run speech_recognizer speech_recognizer_node'", description = "Launch the speech recognizer node" }
 qabot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run qabot client'", description = "Launch the Q&A bot client" }
-
+sst = {cmd = "bash -lc 'source install/local_setup.bash && ros2 run sst_package sst_node'"}
 setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
 
