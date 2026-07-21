@@ -11,12 +11,10 @@ run_tab() {
 }
 
 run_tab ros2 launch robot robot.launch.py
-run_tab ros2 run tts_package service
-run_tab ros2 run speech_recognizer speech_recognizer_node
-run_tab ros2 run qabot client
+run_tab ros2 launch full_demo chatbot.launch.py
 run_tab ros2 run hand_gestures hand_gestures_node
 run_tab python client/unified_arms_client.py
-run_tab ros2 launch face_tracker face_tracker.test.launch.py
+run_tab ros2 launch face_tracker face_tracker.launch.py
 run_tab ros2 run full_demo full_demo_node
 run_tab ros2 run face_tracker_movement face_tracker_movement_node
 run_tab ros2 run image_view image_view --ros-args -r image:=/face_tracker/image_face

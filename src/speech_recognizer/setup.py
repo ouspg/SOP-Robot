@@ -17,7 +17,6 @@ setup(
     maintainer_email='jruntti20@student.oulu.fi',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': ['speech_recognizer_node = speech_recognizer.speech_recognizer:main'],
     },

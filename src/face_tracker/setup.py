@@ -13,7 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'predictors'), glob('predictors/*')),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*')),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
         (os.path.join('share', package_name, 'models'), glob('models/*'))
     ],
     install_requires=[
@@ -25,7 +25,6 @@ setup(
     maintainer_email='vagrant@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'face_tracker_node = face_tracker.face_tracker_node:main',

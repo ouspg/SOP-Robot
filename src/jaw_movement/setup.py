@@ -17,7 +17,6 @@ setup(
     maintainer_email='vagrant@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'jaw_movement_node = jaw_movement.jaw_movement_node:main'

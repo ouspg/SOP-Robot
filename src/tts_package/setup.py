@@ -17,7 +17,6 @@ setup(
     maintainer_email='vagrant@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'service = tts_package.tts_node:main',

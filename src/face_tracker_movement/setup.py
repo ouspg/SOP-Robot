@@ -17,7 +17,6 @@ setup(
     maintainer_email='vagrant@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'face_tracker_movement_node = face_tracker_movement.face_tracker_movement_node:main'

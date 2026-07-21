@@ -1,4 +1,27 @@
-### Full demo
+# Robot AI demo
+
+The current voice pipeline is a single turn-taking loop:
+
+```text
+Default microphone -> WebRTC VAD -> Finnish Whisper -> Ahma LLM -> Finnish TTS
+```
+
+SST publishes `recognized_speech`, the LLM publishes `chatbot_response`, and
+TTS publishes `can_listen`. Listening is paused while the LLM thinks and while
+the robot speaks, preventing the robot from answering its own voice.
+
+Run only the integrated voice chatbot:
+
+```console
+pixi run chatbot
+```
+
+SST always captures from the PipeWire system-default microphone selected in
+the desktop sound settings.
+
+The full physical-robot demo remains available through `pixi run robot-demo`.
+
+## Legacy demo coordinator
 
 This package contains a node that combines various parts of the robot to be used in demo situations.
 
