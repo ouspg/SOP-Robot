@@ -1,4 +1,5 @@
 import threading
+import time
 from queue import Empty, Full, Queue
 
 import numpy as np
@@ -92,6 +93,7 @@ class SSTNode(Node):
 
         self.running = True
         self.utterances = Queue(maxsize=1)
+
         self.listen_thread = threading.Thread(
             target=self.listen,
             daemon=True,
@@ -100,6 +102,7 @@ class SSTNode(Node):
             target=self.transcribe_worker,
             daemon=True,
         )
+
         self.listen_thread.start()
         self.transcribe_thread.start()
 
@@ -149,7 +152,7 @@ class SSTNode(Node):
             self.utterances.put_nowait(pcm)
         except Full:
             self.get_logger().warning(
-                'Transcription is busy; dropping an utterance.'
+                'Faster Whisper is busy; dropping an utterance.'
             )
 
     def transcribe_worker(self):
@@ -158,18 +161,27 @@ class SSTNode(Node):
                 pcm = self.utterances.get(timeout=0.2)
             except Empty:
                 continue
-
             if pcm is None:
                 break
 
+            started = time.perf_counter()
             try:
-                self.transcribe(pcm)
+                text = self.transcribe_local(pcm)
+                latency_ms = (time.perf_counter() - started) * 1_000
+                if text:
+                    self.get_logger().info(
+                        f'[Faster Whisper] {text} '
+                        f'({latency_ms:.0f} ms)'
+                    )
+                    self.speech_publisher.publish(String(data=text))
             except Exception as error:
-                self.get_logger().error(f'Transcription failed: {error}')
+                self.get_logger().error(
+                    f'Faster Whisper transcription failed: {error}'
+                )
             finally:
                 self.utterances.task_done()
 
-    def transcribe(self, pcm):
+    def transcribe_local(self, pcm):
         segments, _ = self.model.transcribe(
             pcm_to_float32(pcm),
             language=LANGUAGE,
@@ -177,14 +189,9 @@ class SSTNode(Node):
             condition_on_previous_text=False,
             vad_filter=True,
         )
-        text = ' '.join(
+        return ' '.join(
             segment.text.strip() for segment in segments
         ).strip()
-        if not text:
-            return
-
-        self.get_logger().info(text)
-        self.speech_publisher.publish(String(data=text))
 
     def destroy_node(self):
         self.running = False
@@ -192,6 +199,7 @@ class SSTNode(Node):
             self.utterances.put_nowait(None)
         except Full:
             pass
+
         self.listen_thread.join(timeout=2)
         self.transcribe_thread.join(timeout=2)
         return super().destroy_node()
@@ -206,7 +214,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ temp_dynamixel_for_launch.yaml
 *.sqlite3
 *.prof
 .venv/*
+.env.local
 .pixi/
 .pixi-packed/
 .pytest_cache/

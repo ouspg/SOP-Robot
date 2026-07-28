@@ -17,7 +17,7 @@ setup(
     zip_safe=True,
     maintainer='Aapo Pihlajaniemi',
     maintainer_email='apihlaja20@student.oulu.fi',
-    description='Local Finnish conversational language model.',
+    description='OpenAI-compatible Finnish conversational language model.',
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [

@@ -25,7 +25,7 @@ class SpeechRecognizerNode(Node):
             self.stop_listening = self.r.listen_in_background(self.m, self.listen, phrase_time_limit=10)
         else:
             self.stop_listening()
-        
+
 
 
     def listen(self, recognizer: sr.Recognizer, audio: sr.AudioData):
@@ -53,4 +53,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

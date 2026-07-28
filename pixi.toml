@@ -101,13 +101,13 @@ index-strategy = "unsafe-best-match"
 "tf-keras" = ">=2.19,<2.20"
 "torch" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
 "torchaudio" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
-"llama-cpp-python" = {version = "*", index = "https://abetlen.github.io/llama-cpp-python/whl/cu132"}
 "torchcodec" = ">=0.12,<0.14"
 "transformers" = ">=4.57,<5"
 faster-whisper = ">=1.2.1, <2"
 webrtcvad-wheels = ">=2.0.14, <3"
 huggingface-hub = ">=0.36.2, <0.37"
-simpleaudio = ">=1.0.4, <2"
+openai = ">=2,<3"
+python-dotenv = ">=1,<2"
 
 [tasks]
 sync-submodules = { cmd = "git submodule update --init --recursive src/dynamixel-workbench src/dynamixel-workbench-msgs", description = "Fetch source dependencies checked into .gitmodules" }

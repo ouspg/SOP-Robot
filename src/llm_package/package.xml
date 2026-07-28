@@ -3,7 +3,9 @@
 <package format="3">
   <name>llm_package</name>
   <version>0.0.0</version>
-  <description>Local Finnish conversational language model.</description>
+  <description>
+    OpenAI-compatible Finnish conversational language model.
+  </description>
   <maintainer email="apihlaja20@student.oulu.fi">Aapo Pihlajaniemi</maintainer>
   <license>TODO: License declaration</license>
 

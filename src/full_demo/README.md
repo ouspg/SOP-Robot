@@ -3,12 +3,16 @@
 The current voice pipeline is a single turn-taking loop:
 
 ```text
-Default microphone -> WebRTC VAD -> Finnish Whisper -> Ahma LLM -> Finnish TTS
+Default microphone -> WebRTC VAD -> Finnish Whisper -> LLM correction -> LLM answer -> Finnish TTS
 ```
 
-SST publishes `recognized_speech`, the LLM publishes `chatbot_response`, and
-TTS publishes `can_listen`. Listening is paused while the LLM thinks and while
-the robot speaks, preventing the robot from answering its own voice.
+SST runs Faster Whisper locally and publishes its result on
+`recognized_speech`. On the first turn, the LLM answers the Faster Whisper
+transcript directly. Starting from the second turn, it first uses the
+conversation history to correct likely recognition errors, then sends the
+corrected utterance with the same history to generate `chatbot_response`. TTS
+publishes `can_listen`. Listening is paused while the LLM thinks and while the
+robot speaks, preventing the robot from answering its own voice.
 
 Run only the integrated voice chatbot:
 
@@ -18,6 +22,19 @@ pixi run chatbot
 
 SST always captures from the PipeWire system-default microphone selected in
 the desktop sound settings.
+
+The standard OpenAI-compatible client is configured through `.env.local`:
+
+```dotenv
+LLM_BASE_URL=https://openrouter.ai/api/v1
+LLM_API_KEY=your-provider-key
+LLM_MODEL=openai/gpt-oss-120b
+```
+
+Change these three generic values to use another compatible provider. For a
+local server such as Ollama, use its `/v1` endpoint and installed model name.
+`LLM_API_KEY` defaults to `not-needed` for local servers that ignore
+authentication. The base URL and model shown above are also the defaults.
 
 The full physical-robot demo remains available through `pixi run robot-demo`.
 

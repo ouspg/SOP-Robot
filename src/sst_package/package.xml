@@ -3,7 +3,9 @@
 <package format="3">
   <name>sst_package</name>
   <version>0.0.0</version>
-  <description>Finnish speech recognition using Faster Whisper.</description>
+  <description>
+    Finnish speech recognition with local Faster Whisper.
+  </description>
   <maintainer email="apihlaja20@student.oulu.fi">Aapo Pihlajaniemi</maintainer>
   <license>TODO: License declaration</license>
 

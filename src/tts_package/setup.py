@@ -20,6 +20,7 @@ setup(
     entry_points={
         'console_scripts': [
             'service = tts_package.tts_node:main',
+            'tts_node = tts_package.tts_node:main',
             'client = tts_package.tts_member_function:main',
         ],
     },

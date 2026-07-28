@@ -5,8 +5,8 @@ from launch_ros.actions import Node
 def generate_launch_description():
     tts_node = Node(
         package='tts_package',
-        executable='client',
-        name='client',
+        executable='tts_node',
+        name='tts_node',
         output='screen',
         additional_env={
             'CUDA_VISIBLE_DEVICES': '-1',

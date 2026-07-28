@@ -23,7 +23,7 @@ setup(
     zip_safe=True,
     maintainer='Aapo Pihlajaniemi',
     maintainer_email='apihlaja20@student.oulu.fi',
-    description='Finnish speech recognition using Faster Whisper.',
+    description='Finnish speech recognition with local Faster Whisper.',
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [
