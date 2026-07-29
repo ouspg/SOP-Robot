@@ -26,9 +26,8 @@ pixi run setup-runtime
 pixi run build
 ```
 
-`pixi run setup-runtime` initializes the source submodules, downloads the TTS
-model, and installs `farm-haystack` with the same no-dependencies behavior the
-old installer used.
+`pixi run setup-runtime` initializes the source submodules and downloads the
+TTS model.
 
 For real Dynamixel hardware, install the udev rule once:
 

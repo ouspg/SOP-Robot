@@ -1,70 +1,110 @@
-import rclpy
-from rclpy.node import Node
-
-from std_msgs.msg import String, Bool
-
-from face_tracker_msgs.msg import Faces, Face
-from face_tracker_msgs.msg import Point2
-
-from time import time
+# Copyright 2026 Aapo2001
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from enum import Enum
+from time import time
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Bool, String
+
+from face_tracker_msgs.msg import Face, Faces
+
 
 class State(Enum):
     THINKING = 0
     IDLE = 1
     LISTENING = 2
 
+
 class FullDemoNode(Node):
     def __init__(self):
-        super().__init__("full_demo")
-        # ROS topics
-        self.tts_message_publisher = self.create_publisher(String, "chatbot_response", 10)
-        self.tts_can_listen_subscription = self.create_subscription(Bool, "can_listen", self.update_tts_ready,10)
+        super().__init__('full_demo')
+        self.tts_message_publisher = self.create_publisher(
+            String,
+            'chatbot_response',
+            10,
+        )
+        self.tts_can_listen_subscription = self.create_subscription(
+            Bool,
+            'can_listen',
+            self.update_tts_ready,
+            10,
+        )
 
-        self.speech_recognizer_can_listen = self.create_publisher(Bool, "speech_recognizer/can_listen", 10)
-        self.speech_recognizer_result = self.create_subscription(String, "speech_recognizer/recognized_speech", self.on_speech_recognized,10)
+        self.sst_can_listen = self.create_publisher(
+            Bool,
+            'can_listen',
+            10,
+        )
+        self.sst_result = self.create_subscription(
+            String,
+            'recognized_speech',
+            self.on_speech_recognized,
+            10,
+        )
 
-        self.chatbot_input = self.create_publisher(String, "chatbot/recognized_speech", 10)
-        self.chatbot_output = self.create_subscription(String, "chatbot/chatbot_response", self.on_chatbot_response,10)
+        self.llm_output = self.create_subscription(
+            String,
+            'chatbot_response',
+            self.on_llm_response,
+            10,
+        )
 
-        self.face_list_subscription = self.create_subscription(Faces, "/face_tracker/face_topic", self.update_face_count, 2)
-
-        self.arm_action_publisher = self.create_publisher(String, "/arms/arm_action", 10)
-
-        # Get focused face from face_tracker_movement_node
-        self.focused_face_subscription = self.create_subscription(Face, "/face_tracker_movement/focused_face", self.focused_face_callback, 10)
+        self.face_list_subscription = self.create_subscription(
+            Faces,
+            '/face_tracker/face_topic',
+            self.update_face_count,
+            2,
+        )
+        self.arm_action_publisher = self.create_publisher(
+            String,
+            '/arms/arm_action',
+            10,
+        )
+        self.focused_face_subscription = self.create_subscription(
+            Face,
+            '/face_tracker_movement/focused_face',
+            self.focused_face_callback,
+            10,
+        )
 
         self.tts_ready = True
-        # Turn off listening for now
-        self.speech_recognizer_can_listen.publish(Bool(data=False))
+        self.sst_can_listen.publish(Bool(data=False))
         self.robot_state = State.IDLE
-        self.get_logger().info("switched state to IDLE")
+        self.get_logger().info('switched state to IDLE')
 
-        # Stores faces that have been greeted to not keep saying hello over and over again
-        self.face_greet_time = {}  # Store the last greet time for each face_id
-
+        self.face_greet_time = {}
 
     def say_hello(self, greeting):
         if self.tts_ready and self.robot_state == State.IDLE:
-            self.get_logger().info(f"Greeting person: {greeting}")
+            self.get_logger().info(f'Greeting person: {greeting}')
             self.robot_state = State.LISTENING
-            self.get_logger().info("switched state to LISTENING")
+            self.get_logger().info('switched state to LISTENING')
             self.tts_message_publisher.publish(String(data=greeting))
-            self.arm_action_publisher.publish(String(data="hold"))
+            self.arm_action_publisher.publish(String(data='hold'))
             self.t = self.create_timer(30, self.close_timer)
-            self.speech_recognizer_can_listen.publish(Bool(data=True))
-    
+            self.sst_can_listen.publish(Bool(data=True))
+
     def update_face_count(self, message):
         self.face_count = len(message.faces)
-    
+
     def update_tts_ready(self, message):
         self.tts_ready = message.data
 
-    def on_chatbot_response(self, msg):
+    def on_llm_response(self, _message):
         if self.tts_ready:
-            # Speak out the message and continue listening
-            self.tts_message_publisher.publish(msg)
             self.speech_timer = self.create_timer(5, self.resume_listening)
 
     def resume_listening(self):
@@ -73,72 +113,70 @@ class FullDemoNode(Node):
             self.speech_timer = self.create_timer(1, self.resume_listening)
         else:
             self.robot_state = State.LISTENING
-            self.get_logger().info("switched state to LISTENING")
-            # Set timeout to return to IDLE if nothing else heard
+            self.get_logger().info('switched state to LISTENING')
             self.t = self.create_timer(30, self.close_timer)
-            self.speech_recognizer_can_listen.publish(Bool(data=True))
+            self.sst_can_listen.publish(Bool(data=True))
 
     def close_timer(self):
         self.destroy_timer(self.t)
         self.robot_state = State.IDLE
-        self.arm_action_publisher.publish(String(data="zer"))
-        self.get_logger().info("switched state to IDLE")
-
+        self.arm_action_publisher.publish(String(data='zer'))
+        self.get_logger().info('switched state to IDLE')
 
     def on_speech_recognized(self, msg):
         if self.robot_state == State.LISTENING:
-            self.get_logger().info("Heard: "+msg.data)
+            self.get_logger().info(f'Heard: {msg.data}')
             self.destroy_timer(self.t)
-            # When speech recognized, stop listening
             self.robot_state = State.THINKING
-            self.get_logger().info("switched state to THINKING")
-            self.speech_recognizer_can_listen.publish(Bool(data=False))
-            self.chatbot_input.publish(msg)
-    
-    def focused_face_callback(self, face):
-        '''
-        Callback function to decide what to do when a new face is focused.
+            self.get_logger().info('switched state to THINKING')
+            self.sst_can_listen.publish(Bool(data=False))
 
-        If the face has been seen before, the person will be greeted again.
-        This can only occur once every 2 minutes per person.
-        '''
+    def focused_face_callback(self, face):
+        """
+        Decide what to do when a newly focused face is observed.
+
+        If the face has been seen before, greet the person again. This can
+        happen at most once every two minutes for each person.
+        """
         num_occurrences = len(face.occurances)
-    
-        self.get_logger().info(f"Occurrances: {num_occurrences}")
-        
+
+        self.get_logger().info(f'Occurrances: {num_occurrences}')
         current_time = time()
 
         if num_occurrences > 1:
             if face.occurances[-1].duration < 20:
-            
-            # Check that at least one occurance is long enough
                 for occurance in face.occurances:
                     if occurance.duration > 6:
                         break
                 else:
-                    # All occurances are too short
                     return
 
                 if face.face_id in self.face_greet_time:
-                    # Calculate time since the last greeting
                     elapsed_time = current_time - self.face_greet_time[face.face_id]
                     if elapsed_time < 120:
-                        self.get_logger().info(f"Already greeted {face.face_id} within the previous 2 minutes.")
+                        self.get_logger().info(
+                            f'Already greeted {face.face_id} within the previous 2 minutes.'
+                        )
                         return
 
-                # Update the last greet time for this face_id
                 self.face_greet_time[face.face_id] = current_time
-
-                self.say_hello(greeting="Tervetuloa takaisin")
+                self.say_hello(greeting='Tervetuloa takaisin')
         else:
-            self.say_hello(greeting="Hei, kysy minulta mitä vaan")
+            self.say_hello(greeting='Hei, kysy minulta mitä vaan')
 
-def main():
-    rclpy.init()
+
+def main(args=None):
+    rclpy.init(args=args)
     demo_node = FullDemoNode()
-    rclpy.spin(demo_node)
-    demo_node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(demo_node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        demo_node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

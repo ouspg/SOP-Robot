@@ -69,6 +69,16 @@ Anyway, you are able to test the face tracking and eye movements like this.
 
 **Note: currently, only jaw, eyes, right hand & head pan movement can be simulated**
 
+To launch the complete demo with fake robot hardware, run:
+
+```console
+pixi run robot-demo-fake
+```
+
+This uses `full_demo/fake_robot.launch.py` to start each ROS node as its own
+process under one ROS 2 launch service. Press Ctrl+C once to stop the complete
+demo.
+
 ### Launching text-to-speech service
 
 Text-to-speech works as a service which can be called from terminal utilizing the ros2 client in package.
@@ -91,17 +101,19 @@ pixi run ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
 
 We suggest using [Dynamixel Wizard 2.0][] to test the connection and functionality of the servos before trying to run the robot. This is optional but can save some time debugging if the servos or communication with them doesn't work.
 
-### 1a. Launching the robot head (Shell script)
+### 1a. Launching the complete real-robot demo
 
-You can use the start_robot_head script file to quickly bring up the whole robot head. The script by default launches the face tracker and the ros2 nodes for the jaw, eye and head movement.
-
-To execute the script from the repository root:
+Launch the robot, face tracking, movement, hand control, and voice chatbot from
+one terminal:
 
 ```console
-./start_robot_head
+pixi run robot-demo-real
 ```
 
-This opens multiple terminal tabs in quick succession without checking if the programs actually launch correctly, so you might want to check the output of each one. Usually problems are caused by the first tab (robot.launch.py) not being able to arm or find a servo.
+This uses `full_demo/real_robot.launch.py`. ROS 2 starts every node as its own
+process and keeps all output in the current terminal. Press Ctrl+C once to stop
+the complete demo. Startup problems are usually caused by `robot.launch.py`
+being unable to arm or find a servo.
 
 ### 1b. Launching the robot (Manual)
 

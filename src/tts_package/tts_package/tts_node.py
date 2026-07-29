@@ -1,58 +1,82 @@
-from TTS.api import TTS
-from rclpy.node import Node
-from std_msgs.msg import String
-from std_msgs.msg import Bool
-import simpleaudio as sa
-import rclpy
+# Copyright 2026 Aapo2001
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+import os
+import subprocess
+from pathlib import Path
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Bool, String
+from TTS.api import TTS
 
 
 class TTSService(Node):
-
     def __init__(self):
-        super().__init__('TTS_service')
-        self.subscription = self.create_subscription(String, "chatbot_response", self.callback, 10)
-        self.publisher = self.create_publisher(Bool, "can_listen", 10)
-        self.jaw = self.create_publisher(String, "jaw_topic", 10)
-        self.can_listen = Bool(data = True)
-        self.cant_listen = Bool(data = False)
-        self.synthetizer = TTS(
-            model_path="./src/tts_package/resource/model.pth",
-            config_path="./src/tts_package/resource/config.json").synthesizer
-        self.output = "./src/tts_package/resource/output.wav"
+        super().__init__('tts_service')
+        self.subscription = self.create_subscription(
+            String,
+            'chatbot_response',
+            self.callback,
+            10,
+        )
+        self.publisher = self.create_publisher(Bool, 'can_listen', 10)
+        self.jaw = self.create_publisher(String, 'jaw_topic', 10)
 
+        project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
+        resource_dir = project_root / 'src' / 'tts_package' / 'resource'
+        self.output = resource_dir / 'output.wav'
+        synthesizer = TTS(
+            model_path=str(resource_dir / 'model.pth'),
+            config_path=str(resource_dir / 'config.json'),
+        ).synthesizer
+        if synthesizer is None:
+            raise RuntimeError('The configured TTS model did not create a synthesizer.')
+        self.synthesizer = synthesizer
+        self.get_logger().info('Finnish TTS ready.')
 
-    def callback(self, msg):
+    def callback(self, message):
+        self.publisher.publish(Bool(data=False))
         try:
-            wav = self.synthetizer.tts(msg.data)
-            self.synthetizer.save_wav(wav, self.output)
-            self.play_audio(msg)
-        except Exception:
-            self.get_logger().info("Error happened")
-        else:
-            self.get_logger().info("Incoming request to synthentize string: %s" % (msg.data))
+            self.get_logger().info(f'Synthesizing: {message.data}')
+            wav = self.synthesizer.tts(message.data)
+            if isinstance(wav, dict):
+                raise RuntimeError('The TTS synthesizer returned metadata instead of audio.')
+            self.synthesizer.save_wav(wav, str(self.output))
+            self.jaw.publish(message)
+            subprocess.run(
+                ['pw-play', str(self.output)],
+                check=True,
+                timeout=120,
+            )
+        except Exception as error:
+            self.get_logger().error(f'TTS playback failed: {error}')
+        finally:
+            self.publisher.publish(Bool(data=True))
 
 
-    def play_audio(self, msg):
-        self.publisher.publish(self.cant_listen)
-        wave_obj = sa.WaveObject.from_wave_file(self.output)
-        self.jaw.publish(msg)
-        play_obj = wave_obj.play()
-        play_obj.wait_done()
-        self.publisher.publish(self.can_listen) 
-    
-
-
-def main():
-    rclpy.init()
-
-    tts_service = TTSService()
-
-    rclpy.spin(tts_service)
-
-    tts_service.destroy_node()
-    rclpy.shutdown()
-
+def main(args=None):
+    rclpy.init(args=args)
+    node = TTSService()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
