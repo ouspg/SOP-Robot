@@ -1,3 +1,4 @@
+import contextlib
 import threading
 import time
 from queue import Empty, Full, Queue
@@ -118,9 +119,7 @@ class SSTNode(Node):
         frames = []
         silence = 0
         with SystemMicrophone() as microphone:
-            self.get_logger().info(
-                'Capturing from the PipeWire system input.'
-            )
+            self.get_logger().info('Capturing from the PipeWire system input.')
             while self.running:
                 frame = microphone.read_frame()
                 if not self.can_listen:
@@ -135,10 +134,7 @@ class SSTNode(Node):
                     frames.append(frame)
                     silence += 1
 
-                utterance_complete = (
-                    silence >= SILENCE_FRAMES
-                    or len(frames) >= MAX_SPEECH_FRAMES
-                )
+                utterance_complete = silence >= SILENCE_FRAMES or len(frames) >= MAX_SPEECH_FRAMES
                 if not frames or not utterance_complete:
                     continue
 
@@ -151,9 +147,7 @@ class SSTNode(Node):
         try:
             self.utterances.put_nowait(pcm)
         except Full:
-            self.get_logger().warning(
-                'Faster Whisper is busy; dropping an utterance.'
-            )
+            self.get_logger().warning('Faster Whisper is busy; dropping an utterance.')
 
     def transcribe_worker(self):
         while self.running:
@@ -169,15 +163,10 @@ class SSTNode(Node):
                 text = self.transcribe_local(pcm)
                 latency_ms = (time.perf_counter() - started) * 1_000
                 if text:
-                    self.get_logger().info(
-                        f'[Faster Whisper] {text} '
-                        f'({latency_ms:.0f} ms)'
-                    )
+                    self.get_logger().info(f'[Faster Whisper] {text} ({latency_ms:.0f} ms)')
                     self.speech_publisher.publish(String(data=text))
             except Exception as error:
-                self.get_logger().error(
-                    f'Faster Whisper transcription failed: {error}'
-                )
+                self.get_logger().error(f'Faster Whisper transcription failed: {error}')
             finally:
                 self.utterances.task_done()
 
@@ -189,16 +178,12 @@ class SSTNode(Node):
             condition_on_previous_text=False,
             vad_filter=True,
         )
-        return ' '.join(
-            segment.text.strip() for segment in segments
-        ).strip()
+        return ' '.join(segment.text.strip() for segment in segments).strip()
 
     def destroy_node(self):
         self.running = False
-        try:
+        with contextlib.suppress(Full):
             self.utterances.put_nowait(None)
-        except Full:
-            pass
 
         self.listen_thread.join(timeout=2)
         self.transcribe_thread.join(timeout=2)

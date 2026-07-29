@@ -17,9 +17,9 @@ import subprocess
 from pathlib import Path
 
 import rclpy
-from TTS.api import TTS
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
+from TTS.api import TTS
 
 
 class TTSService(Node):
@@ -34,24 +34,25 @@ class TTSService(Node):
         self.publisher = self.create_publisher(Bool, 'can_listen', 10)
         self.jaw = self.create_publisher(String, 'jaw_topic', 10)
 
-        project_root = Path(
-            os.environ.get('SOP_ROBOT_ROOT', Path.cwd())
-        ).resolve()
+        project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
         resource_dir = project_root / 'src' / 'tts_package' / 'resource'
         self.output = resource_dir / 'output.wav'
-        self.synthesizer = TTS(
+        synthesizer = TTS(
             model_path=str(resource_dir / 'model.pth'),
             config_path=str(resource_dir / 'config.json'),
         ).synthesizer
+        if synthesizer is None:
+            raise RuntimeError('The configured TTS model did not create a synthesizer.')
+        self.synthesizer = synthesizer
         self.get_logger().info('Finnish TTS ready.')
 
     def callback(self, message):
         self.publisher.publish(Bool(data=False))
         try:
-            self.get_logger().info(
-                f'Synthesizing: {message.data}'
-            )
+            self.get_logger().info(f'Synthesizing: {message.data}')
             wav = self.synthesizer.tts(message.data)
+            if isinstance(wav, dict):
+                raise RuntimeError('The TTS synthesizer returned metadata instead of audio.')
             self.synthesizer.save_wav(wav, str(self.output))
             self.jaw.publish(message)
             subprocess.run(

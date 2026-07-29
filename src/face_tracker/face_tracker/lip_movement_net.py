@@ -19,45 +19,40 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
-import datetime
 import argparse
-
-from tf_keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
-from tf_keras.utils import to_categorical
-from tf_keras.layers import Dense
-from tf_keras.layers import Bidirectional
-from tf_keras.layers import GRU, SimpleRNN
-from tf_keras.layers import Dropout
-from tf_keras.models import Sequential
-from tf_keras.models import load_model
-from tf_keras.optimizers import Adam, RMSprop
-from tf_keras import metrics
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_score, recall_score, roc_auc_score, f1_score
-from sklearn.preprocessing import MinMaxScaler
-import time
-
-import progressbar
-from progressbar import ETA, Percentage, RotatingMarker
-
+import csv
+import datetime
+import math
 import os
-import numpy as np
-#from scipy.misc import imresize
+import time
+from queue import Queue
+from typing import Any, cast
 
+# from scipy.misc import imresize
 import cv2
 import dlib
-import math
-import csv
-from queue import Queue
-
+import numpy as np
+import progressbar
+from progressbar import ETA, Percentage, RotatingMarker
+from sklearn.metrics import (
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.preprocessing import MinMaxScaler
+from tf_keras import metrics
+from tf_keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+from tf_keras.layers import GRU, Bidirectional, Dense, Dropout, SimpleRNN
+from tf_keras.models import Sequential, load_model
+from tf_keras.optimizers import Adam, RMSprop
+from tf_keras.utils import to_categorical
 
 np.random.seed(int(time.time()))
 
-# Add keys to this hash for supporting other action classes. e.g. CLASS_HASH = {'other': 0, 'speech': 1, 'chew': 2, 'laugh': 3}
-CLASS_HASH = {
-    'silent': 0,
-    'speaking': 1
-}
+# Add keys to support other action classes, such as speech, chewing, and laughter.
+CLASS_HASH = {'silent': 0, 'speaking': 1}
 
 MOUTH_WIDTH = 100
 MOUTH_HEIGHT = 50
@@ -71,8 +66,9 @@ NUM_CLASSES = len(CLASS_HASH.keys())
 NUM_FEATURES = 1
 NUM_GRID_COMBINATIONS = 1
 
-detector = dlib.get_frontal_face_detector()
-shape_predictor = None
+dlib_api = cast(Any, dlib)
+detector = dlib_api.get_frontal_face_detector()
+shape_predictor: Any | None = None
 
 num_grid_combos_completed = 0
 
@@ -86,6 +82,14 @@ X_test = []
 y_test = []
 
 
+def load_required_model(model_path):
+    """Load a Keras model and reject an unsupported empty result."""
+    model = load_model(model_path)
+    if model is None:
+        raise RuntimeError(f'Could not load model from {model_path}')
+    return model
+
+
 def load_sequences_into_memory(dataset_top_dir, type_name):
     X_data = []
     y_data = []
@@ -94,18 +98,18 @@ def load_sequences_into_memory(dataset_top_dir, type_name):
     class_wise_totals = {}
 
     data_set_type_dir = os.path.join(dataset_top_dir, type_name)
-    #print('Processing ' + data_set_type_dir)
+    # print('Processing ' + data_set_type_dir)
     class_names = os.listdir(data_set_type_dir)
-    #print('Found class_names ' + str(class_names))
+    # print('Found class_names ' + str(class_names))
     for class_name in class_names:
         num_sequences_for_class = 0
         class_dir = os.path.join(data_set_type_dir, class_name)
-        #print('Processing ' + class_dir)
+        # print('Processing ' + class_dir)
         data_set_names = os.listdir(class_dir)
-        #print('Found datasets ' + str(data_set_names))
+        # print('Found datasets ' + str(data_set_names))
         for data_set_name in data_set_names:
             data_set_dir = os.path.join(class_dir, data_set_name)
-            #print('Processing data_set_dir=' + data_set_dir)
+            # print('Processing data_set_dir=' + data_set_dir)
             person_dir_names = os.listdir(data_set_dir)
             # print('Found person dirs=' + str(person_dir_names))
             for person_dir_name in person_dir_names:
@@ -148,15 +152,22 @@ def load_sequences_into_memory(dataset_top_dir, type_name):
                     facial_landmark_file_names = facial_landmark_file_names[25:50]
                     # this should not happen if the data preparation has happened correctly
                     if len(facial_landmark_file_names) != FRAME_SEQ_LEN:
-                        print('WARNING: Ignoring sequence dir ' + sequence_dir + ' with sequence len ' + str(
-                            len(facial_landmark_file_names)))
+                        print(
+                            'WARNING: Ignoring sequence dir '
+                            + sequence_dir
+                            + ' with sequence len '
+                            + str(len(facial_landmark_file_names))
+                        )
                         continue
 
                     lip_separation_sequence = []
                     for facial_landmark_file_name in facial_landmark_file_names:
-                        facial_landmark_file_path = os.path.join(sequence_dir, facial_landmark_file_name)
-                        with open(facial_landmark_file_path, 'r') as f_obj:
+                        facial_landmark_file_path = os.path.join(
+                            sequence_dir, facial_landmark_file_name
+                        )
+                        with open(facial_landmark_file_path) as f_obj:
                             reader = csv.reader(f_obj)
+                            avg_gap = None
                             for coords in reader:
                                 part_61 = (int(coords[2 * 61]), int(coords[2 * 61 + 1]))
                                 part_67 = (int(coords[2 * 67]), int(coords[2 * 67 + 1]))
@@ -173,7 +184,9 @@ def load_sequences_into_memory(dataset_top_dir, type_name):
 
                                 break
 
-                            # note that [avg_gap] is a feature vector of length 1. hence the square brackets
+                            if avg_gap is None:
+                                continue
+                            # [avg_gap] is a feature vector of length one, hence the brackets.
                             lip_separation_sequence.append([avg_gap])
 
                     scaler = MinMaxScaler()
@@ -188,7 +201,12 @@ def load_sequences_into_memory(dataset_top_dir, type_name):
 
     X_data = np.array(X_data)
     y_data = np.array(y_data)
-    print('\nData loading completed. X_data.shape=' + str(X_data.shape) + ' y_data.shape=' + str(y_data.shape))
+    print(
+        '\nData loading completed. X_data.shape='
+        + str(X_data.shape)
+        + ' y_data.shape='
+        + str(y_data.shape)
+    )
 
     return (X_data, y_data)
 
@@ -201,13 +219,23 @@ def step_decay(epoch):
     return lrate
 
 
-class LipMovementNet(object):
-    def __init__(self, num_rnn_layers=1, num_neurons_in_rnn_layer=100, is_bidirectional=False, use_gru=False,
-                 dropout=0.0,
-                 num_output_dense_layers=1,
-                 num_neurons_in_output_dense_layers=2, activation_output_dense_layers='relu', optimizer='rmsprop',
-                 lr=0.0001,
-                 frames_n=FRAME_SEQ_LEN, num_features=NUM_FEATURES, num_classes=NUM_CLASSES):
+class LipMovementNet:
+    def __init__(
+        self,
+        num_rnn_layers=1,
+        num_neurons_in_rnn_layer=100,
+        is_bidirectional=False,
+        use_gru=False,
+        dropout=0.0,
+        num_output_dense_layers=1,
+        num_neurons_in_output_dense_layers=2,
+        activation_output_dense_layers='relu',
+        optimizer='rmsprop',
+        lr=0.0001,
+        frames_n=FRAME_SEQ_LEN,
+        num_features=NUM_FEATURES,
+        num_classes=NUM_CLASSES,
+    ):
         self.frames_n = frames_n
         self.num_features = num_features
         self.num_classes = num_classes
@@ -225,7 +253,6 @@ class LipMovementNet(object):
         self.lr = lr
 
     def build(self):
-
         input_shape = (self.frames_n, self.num_features)
 
         self.model = Sequential()
@@ -245,36 +272,88 @@ class LipMovementNet(object):
                 if self.is_bidirectional:
                     if specify_input_shape:
                         self.model.add(
-                            Bidirectional(GRU(self.num_neurons_in_rnn_layer, return_sequences=return_sequences,
-                                              name=name), input_shape=input_shape, merge_mode='concat'))
+                            Bidirectional(
+                                GRU(
+                                    self.num_neurons_in_rnn_layer,
+                                    return_sequences=return_sequences,
+                                    name=name,
+                                ),
+                                input_shape=input_shape,
+                                merge_mode='concat',
+                            )
+                        )
                     else:
                         self.model.add(
-                            Bidirectional(GRU(self.num_neurons_in_rnn_layer, return_sequences=return_sequences,
-                                              name=name), merge_mode='concat'))
+                            Bidirectional(
+                                GRU(
+                                    self.num_neurons_in_rnn_layer,
+                                    return_sequences=return_sequences,
+                                    name=name,
+                                ),
+                                merge_mode='concat',
+                            )
+                        )
                 else:
                     if specify_input_shape:
-                        self.model.add(GRU(self.num_neurons_in_rnn_layer, return_sequences=return_sequences, name=name,
-                                           input_shape=input_shape))
+                        self.model.add(
+                            GRU(
+                                self.num_neurons_in_rnn_layer,
+                                return_sequences=return_sequences,
+                                name=name,
+                                input_shape=input_shape,
+                            )
+                        )
                     else:
-                        self.model.add(GRU(self.num_neurons_in_rnn_layer, return_sequences=return_sequences, name=name))
+                        self.model.add(
+                            GRU(
+                                self.num_neurons_in_rnn_layer,
+                                return_sequences=return_sequences,
+                                name=name,
+                            )
+                        )
             else:
                 if self.is_bidirectional:
                     if specify_input_shape:
                         self.model.add(
-                            Bidirectional(SimpleRNN(self.num_neurons_in_rnn_layer, return_sequences=return_sequences,
-                                                    name=name), input_shape=input_shape, merge_mode='concat'))
+                            Bidirectional(
+                                SimpleRNN(
+                                    self.num_neurons_in_rnn_layer,
+                                    return_sequences=return_sequences,
+                                    name=name,
+                                ),
+                                input_shape=input_shape,
+                                merge_mode='concat',
+                            )
+                        )
                     else:
                         self.model.add(
-                            Bidirectional(SimpleRNN(self.num_neurons_in_rnn_layer, return_sequences=return_sequences,
-                                                    name=name), merge_mode='concat'))
+                            Bidirectional(
+                                SimpleRNN(
+                                    self.num_neurons_in_rnn_layer,
+                                    return_sequences=return_sequences,
+                                    name=name,
+                                ),
+                                merge_mode='concat',
+                            )
+                        )
                 else:
                     if specify_input_shape:
                         self.model.add(
-                            SimpleRNN(self.num_neurons_in_rnn_layer, return_sequences=return_sequences, name=name,
-                                      input_shape=input_shape))
+                            SimpleRNN(
+                                self.num_neurons_in_rnn_layer,
+                                return_sequences=return_sequences,
+                                name=name,
+                                input_shape=input_shape,
+                            )
+                        )
                     else:
                         self.model.add(
-                            SimpleRNN(self.num_neurons_in_rnn_layer, return_sequences=return_sequences, name=name))
+                            SimpleRNN(
+                                self.num_neurons_in_rnn_layer,
+                                return_sequences=return_sequences,
+                                name=name,
+                            )
+                        )
 
         if self.dropout > 0.0:
             self.model.add(Dropout(self.dropout))
@@ -282,8 +361,12 @@ class LipMovementNet(object):
         for i in range(self.num_output_dense_layers):
             name = 'dense-' + str(i)
             self.model.add(
-                Dense(self.num_neurons_in_output_dense_layers, activation=self.activation_output_dense_layers,
-                      name=name))
+                Dense(
+                    self.num_neurons_in_output_dense_layers,
+                    activation=self.activation_output_dense_layers,
+                    name=name,
+                )
+            )
 
         self.model.add(Dense(self.num_classes, name='softmax', activation='softmax'))
 
@@ -294,7 +377,9 @@ class LipMovementNet(object):
             opt = RMSprop(lr=self.lr)
         else:
             opt = None
-        self.model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=[metrics.categorical_accuracy])
+        self.model.compile(
+            loss='categorical_crossentropy', optimizer=opt, metrics=[metrics.categorical_accuracy]
+        )
 
     def summary(self):
         self.model.summary()
@@ -309,20 +394,45 @@ class LipMovementNet(object):
         print('self.use_gru = ' + str(self.use_gru))
         print('self.dropout = ' + str(self.dropout))
         print('self.num_output_dense_layers = ' + str(self.num_output_dense_layers))
-        print('self.num_neurons_in_output_dense_layers = ' + str(self.num_neurons_in_output_dense_layers))
+        print(
+            'self.num_neurons_in_output_dense_layers = '
+            + str(self.num_neurons_in_output_dense_layers)
+        )
         print('self.activation_output_dense_layers = ' + str(self.activation_output_dense_layers))
         print('self.optimizer = ' + str(self.optimizer))
         print('self.lr = ' + str(self.lr))
 
 
-def build_and_compile(num_rnn_layers=1, num_neurons_in_rnn_layer=32, is_bidirectional=True, use_gru=True, dropout=0.25,
-                      num_output_dense_layers=0, num_neurons_in_output_dense_layers=0,
-                      activation_output_dense_layers='relu', optimizer='adam', lr=0.0001,
-                      frames_n=FRAME_SEQ_LEN, num_features=NUM_FEATURES, num_classes=NUM_CLASSES):
-    lmn = LipMovementNet(num_rnn_layers, num_neurons_in_rnn_layer, is_bidirectional, use_gru, dropout,
-                         num_output_dense_layers, num_neurons_in_output_dense_layers, activation_output_dense_layers,
-                         optimizer, lr,
-                         frames_n, num_features, num_classes)
+def build_and_compile(
+    num_rnn_layers=1,
+    num_neurons_in_rnn_layer=32,
+    is_bidirectional=True,
+    use_gru=True,
+    dropout=0.25,
+    num_output_dense_layers=0,
+    num_neurons_in_output_dense_layers=0,
+    activation_output_dense_layers='relu',
+    optimizer='adam',
+    lr=0.0001,
+    frames_n=FRAME_SEQ_LEN,
+    num_features=NUM_FEATURES,
+    num_classes=NUM_CLASSES,
+):
+    lmn = LipMovementNet(
+        num_rnn_layers,
+        num_neurons_in_rnn_layer,
+        is_bidirectional,
+        use_gru,
+        dropout,
+        num_output_dense_layers,
+        num_neurons_in_output_dense_layers,
+        activation_output_dense_layers,
+        optimizer,
+        lr,
+        frames_n,
+        num_features,
+        num_classes,
+    )
     lmn.build()
     lmn.compile()
     lmn.print_params()
@@ -342,22 +452,53 @@ def print_progress():
     end_time = time.time()
     minutes_elapsed = int((end_time - start_time) / 60)
     print('=================================================================')
-    print('COMPLETED ' + str(num_grid_combos_completed) + ' out of ' + str(NUM_GRID_COMBINATIONS) + ' in ' + str(
-        minutes_elapsed) + ' minutes')
+    print(
+        'COMPLETED '
+        + str(num_grid_combos_completed)
+        + ' out of '
+        + str(NUM_GRID_COMBINATIONS)
+        + ' in '
+        + str(minutes_elapsed)
+        + ' minutes'
+    )
     if num_grid_combos_completed > 0:
         print('Minutes per combination=' + str(int(minutes_elapsed / num_grid_combos_completed)))
     print('=================================================================')
 
 
-def train(dataset_path, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE, num_rnn_layers=1, num_neurons_in_rnn_layer=32,
-          is_bidirectional=True, use_gru=True, dropout=0.25,
-          num_output_dense_layers=0, num_neurons_in_output_dense_layers=0, activation_output_dense_layers='relu',
-          optimizer='adam', lr=0.0001,
-          frames_n=FRAME_SEQ_LEN, num_features=NUM_FEATURES, num_classes=NUM_CLASSES):
-    model = build_and_compile(num_rnn_layers, num_neurons_in_rnn_layer, is_bidirectional, use_gru, dropout,
-                              num_output_dense_layers, num_neurons_in_output_dense_layers,
-                              activation_output_dense_layers, optimizer, lr,
-                              frames_n, num_features, num_classes)
+def train(
+    dataset_path,
+    epochs=NUM_EPOCHS,
+    batch_size=BATCH_SIZE,
+    num_rnn_layers=1,
+    num_neurons_in_rnn_layer=32,
+    is_bidirectional=True,
+    use_gru=True,
+    dropout=0.25,
+    num_output_dense_layers=0,
+    num_neurons_in_output_dense_layers=0,
+    activation_output_dense_layers='relu',
+    optimizer='adam',
+    lr=0.0001,
+    frames_n=FRAME_SEQ_LEN,
+    num_features=NUM_FEATURES,
+    num_classes=NUM_CLASSES,
+):
+    model = build_and_compile(
+        num_rnn_layers,
+        num_neurons_in_rnn_layer,
+        is_bidirectional,
+        use_gru,
+        dropout,
+        num_output_dense_layers,
+        num_neurons_in_output_dense_layers,
+        activation_output_dense_layers,
+        optimizer,
+        lr,
+        frames_n,
+        num_features,
+        num_classes,
+    )
 
     tensorboard_dir = os.path.join(dataset_path, 'tensorboard')
     if not os.path.exists(tensorboard_dir):
@@ -368,23 +509,23 @@ def train(dataset_path, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE, num_rnn_layers
         os.mkdir(models_dir)
 
     # define callbacks
-    callbacks = [ModelCheckpoint(
-        os.path.join(models_dir,
-                     'lip_movement_net_model_epoch-{epoch:02d}_loss-{loss:.4f}_val_loss-{val_loss:.4f}_val_categorical_accuracy-{val_categorical_accuracy:.4f}.h5'),
-        monitor='val_loss',
-        verbose=1,
-        save_best_only=True,
-        save_weights_only=False,
-        mode='min',
-        period=1),
-        EarlyStopping(
+    callbacks = [
+        ModelCheckpoint(
+            os.path.join(
+                models_dir,
+                'lip_movement_net_model_epoch-{epoch:02d}_loss-{loss:.4f}_val_loss-{val_loss:.4f}_val_categorical_accuracy-{val_categorical_accuracy:.4f}.h5',
+            ),
             monitor='val_loss',
-            min_delta=0.0005,
-            patience=10),
-        TensorBoard(log_dir=tensorboard_dir,
-                    histogram_freq=0,
-                    write_graph=True,
-                    write_images=True)
+            verbose=1,
+            save_best_only=True,
+            save_weights_only=False,
+            mode='min',
+            period=1,
+        ),
+        cast(Any, EarlyStopping)(monitor='val_loss', min_delta=0.0005, patience=10),
+        TensorBoard(
+            log_dir=tensorboard_dir, histogram_freq=0, write_graph=True, write_images=True
+        ),
     ]
 
     global X_train, y_train, X_val, y_val
@@ -403,27 +544,63 @@ def train(dataset_path, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE, num_rnn_layers
     print('Steps_per_epoch=' + str(steps_per_epoch))
     print('Validation_steps=' + str(validation_steps))
     print('Starting the training...')
-    model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1,
-              callbacks=callbacks, validation_data=(X_val, y_val), shuffle=True)
+    cast(Any, model).fit(
+        X_train,
+        y_train,
+        batch_size=batch_size,
+        epochs=epochs,
+        verbose=1,
+        callbacks=callbacks,
+        validation_data=(X_val, y_val),
+        shuffle=True,
+    )
     print('Training completed.')
 
-    model_file_path = os.path.join(models_dir, str(num_rnn_layers) + '_' + str(num_neurons_in_rnn_layer) + '_' + str(
-        is_bidirectional) + '_' + str(use_gru) + '_' + str(dropout) + '_lip_movement_net_model.h5')
+    model_file_path = os.path.join(
+        models_dir,
+        str(num_rnn_layers)
+        + '_'
+        + str(num_neurons_in_rnn_layer)
+        + '_'
+        + str(is_bidirectional)
+        + '_'
+        + str(use_gru)
+        + '_'
+        + str(dropout)
+        + '_lip_movement_net_model.h5',
+    )
     model.save(model_file_path)
     print('Model file saved to path: ' + model_file_path)
 
 
-def test(dataset_path, num_rnn_layers=1, num_neurons_in_rnn_layer=32, is_bidirectional=True, use_gru=True,
-         dropout=0.25):
+def test(
+    dataset_path,
+    num_rnn_layers=1,
+    num_neurons_in_rnn_layer=32,
+    is_bidirectional=True,
+    use_gru=True,
+    dropout=0.25,
+):
     print('Testing...')
 
     models_dir = os.path.join(dataset_path, 'models')
 
-    model_file_path = os.path.join(models_dir, str(num_rnn_layers) + '_' + str(num_neurons_in_rnn_layer) + '_' + str(
-        is_bidirectional) + '_' + str(use_gru) + '_' + str(dropout) + '_lip_movement_net_model.h5')
+    model_file_path = os.path.join(
+        models_dir,
+        str(num_rnn_layers)
+        + '_'
+        + str(num_neurons_in_rnn_layer)
+        + '_'
+        + str(is_bidirectional)
+        + '_'
+        + str(use_gru)
+        + '_'
+        + str(dropout)
+        + '_lip_movement_net_model.h5',
+    )
 
     print('Using model file: ' + model_file_path)
-    model = load_model(model_file_path)
+    model = load_required_model(model_file_path)
 
     global X_test, y_test
     if len(X_test) == 0:
@@ -456,9 +633,9 @@ def test(dataset_path, num_rnn_layers=1, num_neurons_in_rnn_layer=32, is_bidirec
 
 def test_video(video_path, shape_predictor_file, model):
     global shape_predictor
-    shape_predictor = dlib.shape_predictor(shape_predictor_file)
+    shape_predictor = dlib_api.shape_predictor(shape_predictor_file)
 
-    model = load_model(model)
+    model = load_required_model(model)
 
     frames = []
     # if video_path is a directory full of frames, read all the frames in from that directory
@@ -466,13 +643,15 @@ def test_video(video_path, shape_predictor_file, model):
         frame_names = sorted(os.listdir(video_path))
         for frame_name in frame_names:
             img = cv2.imread(os.path.join(video_path, frame_name))
+            if img is None:
+                continue
             img = cv2.resize(img, (256, 320))
             frames.append(img)
     else:
         cap = cv2.VideoCapture(video_path)
         while True:
             ret, img = cap.read()
-            if not ret:
+            if not ret or img is None:
                 break
             img = cv2.resize(img, (256, 320))
             frames.append(img)
@@ -500,14 +679,25 @@ def test_video(video_path, shape_predictor_file, model):
             continue
 
         # draw a box showing the detected face
-        for i, d in enumerate(dets):
+        for _i, d in enumerate(dets):
             # print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
             # 	i, d.left(), d.top(), d.right(), d.bottom()))
 
             cv2.rectangle(img, (d.left(), d.top()), (d.right(), d.bottom()), (0, 255, 0), 2)
             # draw the state label below the face
-            cv2.rectangle(img, (d.left(), d.bottom()), (d.right(), d.bottom() + 10), (0, 0, 255), cv2.FILLED)
-            cv2.putText(img, state, (d.left() + 2, d.bottom() + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
+            cv2.rectangle(
+                img, (d.left(), d.bottom()), (d.right(), d.bottom() + 10), (0, 0, 255), cv2.FILLED
+            )
+            cv2.putText(
+                img,
+                state,
+                (d.left() + 2, d.bottom() + 10 - 3),
+                font,
+                0.3,
+                (255, 255, 255),
+                1,
+                cv2.LINE_AA,
+            )
 
         cv2.imshow('Video', img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -518,7 +708,7 @@ def test_video(video_path, shape_predictor_file, model):
 
         if len(input_sequence) >= FRAME_SEQ_LEN:
             # get the most recent N sequences where N=FRAME_SEQ_LEN
-            seq = input_sequence[-1 * FRAME_SEQ_LEN:]
+            seq = input_sequence[-1 * FRAME_SEQ_LEN :]
             f = []
             for coords in seq:
                 part_61 = (int(coords[2 * 61]), int(coords[2 * 61 + 1]))
@@ -552,14 +742,29 @@ def test_video(video_path, shape_predictor_file, model):
 
             for k in CLASS_HASH:
                 if y_pred_max == CLASS_HASH[k]:
-                    state = k;
+                    state = k
                     break
 
             # redraw the label
-            for i, d in enumerate(dets):
+            for _i, d in enumerate(dets):
                 # draw the state label below the face
-                cv2.rectangle(img, (d.left(), d.bottom()), (d.right(), d.bottom() + 10), (0, 0, 255), cv2.FILLED)
-                cv2.putText(img, state, (d.left() + 2, d.bottom() + 10 - 3), font, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
+                cv2.rectangle(
+                    img,
+                    (d.left(), d.bottom()),
+                    (d.right(), d.bottom() + 10),
+                    (0, 0, 255),
+                    cv2.FILLED,
+                )
+                cv2.putText(
+                    img,
+                    state,
+                    (d.left() + 2, d.bottom() + 10 - 3),
+                    font,
+                    0.3,
+                    (255, 255, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
 
             cv2.imshow('Video', img)
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -579,8 +784,11 @@ def get_facial_landmark_vectors_from_frame(frame):
         return (None, None)
     # assume only 1 face per frame
     facial_points = []
-    for k, d in enumerate(dets):
-        shape = shape_predictor(frame, d)
+    predictor = shape_predictor
+    if predictor is None:
+        raise RuntimeError('A shape predictor must be loaded before processing frames.')
+    for _k, d in enumerate(dets):
+        shape = predictor(frame, d)
         if shape is None:
             continue
 
@@ -593,7 +801,7 @@ def get_facial_landmark_vectors_from_frame(frame):
         if len(facial_points) > 0:
             break
 
-    print('Returning ('+str(len(dets)) + ', ' + str(len(facial_points)) + ')')
+    print('Returning (' + str(len(dets)) + ', ' + str(len(facial_points)) + ')')
     return (dets, facial_points)
 
 
@@ -607,114 +815,147 @@ def dist(p1, p2):
 
 
 def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
+    return v.lower() in ('yes', 'true', 't', '1')
 
 
 def generate_grid_data(path_to_grid_options_csv):
-    fp_obj = open(path_to_grid_options_csv, 'w', newline='')
-    file_writer = csv.writer(fp_obj, delimiter=',')
+    with open(path_to_grid_options_csv, 'w', newline='') as fp_obj:
+        file_writer = csv.writer(fp_obj, delimiter=',')
 
-    i = 0
-    for num_rnn_layers in [1, 2]:
-        for num_neurons_in_rnn_layer in [32, 64, 128]:
-            for is_bidirectional in [False, True]:
-                for use_gru in [False, True]:
-                    for dropout in [0.0, 0.25, 0.5]:
-                        file_writer.writerow([num_rnn_layers,
-                                              num_neurons_in_rnn_layer,
-                                              is_bidirectional,
-                                              use_gru,
-                                              dropout])
-                        i += 1
+        i = 0
+        for num_rnn_layers in [1, 2]:
+            for num_neurons_in_rnn_layer in [32, 64, 128]:
+                for is_bidirectional in [False, True]:
+                    for use_gru in [False, True]:
+                        for dropout in [0.0, 0.25, 0.5]:
+                            file_writer.writerow(
+                                [
+                                    num_rnn_layers,
+                                    num_neurons_in_rnn_layer,
+                                    is_bidirectional,
+                                    use_gru,
+                                    dropout,
+                                ]
+                            )
+                            i += 1
 
-    print('Wrote ' + str(i) + ' grid combinations to ' + path_to_grid_options_csv)
-    fp_obj.flush()
-    fp_obj.close()
+        print('Wrote ' + str(i) + ' grid combinations to ' + path_to_grid_options_csv)
 
 
-def train_in_grid_search_mode(path_to_grid_options_csv, path_to_grid_results_csv, path_to_dataset_dir):
+def train_in_grid_search_mode(
+    path_to_grid_options_csv, path_to_grid_results_csv, path_to_dataset_dir
+):
     results = {}
 
-    # note down the combinations that have been explored already so that we don't train on those again.
+    # Note the combinations already explored so that we do not train them again.
     # useful if grid search is resumed after a pre-maturely terminated run.
     if os.path.exists(path_to_grid_results_csv):
         global num_grid_combos_completed
         num_grid_combos_completed = 0
-        fp_obj0 = open(path_to_grid_results_csv, 'r')
-        reader = csv.reader(fp_obj0)
-        for results_row in reader:
-            num_rnn_layers = results_row[0]
-            num_neurons_in_rnn_layer = results_row[1]
-            is_bidirectional = results_row[2]
-            use_gru = results_row[3]
-            dropout = results_row[4]
+        with open(path_to_grid_results_csv) as fp_obj0:
+            reader = csv.reader(fp_obj0)
+            for results_row in reader:
+                num_rnn_layers = results_row[0]
+                num_neurons_in_rnn_layer = results_row[1]
+                is_bidirectional = results_row[2]
+                use_gru = results_row[3]
+                dropout = results_row[4]
 
-            key = num_rnn_layers + '_' + num_neurons_in_rnn_layer + '_' + is_bidirectional + '_' + use_gru + '_' + dropout
-            results[key] = True
+                key = (
+                    num_rnn_layers
+                    + '_'
+                    + num_neurons_in_rnn_layer
+                    + '_'
+                    + is_bidirectional
+                    + '_'
+                    + use_gru
+                    + '_'
+                    + dropout
+                )
+                results[key] = True
 
-            num_grid_combos_completed += 1
-
-        fp_obj0.close()
+                num_grid_combos_completed += 1
 
     global NUM_GRID_COMBINATIONS
-    NUM_GRID_COMBINATIONS = 0
-    fp_obj1 = open(path_to_grid_options_csv, 'r')
-    reader = csv.reader(fp_obj1)
-    for grid_options in reader:
-        NUM_GRID_COMBINATIONS += 1
-    fp_obj1.close()
-
-    fp_obj1 = open(path_to_grid_options_csv, 'r')
-    reader = csv.reader(fp_obj1)
-
-    exists_file = os.path.exists(path_to_grid_results_csv)
-    fp_obj2 = open(path_to_grid_results_csv, 'a+', newline='')
-    file_writer = csv.writer(fp_obj2, delimiter=',')
-    if not exists_file:
-        file_writer.writerow(['num_rnn_layers', 'num_neurons_in_rnn_layer', 'is_bidirectional', 'use_gru', 'dropout',
-                          'precision', 'recall', 'f1', 'roc_auc'])
+    with open(path_to_grid_options_csv) as fp_obj1:
+        NUM_GRID_COMBINATIONS = sum(1 for _grid_options in csv.reader(fp_obj1))
 
     global start_time
     start_time = time.time()
 
-    for grid_options in reader:
-        num_rnn_layers = int(grid_options[0])
-        num_neurons_in_rnn_layer = int(grid_options[1])
-        is_bidirectional = str2bool(grid_options[2])
-        use_gru = str2bool(grid_options[3])
-        dropout = float(grid_options[4])
+    exists_file = os.path.exists(path_to_grid_results_csv)
+    with (
+        open(path_to_grid_options_csv) as fp_obj1,
+        open(path_to_grid_results_csv, 'a+', newline='') as fp_obj2,
+    ):
+        reader = csv.reader(fp_obj1)
+        file_writer = csv.writer(fp_obj2, delimiter=',')
+        if not exists_file:
+            file_writer.writerow(
+                [
+                    'num_rnn_layers',
+                    'num_neurons_in_rnn_layer',
+                    'is_bidirectional',
+                    'use_gru',
+                    'dropout',
+                    'precision',
+                    'recall',
+                    'f1',
+                    'roc_auc',
+                ]
+            )
 
-        d = grid_options[0] + '_' + grid_options[1] + '_' + grid_options[2] + '_' + grid_options[3] + '_' + \
-            grid_options[4]
+        for grid_options in reader:
+            num_rnn_layers = int(grid_options[0])
+            num_neurons_in_rnn_layer = int(grid_options[1])
+            is_bidirectional = str2bool(grid_options[2])
+            use_gru = str2bool(grid_options[3])
+            dropout = float(grid_options[4])
 
-        if d in results:
-            print('SKIPPING already trained combination: ' + str(grid_options))
-            continue
+            d = '_'.join(grid_options[:5])
 
-        train(dataset_path=path_to_dataset_dir, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE,
-              num_rnn_layers=num_rnn_layers, num_neurons_in_rnn_layer=num_neurons_in_rnn_layer,
-              is_bidirectional=is_bidirectional, use_gru=use_gru, dropout=dropout,
-              num_output_dense_layers=0,
-              num_neurons_in_output_dense_layers=0, activation_output_dense_layers='relu',
-              optimizer='adam', lr=0.0001,
-              frames_n=FRAME_SEQ_LEN, num_features=NUM_FEATURES, num_classes=NUM_CLASSES)
+            if d in results:
+                print('SKIPPING already trained combination: ' + str(grid_options))
+                continue
 
-        results = test(path_to_dataset_dir, num_rnn_layers, num_neurons_in_rnn_layer, is_bidirectional, use_gru, dropout)
+            train(
+                dataset_path=path_to_dataset_dir,
+                epochs=NUM_EPOCHS,
+                batch_size=BATCH_SIZE,
+                num_rnn_layers=num_rnn_layers,
+                num_neurons_in_rnn_layer=num_neurons_in_rnn_layer,
+                is_bidirectional=is_bidirectional,
+                use_gru=use_gru,
+                dropout=dropout,
+                num_output_dense_layers=0,
+                num_neurons_in_output_dense_layers=0,
+                activation_output_dense_layers='relu',
+                optimizer='adam',
+                lr=0.0001,
+                frames_n=FRAME_SEQ_LEN,
+                num_features=NUM_FEATURES,
+                num_classes=NUM_CLASSES,
+            )
 
-        row = grid_options + results
-        file_writer.writerow(row)
-        fp_obj2.flush()
+            test_results = test(
+                path_to_dataset_dir,
+                num_rnn_layers,
+                num_neurons_in_rnn_layer,
+                is_bidirectional,
+                use_gru,
+                dropout,
+            )
 
-    fp_obj1.close()
+            row = grid_options + test_results
+            file_writer.writerow(row)
+            fp_obj2.flush()
 
-    fp_obj2.flush()
-    fp_obj2.close()
 
-
-class LipMovementDetector(object):
+class LipMovementDetector:
     def __init__(self, model_path, shape_predictor):
-        self.input_sequence = Queue(FRAME_SEQ_LEN)
-        self.model = load_model(model_path)
+        self.input_sequence: list[Queue[list[float]]] = []
+        self.output_sequence: list[Queue[str]] = []
+        self.model = load_required_model(model_path)
         self.shape_predictor = shape_predictor
 
     def initialize_input_sequence(self, num_of_faces):
@@ -723,21 +964,23 @@ class LipMovementDetector(object):
         Also initializes output sequence to match the number of faces.
         """
         self.input_sequence = []
-        for face in range(num_of_faces):
+        for _face in range(num_of_faces):
             self.input_sequence.append(Queue(FRAME_SEQ_LEN))
         self.initialize_output_sequence(num_of_faces)
 
     def initialize_output_sequence(self, num_of_faces):
         self.output_sequence = []
         output_seq_len = 10
-        for face in range(num_of_faces):
+        for _face in range(num_of_faces):
             self.output_sequence.append(Queue(output_seq_len))
 
     def test_video_frame(self, frame, bounding_box, face_idx):
         """
         Test the video frame to see if the face in the bounding box is speaking or silent.
         """
-        facial_points_vector = self.get_facial_landmark_vectors_from_bounding_box(frame, bounding_box)
+        facial_points_vector = self.get_facial_landmark_vectors_from_bounding_box(
+            frame, bounding_box
+        )
         if not facial_points_vector:
             return 'silent'
 
@@ -798,25 +1041,32 @@ class LipMovementDetector(object):
 
 
 if __name__ == '__main__':
-
     run_name = datetime.datetime.now().strftime('%Y:%m:%d:%H:%M:%S')
 
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("-i", "--dataset", required=False,
-                    help="path to training data directory")
-    ap.add_argument("-gg", "--gen_grid_options", required=False,
-                    help="generate the csv file containing the grid search combinations")
-    ap.add_argument("-go", "--grid_options_csv", required=False,
-                    help="path to file containing grid search combinations")
-    ap.add_argument("-gr", "--grid_results_csv", required=False,
-                    help="path to output file containing grid search results")
-    ap.add_argument("-v", "--video_file", required=False,
-                    help="path to video file")
-    ap.add_argument("-p", "--shape_predictor", required=False,
-                    help="shape predictor file")
-    ap.add_argument("-m", "--model", required=False,
-                    help="shape model file")
+    ap.add_argument('-i', '--dataset', required=False, help='path to training data directory')
+    ap.add_argument(
+        '-gg',
+        '--gen_grid_options',
+        required=False,
+        help='generate the csv file containing the grid search combinations',
+    )
+    ap.add_argument(
+        '-go',
+        '--grid_options_csv',
+        required=False,
+        help='path to file containing grid search combinations',
+    )
+    ap.add_argument(
+        '-gr',
+        '--grid_results_csv',
+        required=False,
+        help='path to output file containing grid search results',
+    )
+    ap.add_argument('-v', '--video_file', required=False, help='path to video file')
+    ap.add_argument('-p', '--shape_predictor', required=False, help='shape predictor file')
+    ap.add_argument('-m', '--model', required=False, help='shape model file')
 
     args = vars(ap.parse_args())
 
@@ -825,17 +1075,32 @@ if __name__ == '__main__':
         exit(0)
 
     if args['grid_options_csv']:
-        train_in_grid_search_mode(args['grid_options_csv'], args['grid_results_csv'], args['dataset'])
+        train_in_grid_search_mode(
+            args['grid_options_csv'], args['grid_results_csv'], args['dataset']
+        )
         exit(0)
 
     if args['dataset']:
         start_time = time.time()
 
-        train(args['dataset'], epochs=NUM_EPOCHS, batch_size=BATCH_SIZE, num_rnn_layers=1, num_neurons_in_rnn_layer=32,
-              is_bidirectional=True, use_gru=True, dropout=0.25,
-              num_output_dense_layers=0, num_neurons_in_output_dense_layers=0, activation_output_dense_layers='relu',
-              optimizer='adam', lr=0.0001,
-              frames_n=FRAME_SEQ_LEN, num_features=NUM_FEATURES, num_classes=NUM_CLASSES)
+        train(
+            args['dataset'],
+            epochs=NUM_EPOCHS,
+            batch_size=BATCH_SIZE,
+            num_rnn_layers=1,
+            num_neurons_in_rnn_layer=32,
+            is_bidirectional=True,
+            use_gru=True,
+            dropout=0.25,
+            num_output_dense_layers=0,
+            num_neurons_in_output_dense_layers=0,
+            activation_output_dense_layers='relu',
+            optimizer='adam',
+            lr=0.0001,
+            frames_n=FRAME_SEQ_LEN,
+            num_features=NUM_FEATURES,
+            num_classes=NUM_CLASSES,
+        )
 
         test(args['dataset'])
         exit(0)

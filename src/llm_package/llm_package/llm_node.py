@@ -44,9 +44,7 @@ RESPONSE_PROMPT = (
 
 
 def load_local_environment():
-    project_root = Path(
-        os.environ.get('SOP_ROBOT_ROOT', Path.cwd())
-    ).resolve()
+    project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
     load_dotenv(project_root / '.env.local')
 
 
@@ -55,10 +53,13 @@ class LLMNode(Node):
         super().__init__('llm_node')
 
         load_local_environment()
-        self.base_url = os.environ.get(
-            'LLM_BASE_URL',
-            DEFAULT_BASE_URL,
-        ) or DEFAULT_BASE_URL
+        self.base_url = (
+            os.environ.get(
+                'LLM_BASE_URL',
+                DEFAULT_BASE_URL,
+            )
+            or DEFAULT_BASE_URL
+        )
         self.model = os.environ.get('LLM_MODEL') or DEFAULT_MODEL
         api_key = os.environ.get('LLM_API_KEY') or DEFAULT_API_KEY
 
@@ -84,9 +85,7 @@ class LLMNode(Node):
             api_key=api_key,
         )
         self.history = []
-        self.get_logger().info(
-            f'OpenAI-compatible client ready with {self.model}.'
-        )
+        self.get_logger().info(f'OpenAI-compatible client ready with {self.model}.')
 
     def speech_callback(self, message):
         transcript = message.data.strip()
@@ -104,32 +103,23 @@ class LLMNode(Node):
         self.response_publisher.publish(String(data=answer))
 
     def generate_response(self, transcript):
-        self.get_logger().info(
-            f'Faster Whisper: {transcript}'
-        )
+        self.get_logger().info(f'Faster Whisper: {transcript}')
         if self.history:
             corrected = self.correct_transcript(transcript)
             self.get_logger().info(f'Interpreted user: {corrected}')
         else:
             corrected = transcript
-            self.get_logger().info(
-                'First turn: using the Faster Whisper transcript directly.'
-            )
+            self.get_logger().info('First turn: using the Faster Whisper transcript directly.')
         answer = self.answer_user(corrected)
         self.get_logger().info(f'Robot: {answer}')
         return answer
 
     def correct_transcript(self, transcript):
-        messages = [{
-            'role': 'system',
-            'content': CORRECTION_PROMPT,
-        }] + self.history + [{
-            'role': 'user',
-            'content': (
-                'Faster Whisperin litterointi:\n'
-                f'{transcript}'
-            ),
-        }]
+        messages = [
+            {'role': 'system', 'content': CORRECTION_PROMPT},
+            *self.history,
+            {'role': 'user', 'content': f'Faster Whisperin litterointi:\n{transcript}'},
+        ]
         return self.complete(
             messages,
             max_tokens=512,
@@ -137,26 +127,29 @@ class LLMNode(Node):
         )
 
     def answer_user(self, corrected):
-        messages = [{
-            'role': 'system',
-            'content': RESPONSE_PROMPT,
-        }] + self.history + [{
-            'role': 'user',
-            'content': corrected,
-        }]
+        messages = [
+            {'role': 'system', 'content': RESPONSE_PROMPT},
+            *self.history,
+            {'role': 'user', 'content': corrected},
+        ]
         answer = self.complete(
             messages,
             max_tokens=512,
             empty_error='The model response was empty.',
         )
 
-        self.history.extend([{
-            'role': 'user',
-            'content': corrected,
-        }, {
-            'role': 'assistant',
-            'content': answer,
-        }])
+        self.history.extend(
+            [
+                {
+                    'role': 'user',
+                    'content': corrected,
+                },
+                {
+                    'role': 'assistant',
+                    'content': answer,
+                },
+            ]
+        )
         self.history = self.history[-MAX_HISTORY_MESSAGES:]
         return answer
 
@@ -181,9 +174,7 @@ class LLMNode(Node):
                 f'text; retrying with {token_budget * 2} tokens.'
             )
 
-        raise RuntimeError(
-            f'{empty_error} finish_reason={finish_reason!r}.'
-        )
+        raise RuntimeError(f'{empty_error} finish_reason={finish_reason!r}.')
 
     def destroy_node(self):
         self.client.close()

@@ -1,0 +1,32 @@
+target-version = "py312"
+line-length = 99
+respect-gitignore = true
+
+extend-exclude = [
+    ".pixi",
+    ".pixi-packed",
+    ".venv",
+    "build",
+    "install",
+    "log",
+    "src/dynamixel-workbench",
+    "src/dynamixel-workbench-msgs",
+]
+
+[lint]
+select = [
+    "B",
+    "E",
+    "F",
+    "I",
+    "RUF",
+    "SIM",
+    "UP",
+    "W",
+]
+
+[format]
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
+quote-style = "single"

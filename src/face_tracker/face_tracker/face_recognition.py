@@ -1,8 +1,8 @@
 from deepface import DeepFace
 from deepface.models.FacialRecognition import FacialRecognition
 
-class FaceRecognizer(object):
 
+class FaceRecognizer:
     def __init__(self, logger, model_name, detector_backend):
         """
         Initialize face recognizer, and create embeddings in the intialization
@@ -14,10 +14,10 @@ class FaceRecognizer(object):
         # build models once to store them in the memory
         self.model: FacialRecognition = DeepFace.build_model(model_name=model_name)
 
-        logger.info(f"facial recognition model {model_name} is just built")
+        logger.info(f'facial recognition model {model_name} is just built')
 
-        self.logger.info("FaceRecognizer initialized!")
-    
+        self.logger.info('FaceRecognizer initialized!')
+
     def extract_faces(self, img):
         """
         Extract faces from image. Discards small faces.
@@ -37,8 +37,10 @@ class FaceRecognizer(object):
             detector_backend=self.detector_backend,
             enforce_detection=False,
         )
-        return [face_obj for face_obj in face_objs if face_obj["facial_area"]["w"] < img.shape[0] * 0.8]
-    
+        return [
+            face_obj for face_obj in face_objs if face_obj['facial_area']['w'] < img.shape[0] * 0.8
+        ]
+
     def represent(self, img):
         """
         This function calculates vector representation for one face
@@ -50,6 +52,6 @@ class FaceRecognizer(object):
         target_embedding_obj = DeepFace.represent(
             img_path=img,
             model_name=self.model_name,
-            detector_backend="skip",
-            )
-        return target_embedding_obj[0]["embedding"]
+            detector_backend='skip',
+        )
+        return target_embedding_obj[0]['embedding']

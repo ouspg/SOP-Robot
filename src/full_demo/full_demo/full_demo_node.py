@@ -15,10 +15,11 @@
 from enum import Enum
 from time import time
 
-from face_tracker_msgs.msg import Face, Faces
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
+
+from face_tracker_msgs.msg import Face, Faces
 
 
 class State(Enum):
@@ -151,13 +152,10 @@ class FullDemoNode(Node):
                     return
 
                 if face.face_id in self.face_greet_time:
-                    elapsed_time = (
-                        current_time - self.face_greet_time[face.face_id]
-                    )
+                    elapsed_time = current_time - self.face_greet_time[face.face_id]
                     if elapsed_time < 120:
                         self.get_logger().info(
-                            f'Already greeted {face.face_id} within the '
-                            'previous 2 minutes.'
+                            f'Already greeted {face.face_id} within the previous 2 minutes.'
                         )
                         return
 

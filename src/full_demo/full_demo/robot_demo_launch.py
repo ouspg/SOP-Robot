@@ -21,36 +21,38 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_robot_demo_launch_description(*, use_fake_hardware):
-    robot_launch_file = (
-        'robot.fake.launch.py'
-        if use_fake_hardware
-        else 'robot.launch.py'
-    )
+    robot_launch_file = 'robot.fake.launch.py' if use_fake_hardware else 'robot.launch.py'
 
     robot = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare('robot'),
-                robot_launch_file,
-            ])
+            PathJoinSubstitution(
+                [
+                    FindPackageShare('robot'),
+                    robot_launch_file,
+                ]
+            )
         )
     )
     chatbot = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare('full_demo'),
-                'launch',
-                'chatbot.launch.py',
-            ])
+            PathJoinSubstitution(
+                [
+                    FindPackageShare('full_demo'),
+                    'launch',
+                    'chatbot.launch.py',
+                ]
+            )
         )
     )
     face_tracker = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare('face_tracker'),
-                'launch',
-                'face_tracker.launch.py',
-            ])
+            PathJoinSubstitution(
+                [
+                    FindPackageShare('face_tracker'),
+                    'launch',
+                    'face_tracker.launch.py',
+                ]
+            )
         )
     )
 

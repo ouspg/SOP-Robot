@@ -66,6 +66,8 @@ pyserial = "*"
 scikit-learn = "*"
 scipy = "*"
 yaml-cpp = "*"
+ruff = ">=0.13,<0.14"
+basedpyright = ">=1.39.8,<2"
 
 [pypi-options]
 index-strategy = "unsafe-best-match"
@@ -87,11 +89,15 @@ webrtcvad-wheels = ">=2.0.14, <3"
 huggingface-hub = ">=0.36.2, <0.37"
 openai = ">=2,<3"
 python-dotenv = ">=1,<2"
+diagrams = ">=0.25.1, <0.26"
 
 [tasks]
 sync-submodules = { cmd = "git submodule update --init --recursive src/dynamixel-workbench src/dynamixel-workbench-msgs", description = "Fetch source dependencies checked into .gitmodules" }
 build = { cmd = "colcon build --symlink-install", depends-on = ["sync-submodules"], inputs = ["src"], outputs = ["install/setup.sh"], description = "Build the ROS 2 workspace" }
 test = { cmd = "colcon test --python-testing pytest --event-handlers console_direct+ && colcon test-result --verbose", description = "Run ROS 2 package tests" }
+lint = { cmd = "ruff check . && ruff format --check .", description = "Run Ruff lint and formatting checks" }
+typecheck = { cmd = "basedpyright", description = "Run BasedPyright across the Python workspace" }
+format = { cmd = "ruff check . --fix && ruff format .", description = "Apply Ruff lint and formatting fixes" }
 clean = { cmd = "rm -rf build install log", description = "Remove colcon build outputs" }
 
 robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }

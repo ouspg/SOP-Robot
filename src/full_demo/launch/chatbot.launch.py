@@ -40,8 +40,10 @@ def generate_launch_description():
         output='screen',
     )
 
-    return LaunchDescription([
-        tts_node,
-        llm_node,
-        sst_node,
-    ])
+    return LaunchDescription(
+        [
+            tts_node,
+            llm_node,
+            sst_node,
+        ]
+    )
