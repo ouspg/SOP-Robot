@@ -97,7 +97,7 @@ namespace robot_hardware
 
     std::unordered_map<std::string, int> joint_indices_;
 
-    DynamixelWorkbench dxl_wb_;
+    std::unique_ptr<DynamixelWorkbench> dxl_wb_;
 
     std::vector<DynamixelGroup> dynamixel_groups_;
 

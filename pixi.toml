@@ -65,39 +65,18 @@ pyaudio = "*"
 pyserial = "*"
 scikit-learn = "*"
 scipy = "*"
-speechrecognition = "==3.10.4"
 yaml-cpp = "*"
 
 [pypi-options]
 index-strategy = "unsafe-best-match"
 
 [pypi-dependencies]
-"boilerpy3" = "==1.0.7"
 "coqui-tts" = ">=0.27.5,<0.28"
 "deepface" = "==0.0.92"
-"Events" = "==0.5"
 "httpx" = "*"
-"jsonschema" = "==3.2.0"
-"lazy-imports" = "==0.3.1"
-"more-itertools" = "*"
-"networkx" = "*"
-"pandas" = "*"
 "pillow" = "*"
-"platformdirs" = "*"
-"posthog" = ">=3,<4"
 "progressbar" = "==2.5"
-"prompthub-py" = "==4.0.0"
-"pydantic" = "==1.10.18"
-"quantulum3" = "==0.9.2"
-"rank-bm25" = "==0.2.2"
-"requests-cache" = "==0.9.8"
-"sentence-transformers" = "==3.0.0"
-"sentencepiece" = "==0.2.1"
-"spacy" = { version = "==3.7.5", extras = ["ja"] }
-"sseclient-py" = "==1.8.0"
-"tenacity" = ">=8,<10"
 "tensorflow" = ">=2.19,<2.20"
-"tiktoken" = "*"
 "tf-keras" = ">=2.19,<2.20"
 "torch" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
 "torchaudio" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
@@ -118,16 +97,15 @@ clean = { cmd = "rm -rf build install log", description = "Remove colcon build o
 robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
 robot-head = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=head'", description = "Launch the real robot head only" }
 robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
-robot-demo = { cmd = "bash launch_demo.sh", description = "Launch the full robot demo in separate terminal windows" }
+robot-demo-real = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch full_demo real_robot.launch.py'", description = "Launch the complete demo with the real robot" }
+robot-demo-fake = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch full_demo fake_robot.launch.py'", description = "Launch the complete demo with fake robot hardware" }
 face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
 face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
+unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
 tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package tts_node'", description = "Launch the text-to-speech node" }
-speech-recognizer = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run speech_recognizer speech_recognizer_node'", description = "Launch the speech recognizer node" }
-qabot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run qabot client'", description = "Launch the Q&A bot client" }
 sst = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_package sst.launch.py'", description = "Launch speech-to-text using the system input device" }
 setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
 llm = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run llm_package llm_node'", description = "Launch the conversational language-model node" }
 chatbot = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch full_demo chatbot.launch.py'", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
-install-haystack = { cmd = "python -c \"import importlib.util, subprocess, sys; sys.exit(0 if importlib.util.find_spec('haystack') else subprocess.call([sys.executable, '-m', 'pip', 'install', '--no-deps', 'farm-haystack==1.26.3']))\"", description = "Install farm-haystack without its incompatible transitive pins" }
-setup-runtime = { depends-on = ["sync-submodules", "download-tts-model", "install-haystack"], description = "Fetch runtime assets and no-deps Python package installs" }
+setup-runtime = { depends-on = ["sync-submodules", "download-tts-model"], description = "Fetch source dependencies and runtime model assets" }

@@ -50,9 +50,10 @@ class FaceTrackerMovementNode(Node):
         # Set initial values
         if simulation:
             self.logger.info("Running face_tracker_movement in simulation mode")
-            self.logger.info("Notice that the camera is not moved in simulation, when face is moveing. " + 
-                             "This means that face location doesn't change, when head moves." +
-                             "Idle movement should be similar, but has some hacky solutions that make it work.")
+            self.logger.debug(
+                "The camera does not move with the simulated head, so face "
+                "coordinates remain fixed while the head moves."
+            )
 
             # Set initial values for simulation environment
             # Movement limits
@@ -78,7 +79,7 @@ class FaceTrackerMovementNode(Node):
             self.simulation = True
 
         else:
-            self.logger.info(f"Running face_tracker_movement in hardware mode")
+            self.logger.info("Running face_tracker_movement in hardware mode")
 
             # Set initial values for actual robot
             # Movement limits
@@ -107,7 +108,7 @@ class FaceTrackerMovementNode(Node):
         self.camera_resolution_x = 1280
         self.camera_resolution_y = 960
         self.angle_per_pixel = self.camera_diagonal_fov / math.sqrt(self.camera_resolution_x**2 + self.camera_resolution_y**2)
-        self.logger.info(f"{self.angle_per_pixel=}")
+        self.logger.debug(f"{self.angle_per_pixel=}")
 
         # camera angle to eye and head servo angle coeffs (servo_angle = camera_angle * coeff)
         self.camera_angle_eye_vertical_coeff = 4.01489
@@ -211,7 +212,12 @@ class FaceTrackerMovementNode(Node):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
                 self.head_state[i] = self.start_head_state[i]
-                self.logger.info("Head joint ID " + str(self.head_joint_ids[i]) + " is not responding")
+                self.logger.warning(
+                    "Head joint ID "
+                    + str(self.head_joint_ids[i])
+                    + " is not responding",
+                    throttle_duration_sec=5.0,
+                )
             else:
                 self.head_state[i] = val
 
@@ -220,7 +226,12 @@ class FaceTrackerMovementNode(Node):
         for i, val in enumerate(msg.actual.positions):
             if math.isnan(val):
                 self.eyes_servo_state[i] = self.eyes_center_position[i]
-                self.logger.info("Eye joint ID " + str(self.eyes_joint_ids[i]) + " is not responding")
+                self.logger.warning(
+                    "Eye joint ID "
+                    + str(self.eyes_joint_ids[i])
+                    + " is not responding",
+                    throttle_duration_sec=5.0,
+                )
             else:
                 # Servo angle
                 self.eyes_servo_state[i] = val
@@ -252,12 +263,12 @@ class FaceTrackerMovementNode(Node):
         elif gesture == 'glance':
             self.glance(**args)
         else:
-            self.logger.info("Gesture not implemented!")
+            self.logger.warning(f"Gesture not implemented: {gesture}")
 
     # Get random horizontal positions for eyes and head and turn there at a random speed
     def idle_timer_callback(self):
         if self.idling == False:
-            self.logger.info("Start idling...")
+            self.logger.debug("Start idling...")
         self.idling = True
 
         # Only for simulator, gets around not getting servo positions 
@@ -301,9 +312,9 @@ class FaceTrackerMovementNode(Node):
             eye_goal_horizontal = random.uniform(self.eye_horizontal_lower_limit, self.eye_horizontal_upper_limit)
 
         # For testing only
-        self.logger.info(f"{pan_travel=}")
-        self.logger.info(f"{eye_goal_vertical=}")
-        self.logger.info(f"{eye_goal_horizontal=}")
+        self.logger.debug(f"{pan_travel=}")
+        self.logger.debug(f"{eye_goal_vertical=}")
+        self.logger.debug(f"{eye_goal_horizontal=}")
 
         if self.eyes_enabled:
             self.send_eye_goal(eye_goal_horizontal, eye_goal_vertical)
@@ -360,7 +371,9 @@ class FaceTrackerMovementNode(Node):
                 # Publish selected face if in near interaction for other nodes to work with
                 if selected_face.diagonal > self.near_interaction_treshold:
                     self.focused_face_publisher.publish(selected_face)
-                self.logger.info(f"Tracking face with id={selected_face.face_id}")
+                self.logger.debug(
+                    f"Tracking face with id={selected_face.face_id}"
+                )
             if not self.preferred_face_id:
                 self.add_preferred_face(selected_face)
         self.previous_face = selected_face
@@ -403,7 +416,9 @@ class FaceTrackerMovementNode(Node):
         # Filter and log deleted items
         for blocked_face in self.blocked_faces:
             if blocked_face["block_start"] + blocked_face["block_duration"] < time.time():
-                self.logger.info(f"Removed face {blocked_face['face_id']} from blocked faces")
+                self.logger.debug(
+                    f"Removed face {blocked_face['face_id']} from blocked faces"
+                )
             else:
                 remaining_faces.append(blocked_face)
         self.blocked_faces = remaining_faces
@@ -413,7 +428,7 @@ class FaceTrackerMovementNode(Node):
             self.logger.warning("Setting preferred face to same as old preferred face!")
         self.preferred_face_id = face.face_id
         self.preferred_face_tracking_start_time = face.occurances[-1].end_time  # Timestamp for last time face was seen
-        self.logger.info(f"Preferred face set to {self.preferred_face_id}")
+        self.logger.debug(f"Preferred face set to {self.preferred_face_id}")
 
     def remove_preferred_face(self):
         self.blocked_faces.append({
@@ -421,7 +436,9 @@ class FaceTrackerMovementNode(Node):
             "block_start": time.time(),
             "block_duration": self.blocked_faces_timeout,
         })
-        self.logger.info(f"preferred face removed and blocked: {self.preferred_face_id}")
+        self.logger.debug(
+            f"Preferred face removed and blocked: {self.preferred_face_id}"
+        )
         self.preferred_face_id = None
         self.preferred_face_tracking_start_time = None
 
@@ -627,7 +644,10 @@ class FaceTrackerMovementNode(Node):
         self.eye_action_client.wait_for_server()
 
         self.eye_action_client.send_goal_async(goal_msg)
-        self.logger.info('eye location x: %f, eye location y: %f' % (horizontal, vertical))
+        self.logger.debug(
+            'Eye location x: %f, eye location y: %f'
+            % (horizontal, vertical)
+        )
 
     def send_horizontal_tilt_goal(self, horizontalTilt):
         goal_msg = FollowJointTrajectory.Goal()
@@ -644,7 +664,9 @@ class FaceTrackerMovementNode(Node):
         if duration == None:
             x_diff = abs(self.head_state[0] - pan)
             duration = Duration(sec=0, nanosec=int(200000000 * x_diff))
-        self.logger.info("Turning head to x: " + str(pan) + " y: " + str(verticalTilt))
+        self.logger.debug(
+            "Turning head to x: " + str(pan) + " y: " + str(verticalTilt)
+        )
         goal_msg = FollowJointTrajectory.Goal()
         trajectory_points = JointTrajectoryPoint(positions=[pan * self.head_pan_multiplicator, verticalTilt * self.head_vertical_multiplicator], time_from_start=duration)
         goal_msg.trajectory = JointTrajectory(joint_names=['head_pan_joint', 'head_tilt_vertical_joint'],
@@ -729,17 +751,16 @@ class FaceTrackerMovementNode(Node):
 
 
 def main(args=None):
-    print('Hi from face_tracker_movement.')
-
     rclpy.init(args=args)
-
     action_client = FaceTrackerMovementNode()
-
-    rclpy.spin(action_client)
-
-    # Shutdown
-    action_client.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(action_client)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        action_client.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

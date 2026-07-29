@@ -6,14 +6,14 @@ Ensure that you have set up the robot as instructed in [Robot bring-up](../docs/
 
 Once the robot is running properly, open a new command window, and run the hand_gestures_node with the following command.
 
-### The simulator only supports the finger movements. the unified_arms_client tries to connect with serial and if it does not find it, it will assume it is in simulator.
+### The simulator only supports finger movements. The unified_arms node tries to connect over serial and assumes fake hardware when the port is unavailable.
 ```
 ros2 run hand_gestures hand_gestures_node
 ```
-Then run the unified arms client in new terminal window
+Then run the unified arms node in a new terminal window:
 
 ```
-python3 client/unified_arms_client.py 
+ros2 run unified_arms unified_arms_node
 ```
 
 Run tester client in new terminal window, from there you can send commands to hands

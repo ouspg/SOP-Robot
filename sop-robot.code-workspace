@@ -90,8 +90,8 @@
 			"${workspaceFolder}/install/full_demo/lib/python3.12/site-packages",
 			"${workspaceFolder}/install/hand_gestures/lib/python3.12/site-packages",
 			"${workspaceFolder}/install/jaw_movement/lib/python3.12/site-packages",
-			"${workspaceFolder}/install/qabot/lib/python3.12/site-packages",
-			"${workspaceFolder}/install/speech_recognizer/lib/python3.12/site-packages",
+			"${workspaceFolder}/install/llm_package/lib/python3.12/site-packages",
+			"${workspaceFolder}/install/sst_package/lib/python3.12/site-packages",
 			"${workspaceFolder}/install/tts_package/lib/python3.12/site-packages"
 		],
 		"python.analysis.extraPaths": [
@@ -101,8 +101,8 @@
 			"${workspaceFolder}/install/full_demo/lib/python3.12/site-packages",
 			"${workspaceFolder}/install/hand_gestures/lib/python3.12/site-packages",
 			"${workspaceFolder}/install/jaw_movement/lib/python3.12/site-packages",
-			"${workspaceFolder}/install/qabot/lib/python3.12/site-packages",
-			"${workspaceFolder}/install/speech_recognizer/lib/python3.12/site-packages",
+			"${workspaceFolder}/install/llm_package/lib/python3.12/site-packages",
+			"${workspaceFolder}/install/sst_package/lib/python3.12/site-packages",
 			"${workspaceFolder}/install/tts_package/lib/python3.12/site-packages"
 		]
 	}

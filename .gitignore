@@ -34,4 +34,3 @@ temp_dynamixel_for_launch.yaml
 .pytest_cache/
 .ruff_cache/
 .cache/
-src/speech_recognizer/resource

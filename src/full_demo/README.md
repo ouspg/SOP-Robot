@@ -36,24 +36,35 @@ local server such as Ollama, use its `/v1` endpoint and installed model name.
 `LLM_API_KEY` defaults to `not-needed` for local servers that ignore
 authentication. The base URL and model shown above are also the defaults.
 
-The full physical-robot demo remains available through `pixi run robot-demo`.
+The complete demo has separate launch files for real and fake robot hardware:
 
-## Legacy demo coordinator
+```console
+pixi run robot-demo-real
+pixi run robot-demo-fake
+```
+
+These tasks run `real_robot.launch.py` and `fake_robot.launch.py` from this
+package. Each ROS node runs as its own process, all output stays in the current
+terminal, and one Ctrl+C stops the launch service and its nodes.
+
+## Demo coordinator
 
 This package contains a node that combines various parts of the robot to be used in demo situations.
 
 Currently, the parts/packages used by this node are:
 
-- **speech_recognizer** - to hear when people talk to the robot
-- **qabot** - to find responses for the recognized speech
-- **tts_package** - to speak out the response produced by qabot
+- **sst_package** - to hear when people talk to the robot
+- **llm_package** - to generate responses for the recognized speech
+- **tts_package** - to speak out the response produced by the LLM
 - **face_tracker** - to find faces and say hi when finding one
-- **Hands** - to wave to the person found by face tracking
+- **unified_arms** - to coordinate arm and hand gestures
 
 ## Usage
 
-The demo is simply run by going to the root directory of the project and running
+Launch the physical robot from the repository root with:
+
 ```console
-bash launch_demo.sh
+pixi run robot-demo-real
 ```
-This will start all the required nodes and services
+
+Use `pixi run robot-demo-fake` for the same demo with fake robot hardware.

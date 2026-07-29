@@ -84,7 +84,7 @@ def generate_launch_description():
           'stderr': 'screen',
           },
     )
-    
+
     controllers_to_start = [
         "head_controller",
         "eyes_controller",
@@ -93,7 +93,7 @@ def generate_launch_description():
         "r_shoulder_controller",
         "l_hand_controller"
     ]
-    
+
     controller_spawners = [
         Node(
         package="controller_manager",
