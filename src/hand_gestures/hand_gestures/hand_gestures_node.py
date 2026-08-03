@@ -10,6 +10,8 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 class HandGestureNode(Node):
     def __init__(self):
         super().__init__('hand_gesture_client')
+        self.declare_parameter('simulation', False)
+        self.simulation = bool(self.get_parameter('simulation').value)
         self.right_hand_action_client = ActionClient(
             self, FollowJointTrajectory, 'r_hand_controller/follow_joint_trajectory'
         )
@@ -46,6 +48,11 @@ class HandGestureNode(Node):
             'funny': [-2.35, 0.45, -0.07, -0.47, -1.72],
             'three': [-0.78, 2, -0.07, -2.35, -1.72],
         }
+        # The fake left hand uses the URDF's visual joint angles. Keep the
+        # physical left-hand table above unchanged for the XL320 servos.
+        self.left_command_positions = (
+            self.right_positions_dict if self.simulation else self.left_positions_dict
+        )
         self.logger = self.get_logger()
 
     def send_action(self, action, hand):
@@ -53,7 +60,7 @@ class HandGestureNode(Node):
         if hand == 'r':
             self.send_right_hand_goal(self.right_positions_dict[action])
         elif hand == 'l':
-            self.send_left_hand_goal(self.left_positions_dict[action])
+            self.send_left_hand_goal(self.left_command_positions[action])
 
     def send_right_hand_goal(self, action, duration=None):
         if duration is None:
@@ -108,7 +115,7 @@ class HandGestureNode(Node):
         arg = msg.data
         hand = 'l'
         self.logger.info(f'{hand}_hand, arg: {arg}')
-        if arg not in self.left_positions_dict:
+        if arg not in self.left_command_positions:
             self.logger.info('Action not implemented')
         else:
             self.send_action(arg, hand)
