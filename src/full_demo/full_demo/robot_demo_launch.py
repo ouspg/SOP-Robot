@@ -67,6 +67,7 @@ def generate_robot_demo_launch_description(*, use_fake_hardware):
         executable='hand_gestures_node',
         name='hand_gestures',
         output='screen',
+        parameters=[{'simulation': use_fake_hardware}],
     )
     unified_arms = Node(
         package='unified_arms',
