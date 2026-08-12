@@ -8,6 +8,7 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
 from face_tracker_msgs.msg import Face as FaceMsg
@@ -18,6 +19,11 @@ from .lip_movement_net import LipMovementDetector
 
 bridge = CvBridge()
 dlib_api = cast(Any, dlib)
+image_qos = QoSProfile(
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+)
 
 
 class WebcamError(Exception):
@@ -35,13 +41,13 @@ class FaceTrackerNode(Node):
         self.logger = self.get_logger()
 
         lip_movement_detection = (
-            self.declare_parameter('lip_movement_detection', True)
+            self.declare_parameter('lip_movement_detection', False)
             .get_parameter_value()
             ._bool_value
         )
 
         face_recognition = (
-            self.declare_parameter('face_recognition', True).get_parameter_value()._bool_value
+            self.declare_parameter('face_recognition', False).get_parameter_value()._bool_value
         )
 
         correlation_tracking = (
@@ -73,9 +79,29 @@ class FaceTrackerNode(Node):
         )
 
         face_detection_model = (
-            self.declare_parameter('face_detection_model', 'yunet')
+            self.declare_parameter('face_detection_model', 'yolov8')
             .get_parameter_value()
             .string_value
+        )
+
+        inference_device = (
+            self.declare_parameter('inference_device', 'cuda:0').get_parameter_value().string_value
+        )
+
+        detection_interval = (
+            self.declare_parameter('detection_interval', 10).get_parameter_value().integer_value
+        )
+
+        detection_scale = (
+            self.declare_parameter('detection_scale', 0.5).get_parameter_value().double_value
+        )
+
+        publish_debug_image = (
+            self.declare_parameter('publish_debug_image', False).get_parameter_value().bool_value
+        )
+
+        debug_image_scale = (
+            self.declare_parameter('debug_image_scale', 0.5).get_parameter_value().double_value
         )
 
         image_topic = (
@@ -144,16 +170,22 @@ class FaceTrackerNode(Node):
             pair_similarity_maximum,
             face_recognition_model,
             face_detection_model,
+            inference_device,
+            detection_interval,
+            detection_scale,
+            publish_debug_image,
         )
+        self.publish_debug_image = publish_debug_image
+        self.debug_image_scale = min(1.0, max(0.1, debug_image_scale))
 
         # Create subscription, that receives camera frames
         self.subscriber = self.create_subscription(
             Image,
             image_topic,
             self.on_frame_received,
-            1,
+            image_qos,
         )
-        self.face_img_publisher = self.create_publisher(Image, face_image_topic, 5)
+        self.face_img_publisher = self.create_publisher(Image, face_image_topic, image_qos)
         self.face_publisher = self.create_publisher(Faces, face_topic, 1)
 
         self.font = cv2.FONT_HERSHEY_SIMPLEX
@@ -207,24 +239,33 @@ class FaceTrackerNode(Node):
             )
             msg_faces.append(msg_face)
 
-        # Draw fps to the frame
-        cv2.putText(
-            cv2_bgr_img,
-            f'{self.fps.fps:.2f}',
-            (10, 20),
-            self.font,
-            0.5,
-            (255, 255, 255),
-            1,
-            cv2.LINE_AA,
-        )
+        if self.publish_debug_image:
+            cv2.putText(
+                cv2_bgr_img,
+                f'{self.fps.fps:.2f}',
+                (10, 20),
+                self.font,
+                0.5,
+                (255, 255, 255),
+                1,
+                cv2.LINE_AA,
+            )
 
-        # publish faces
-        try:
-            # Publish modified frame image
-            self.face_img_publisher.publish(bridge.cv2_to_imgmsg(cv2_bgr_img, 'bgr8'))
-        except CvBridgeError as e:
-            self.logger.warning(f'Could not convert ROS image to OpenCV image: {e}')
+            try:
+                debug_image = cv2_bgr_img
+                if self.debug_image_scale != 1.0:
+                    debug_image = cv2.resize(
+                        cv2_bgr_img,
+                        None,
+                        fx=self.debug_image_scale,
+                        fy=self.debug_image_scale,
+                        interpolation=cv2.INTER_AREA,
+                    )
+                debug_msg = bridge.cv2_to_imgmsg(debug_image, 'bgr8')
+                debug_msg.header = img.header
+                self.face_img_publisher.publish(debug_msg)
+            except CvBridgeError as e:
+                self.logger.warning(f'Could not convert ROS image to OpenCV image: {e}')
         # Publish faces info if faces found
         if len(msg_faces) > 0:
             self.face_publisher.publish(Faces(faces=msg_faces))

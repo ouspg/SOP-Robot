@@ -428,7 +428,10 @@ class FaceTrackerMovementNode(Node):
                 if selected_face.diagonal > self.near_interaction_treshold:
                     self.focused_face_publisher.publish(selected_face)
                 self.logger.debug(f'Tracking face with id={selected_face.face_id}')
-            if not self.preferred_face_id:
+            # Detection-only face tracking publishes an empty ID and no occurrence history.
+            # Continue tracking those faces spatially without treating every anonymous face
+            # as the same preferred person.
+            if selected_face.face_id and not self.preferred_face_id:
                 self.add_preferred_face(selected_face)
         self.previous_face = selected_face
         return selected_face
@@ -484,12 +487,14 @@ class FaceTrackerMovementNode(Node):
         self.blocked_faces = remaining_faces
 
     def add_preferred_face(self, face):
+        if not face.face_id:
+            return
         if self.preferred_face_id == face.face_id:
             self.logger.warning('Setting preferred face to same as old preferred face!')
         self.preferred_face_id = face.face_id
-        self.preferred_face_tracking_start_time = face.occurances[
-            -1
-        ].end_time  # Timestamp for last time face was seen
+        self.preferred_face_tracking_start_time = (
+            face.occurances[-1].end_time if face.occurances else time.time()
+        )
         self.logger.debug(f'Preferred face set to {self.preferred_face_id}')
 
     def remove_preferred_face(self):

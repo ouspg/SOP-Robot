@@ -18,21 +18,27 @@ class FaceAnalyzer:
         subcluster_similarity_threshold=0.2,
         pair_similarity_maximum=1.0,
         face_recognition_model='SFace',
-        face_detection_model='yunet',
+        face_detection_model='yolov8',
+        inference_device='cuda:0',
+        detection_interval=10,
+        detection_scale=0.5,
+        draw_annotations=False,
     ):
         self.logger = logger
         self.correlation_tracker_enabled = correlation_tracker
         self.lip_movement_detector = lip_movement_detector
+        self.detection_interval = max(1, detection_interval)
+        self.detection_scale = min(1.0, max(0.1, detection_scale))
+        self.draw_annotations = draw_annotations
 
-        # Face recognition
-        if face_recognizer:
-            self.face_recognizer = FaceRecognizer(
-                logger=self.logger,
-                model_name=face_recognition_model,
-                detector_backend=face_detection_model,
-            )
-        else:
-            self.face_recognizer = None
+        self.face_recognizer = FaceRecognizer(
+            logger=self.logger,
+            model_name=face_recognition_model,
+            detector_backend=face_detection_model,
+            recognition_enabled=face_recognizer,
+            inference_device=inference_device,
+        )
+        self.face_recognition_enabled = face_recognizer
 
         self.face_ids = []
         self.face_representations = []
@@ -57,7 +63,9 @@ class FaceAnalyzer:
         # pr.enable()
 
     def on_frame_received(self, frame: cv2.typing.MatLike):
-        cv2_gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        cv2_gray_img = None
+        if self.lip_movement_detector is not None:
+            cv2_gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         # Get the face locations
         if self.frame == 0:
@@ -87,37 +95,37 @@ class FaceAnalyzer:
                     cv2_gray_img, face.rect, i
                 )
 
-            # Draw information to frame
-            self.draw_face_info(frame, face)
+            if self.draw_annotations:
+                self.draw_face_info(frame, face)
 
-        cv2.putText(
-            frame,
-            f'Faces in current frame{len(self.faces)}',
-            (100, 10),
-            self.font,
-            0.5,
-            (255, 255, 255),
-            1,
-            cv2.LINE_AA,
-        )
+        if self.draw_annotations:
+            cv2.putText(
+                frame,
+                f'Faces in current frame {len(self.faces)}',
+                (100, 10),
+                self.font,
+                0.5,
+                (255, 255, 255),
+                1,
+                cv2.LINE_AA,
+            )
 
-        cv2.putText(
-            frame,
-            f'Clusters in database {len(self.cluster.clusters)}',
-            (100, 30),
-            self.font,
-            0.5,
-            (255, 255, 255),
-            1,
-            cv2.LINE_AA,
-        )
+            cv2.putText(
+                frame,
+                f'Clusters in database {len(self.cluster.clusters)}',
+                (100, 30),
+                self.font,
+                0.5,
+                (255, 255, 255),
+                1,
+                cv2.LINE_AA,
+            )
 
         if self.correlation_tracker_enabled:
             self.frame += 1
             # Set frame to zero for new detection every nth frame.
             # Large values lead to drifting of the detected faces
-            n = 5
-            self.frame = self.frame % n
+            self.frame = self.frame % self.detection_interval
 
         return [face.as_dict() for face in self.faces]
 
@@ -128,28 +136,38 @@ class FaceAnalyzer:
         Perform face detection and recognition, then initialize dlib correlation trackers.
         """
         faces: list[Face] = []
-        if self.face_recognizer is None:
-            return faces
+
+        detection_frame = frame
+        if self.detection_scale != 1.0:
+            detection_frame = cv2.resize(
+                frame,
+                None,
+                fx=self.detection_scale,
+                fy=self.detection_scale,
+                interpolation=cv2.INTER_AREA,
+            )
 
         # Uses deepface to extract face locations from frame
-        face_objs = self.face_recognizer.extract_faces(frame)
+        face_objs = self.face_recognizer.extract_faces(detection_frame)
 
         for face_obj in face_objs:
             face_img = face_obj['face']
             face_region = face_obj['facial_area']
-            x = face_region['x']
-            y = face_region['y']
-            w = face_region['w']
-            h = face_region['h']
+            x = int(face_region['x'] / self.detection_scale)
+            y = int(face_region['y'] / self.detection_scale)
+            w = int(face_region['w'] / self.detection_scale)
+            h = int(face_region['h'] / self.detection_scale)
 
-            representation: list[float] = self.face_recognizer.represent(face_img)
+            representation: list[float] = []
+            cluster_prediction = None
+            if self.face_recognition_enabled:
+                representation = self.face_recognizer.represent(face_img)
 
-            # Compare face to the database
-
-            cluster_predictation = self.cluster.predict(np.array(representation))
+                # Compare face to the database
+                cluster_prediction = self.cluster.predict(np.array(representation))
 
             # Matching face not found, create new one
-            face = Face(x, x + w, y, y + h, face_img, representation, cluster_predictation)
+            face = Face(x, x + w, y, y + h, face_img, representation, cluster_prediction)
 
             if self.correlation_tracker_enabled:
                 face.start_track(frame)
