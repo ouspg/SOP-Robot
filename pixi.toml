@@ -80,8 +80,10 @@ index-strategy = "unsafe-best-match"
 "progressbar" = "==2.5"
 "tensorflow" = ">=2.19,<2.20"
 "tf-keras" = ">=2.19,<2.20"
-"torch" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
-"torchaudio" = { version = "==2.11.0+cpu", index = "https://download.pytorch.org/whl/cpu" }
+"torch" = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cu130" }
+"torchvision" = { version = "==0.26.0", index = "https://download.pytorch.org/whl/cu130" }
+"torchaudio" = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cu130" }
+"ultralytics" = ">=8.3,<9"
 "torchcodec" = ">=0.12,<0.14"
 "transformers" = ">=4.57,<5"
 faster-whisper = ">=1.2.1, <2"

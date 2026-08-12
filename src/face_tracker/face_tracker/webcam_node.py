@@ -5,10 +5,16 @@ import cv2
 import rclpy
 from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
 bridge = CvBridge()
 cv2_api = cast(Any, cv2)
+image_qos = QoSProfile(
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+)
 
 
 class WebcamError(Exception):
@@ -43,7 +49,7 @@ class WebCamNode(Node):
             + f'mjpg={self.mjpg}'
         )
 
-        self.face_img_publisher = self.create_publisher(Image, raw_image_topic, 5)
+        self.face_img_publisher = self.create_publisher(Image, raw_image_topic, image_qos)
 
         # TODO: Implement better way to run webcam loop.
         self.webcam_loop()

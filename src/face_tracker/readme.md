@@ -11,14 +11,19 @@ face_tracker_node:
 
 | Name                      | Description                                                                          | Default                                       |
 | ------------------------- | :----------------------------------------------------------------------------------: | --------------------------------------------: |
-| lip_movement_detection    | enable lip_movement_detection                                                        | True                                          |
-| face_recognition          | enable face_recognition                                                              | True                                          |
-| correlation_tracking      | enable correlation_tracking                                                          | False                                         |
+| lip_movement_detection    | Enable lip-movement analysis                                                          | False                                         |
+| face_recognition          | Enable identity embeddings and clustering (CPU SFace by default)                    | False                                         |
+| correlation_tracking      | Track faces between detector runs                                                     | True                                          |
 | cluster_similarity_threshold    | Treshold parameter for face clustering                                         | 0.3                                           |
 | subcluster_similarity_threshold | Treshold parameter for face clustering                                         | 0.2                                           |
 | pair_similarity_maximum   | pair_similarity_maximum parameter for face clustering                                | 1.0                                           |
 | face_recognition_model    | Face recognition model from deepface                                                 | "SFace"                                       |
-| face_detection_model      | Face detection model from deepface                                                   | "yunet"                                       |
+| face_detection_model      | Face detection model from DeepFace                                                   | "yolov8"                                      |
+| inference_device          | PyTorch detector device; falls back to CPU when CUDA is unavailable                  | "cuda:0"                                      |
+| detection_interval        | Run detection every N frames and track between runs                                  | 10                                            |
+| detection_scale           | Scale applied before face detection                                                   | 0.5                                           |
+| publish_debug_image       | Draw annotations and publish the full debug image                                     | True in launch                                |
+| debug_image_scale         | Debug-preview scale; 0.5 publishes 640x480 from a 1280x960 camera                    | 0.5                                           |
 | image_topic               | Input rgb image                                                                      | /image_raw                                    |
 | image_face_topic          | Output image with faces surrounded by triangles and face landmarks shown as circle   | image_face                                    |
 | face_topic                | Output face and face landmark positions in the frame                                 | faces - face_tracker_msgs.msg.Faces           |
@@ -27,7 +32,6 @@ face_tracker_node:
 
 ! Notice: If `face_recognition_model` or `face_detection_model` is changed, also `cluster_similarity_threshold`, `subcluster_similarity_threshold` and `pair_similarity_maximum` have to be adjusted.
 
-! Correlation tracker is disabled face detection and recognition is not done in separate thread from correlation tracking.
 
 Webcam_node:
 
@@ -68,6 +72,8 @@ To use it, simply enter the desired coordinates on a single line, separated by e
 * `dlib`
 * `opencv-python`
 * `deepface`
+* CUDA-enabled `torch`
+* `ultralytics`
 
 ## Potential future improvements
 
