@@ -6,28 +6,32 @@ https://github.com/QEDan/links_clustering/tree/master
 """
 # pylint: disable=W0201, E1101
 
-import numpy as np
 import random
 
-from links_cluster import LinksCluster, Cluster, Subcluster, CONVERSATION_TRESHOLD
+import numpy as np
+
+from .links_cluster import CONVERSATION_TRESHOLD, Cluster, LinksCluster, Subcluster
 
 
 class TestLinksCluster:
     """Tests for LinksCluster class."""
+
     def setup_method(self):
         """Setup for tests."""
         self.cluster_similarity_threshold = 0.3
         self.subcluster_similarity_threshold = 0.2
         self.pair_similarity_maximum = 1.0
-        self.cluster = LinksCluster(self.cluster_similarity_threshold,
-                                    self.subcluster_similarity_threshold,
-                                    self.pair_similarity_maximum,
-                                    store_vectors=True)
+        self.cluster = LinksCluster(
+            self.cluster_similarity_threshold,
+            self.subcluster_similarity_threshold,
+            self.pair_similarity_maximum,
+            store_vectors=True,
+        )
         self.vector_dim = 256
 
     def random_vec(self):
         """Generate random vector of the correct shape."""
-        return np.random.random((self.vector_dim))
+        return np.random.random(self.vector_dim)
 
     def rotate_vec(self, vector, angle):
         """Rotate a vector in the x-y plane by angle (radians).
@@ -38,7 +42,8 @@ class TestLinksCluster:
         rotation_matrix = np.identity(self.vector_dim)
         rotation_matrix[0:2, 0:2] = [
             [np.cos(angle), -1 * np.sin(angle)],
-            [np.sin(angle), np.cos(angle)]]
+            [np.sin(angle), np.cos(angle)],
+        ]
         vector = rotation_matrix.dot(vector)
         return vector
 
@@ -47,10 +52,10 @@ class TestLinksCluster:
         assert isinstance(self.cluster, LinksCluster)
 
     def test_predict_once(self):
-        """Test that first prediction returns None."""
-        vector = np.random.random((self.vector_dim, ))
+        """Test that the first prediction returns the new cluster."""
+        vector = np.random.random((self.vector_dim,))
         prediction = self.cluster.predict(vector)
-        assert prediction is None
+        assert prediction['id'] == self.cluster.clusters[0].id
         assert vector in self.cluster.get_all_vectors()
 
     def test_predict_many(self):
@@ -74,11 +79,9 @@ class TestLinksCluster:
         """Test clustering after adding within same subcluster."""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            0.1 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        self.cluster.predict(vector)
+        vector2 = self.rotate_vec(vector, 0.1 * np.arccos(self.subcluster_similarity_threshold))
+        self.cluster.predict(vector2)
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
         assert len(self.cluster.clusters[0].subclusters) == 1  # Should be one subcluster
@@ -87,11 +90,9 @@ class TestLinksCluster:
         """Test clustering after adding to new subcluster."""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        self.cluster.predict(vector)
+        vector2 = self.rotate_vec(vector, 1.01 * np.arccos(self.subcluster_similarity_threshold))
+        self.cluster.predict(vector2)
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
         assert len(self.cluster.clusters[0].subclusters) == 2  # New subcluster created.
@@ -101,12 +102,9 @@ class TestLinksCluster:
         vector = self.random_vec()
         vector[0] += 1000.0
         first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            2 * np.arccos(self.cluster_similarity_threshold))
+        vector2 = self.rotate_vec(vector, 2 * np.arccos(self.cluster_similarity_threshold))
         second_prediction = self.cluster.predict(vector2)
-        assert first_prediction == None
-        # assert second_prediction == 1
+        assert first_prediction['id'] != second_prediction['id']
         assert len(self.cluster.clusters) == 2
         assert len(self.cluster.clusters[0].subclusters) == 1
         assert len(self.cluster.clusters[1].subclusters) == 1
@@ -147,11 +145,9 @@ class TestLinksCluster:
         """Test that merging subclusters works as expected."""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        self.cluster.predict(vector)
+        vector2 = self.rotate_vec(vector, 1.01 * np.arccos(self.subcluster_similarity_threshold))
+        self.cluster.predict(vector2)
         # These asserts test that we have created 2 subclusters in the same cluster
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
@@ -159,19 +155,19 @@ class TestLinksCluster:
 
         # Edit current conversation times
         self.cluster.clusters[0].subclusters[0].current_conversation = {
-            "start_time": 1,
-            "end_time": 3,
-            "duration": 2,
+            'start_time': 1,
+            'end_time': 3,
+            'duration': 2,
         }
         self.cluster.clusters[0].subclusters[1].current_conversation = {
-            "start_time": 2,
-            "end_time": 4,
-            "duration": 2,
+            'start_time': 2,
+            'end_time': 4,
+            'duration': 2,
         }
         current_conversation_merged = {
-            "start_time": 1,
-            "end_time": 4,
-            "duration": 3,
+            'start_time': 1,
+            'end_time': 4,
+            'duration': 3,
         }
 
         # Merge subclusters and test for correctness
@@ -181,11 +177,14 @@ class TestLinksCluster:
         assert self.cluster.clusters[0].subclusters[0].vector_count == 2
         assert len(self.cluster.clusters[0].subclusters[0].vectors) == 2
         np.testing.assert_array_almost_equal(
-            self.cluster.clusters[0].subclusters[0].centroid,
-            np.mean([vector, vector2], axis=0))
-        
+            self.cluster.clusters[0].subclusters[0].centroid, np.mean([vector, vector2], axis=0)
+        )
+
         # Test conversation times
-        assert self.cluster.clusters[0].subclusters[0].current_conversation == current_conversation_merged
+        assert (
+            self.cluster.clusters[0].subclusters[0].current_conversation
+            == current_conversation_merged
+        )
 
     def test_get_all_vectors(self):
         """Test that get_all_vectors returns all vectors."""
@@ -197,7 +196,7 @@ class TestLinksCluster:
 
     def test_sim_threshold_limit(self):
         """Test that the limit for large k is near 1.0."""
-        large_k = 2 ** 25
+        large_k = 2**25
         thresh = self.cluster.sim_threshold(large_k, large_k)
         assert np.abs(thresh - 1.0) < 1.0e-6
 
@@ -205,11 +204,9 @@ class TestLinksCluster:
         """Test cluster calculate_time_info function"""
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        self.cluster.predict(vector)
+        vector2 = self.rotate_vec(vector, 1.01 * np.arccos(self.subcluster_similarity_threshold))
+        self.cluster.predict(vector2)
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
         assert len(self.cluster.clusters[0].subclusters) == 2  # New subcluster created.
@@ -222,50 +219,53 @@ class TestLinksCluster:
         end_times_2 = times[3::4]
 
         assert len(start_times) == len(start_times_2) == len(end_times) == len(end_times_2)
-        
+
         conversation_list = []
         conversation_list_2 = []
         conversation_list_merged = []
         for i in range(len(start_times)):
-            conversation_list.append({
-                "start_time": start_times[i],
-                "end_time": end_times[i],
-                "duration": end_times[i] - start_times[i],
-            })
-            conversation_list_2.append({
-                "start_time": start_times_2[i],
-                "end_time": end_times_2[i],
-                "duration": end_times_2[i] - start_times_2[i],
-            })
-            conversation_list_merged.append({
-                "start_time": start_times[i],
-                "end_time": end_times_2[i],
-                "duration": end_times_2[i] - start_times[i],
-            })
-
+            conversation_list.append(
+                {
+                    'start_time': start_times[i],
+                    'end_time': end_times[i],
+                    'duration': end_times[i] - start_times[i],
+                }
+            )
+            conversation_list_2.append(
+                {
+                    'start_time': start_times_2[i],
+                    'end_time': end_times_2[i],
+                    'duration': end_times_2[i] - start_times_2[i],
+                }
+            )
+            conversation_list_merged.append(
+                {
+                    'start_time': start_times[i],
+                    'end_time': end_times_2[i],
+                    'duration': end_times_2[i] - start_times[i],
+                }
+            )
 
         self.cluster.clusters[0].subclusters[0].conversations = conversation_list
         self.cluster.clusters[0].subclusters[1].conversations = conversation_list_2
-        
+
         convs = self.cluster.clusters[0].calculate_conversation_list()
-        convs_sorted = sorted(convs, key=lambda x: x["start_time"])
+        convs_sorted = sorted(convs, key=lambda x: x['start_time'])
         assert convs != []
         assert convs == convs_sorted
         for i in range(1, len(convs)):
-            assert convs[i]["start_time"] >= convs[i - 1]["end_time"] + CONVERSATION_TRESHOLD
-    
+            assert convs[i]['start_time'] >= convs[i - 1]['end_time'] + CONVERSATION_TRESHOLD
+
     def test_merge_subclusters_times_overlapping(self):
         """
-        Test that merging subclusters works as expected with 
+        Test that merging subclusters works as expected with
         current conversations, that are overlapping.
         """
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        self.cluster.predict(vector)
+        vector2 = self.rotate_vec(vector, 1.01 * np.arccos(self.subcluster_similarity_threshold))
+        self.cluster.predict(vector2)
         # These asserts test that we have created 2 subclusters in the same cluster
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
@@ -273,19 +273,19 @@ class TestLinksCluster:
 
         # Edit current conversation times
         self.cluster.clusters[0].subclusters[0].current_conversation = {
-            "start_time": 1,
-            "end_time": 3,
-            "duration": 2,
+            'start_time': 1,
+            'end_time': 3,
+            'duration': 2,
         }
         self.cluster.clusters[0].subclusters[1].current_conversation = {
-            "start_time": 2,
-            "end_time": 4,
-            "duration": 2,
+            'start_time': 2,
+            'end_time': 4,
+            'duration': 2,
         }
         current_conversation_merged = {
-            "start_time": 1,
-            "end_time": 4,
-            "duration": 3,
+            'start_time': 1,
+            'end_time': 4,
+            'duration': 3,
         }
 
         # Merge subclusters and test for correctness
@@ -295,24 +295,25 @@ class TestLinksCluster:
         assert self.cluster.clusters[0].subclusters[0].vector_count == 2
         assert len(self.cluster.clusters[0].subclusters[0].vectors) == 2
         np.testing.assert_array_almost_equal(
-            self.cluster.clusters[0].subclusters[0].centroid,
-            np.mean([vector, vector2], axis=0))
-        
+            self.cluster.clusters[0].subclusters[0].centroid, np.mean([vector, vector2], axis=0)
+        )
+
         # Test conversation times
-        assert self.cluster.clusters[0].subclusters[0].current_conversation == current_conversation_merged
-        
+        assert (
+            self.cluster.clusters[0].subclusters[0].current_conversation
+            == current_conversation_merged
+        )
+
     def test_merge_subclusters_times_non_overlapping(self):
         """
-        Test that merging subclusters works as expected with 
+        Test that merging subclusters works as expected with
         current conversations, that are not overlapping.
         """
         vector = self.random_vec()
         vector[0] += 1000.0
-        first_prediction = self.cluster.predict(vector)
-        vector2 = self.rotate_vec(
-            vector,
-            1.01 * np.arccos(self.subcluster_similarity_threshold))
-        second_prediction = self.cluster.predict(vector2)
+        self.cluster.predict(vector)
+        vector2 = self.rotate_vec(vector, 1.01 * np.arccos(self.subcluster_similarity_threshold))
+        self.cluster.predict(vector2)
         # These asserts test that we have created 2 subclusters in the same cluster
         # assert first_prediction == second_prediction
         assert len(self.cluster.clusters) == 1
@@ -320,24 +321,31 @@ class TestLinksCluster:
 
         # Edit current conversation times
         self.cluster.clusters[0].subclusters[0].current_conversation = {
-            "start_time": 1,
-            "end_time": 3,
-            "duration": 2,
+            'start_time': 1,
+            'end_time': 3,
+            'duration': 2,
         }
         self.cluster.clusters[0].subclusters[1].current_conversation = {
-            "start_time": 200,
-            "end_time": 400,
-            "duration": 200,
+            'start_time': 200,
+            'end_time': 400,
+            'duration': 200,
         }
-        conversations = [{
-            "start_time": 1,
-            "end_time": 3,
-            "duration": 2,
-        }]
+        conversations = [
+            {
+                'start_time': 1,
+                'end_time': 3,
+                'duration': 2,
+            },
+            {
+                'start_time': 200,
+                'end_time': 400,
+                'duration': 200,
+            },
+        ]
         current_conversation_merged = {
-            "start_time": 200,
-            "end_time": 400,
-            "duration": 200,
+            'start_time': 200,
+            'end_time': 400,
+            'duration': 200,
         }
 
         # Merge subclusters and test for correctness
@@ -347,16 +355,20 @@ class TestLinksCluster:
         assert self.cluster.clusters[0].subclusters[0].vector_count == 2
         assert len(self.cluster.clusters[0].subclusters[0].vectors) == 2
         np.testing.assert_array_almost_equal(
-            self.cluster.clusters[0].subclusters[0].centroid,
-            np.mean([vector, vector2], axis=0))
-        
+            self.cluster.clusters[0].subclusters[0].centroid, np.mean([vector, vector2], axis=0)
+        )
+
         # Test conversation times
-        assert self.cluster.clusters[0].subclusters[0].current_conversation == current_conversation_merged
+        assert (
+            self.cluster.clusters[0].subclusters[0].current_conversation
+            == current_conversation_merged
+        )
         assert self.cluster.clusters[0].subclusters[0].conversations == conversations
 
 
 class TestSubcluster:
     """Tests for Subcluster class."""
+
     def setup_method(self):
         """Setup for tests."""
         self.vector_dim = 256
@@ -365,7 +377,7 @@ class TestSubcluster:
 
     def random_vec(self):
         """Generate random vector of the correct shape."""
-        return np.random.random((self.vector_dim))
+        return np.random.random(self.vector_dim)
 
     def test_init(self):
         """Test basic class initialization properties."""
@@ -383,9 +395,9 @@ class TestSubcluster:
         self.subcluster.add(new_vector)
         assert self.subcluster.vector_count == 2
         assert len(self.subcluster.vectors) == 2
-        assert np.array_equal(self.subcluster.centroid,
-                              np.mean([self.initial_vector, new_vector],
-                                      axis=0))
+        assert np.array_equal(
+            self.subcluster.centroid, np.mean([self.initial_vector, new_vector], axis=0)
+        )
 
     def test_add_multiple_vectors(self):
         """Test that we can add multiple vectors."""
@@ -395,19 +407,15 @@ class TestSubcluster:
             new_vector = new_vectors[i]
             self.subcluster.add(new_vector)
         expected_centroid = np.mean(
-            np.concatenate(
-                [np.expand_dims(self.initial_vector, axis=0),
-                 new_vectors],
-                axis=0
-            ),
-            axis=0
+            np.concatenate([np.expand_dims(self.initial_vector, axis=0), new_vectors], axis=0),
+            axis=0,
         )
         assert self.subcluster.vector_count == how_many + 1
         assert len(self.subcluster.vectors) == how_many + 1
         np.testing.assert_array_almost_equal(
-            self.subcluster.centroid,
-            expected_centroid,
-            decimal=12)
+            self.subcluster.centroid, expected_centroid, decimal=12
+        )
+
 
 class TestCluster:
     def setup_method(self):
@@ -419,7 +427,7 @@ class TestCluster:
 
     def random_vec(self):
         """Generate random vector of the correct shape."""
-        return np.random.random((self.vector_dim))
+        return np.random.random(self.vector_dim)
 
     def test_init(self):
         """Test basic class initialization properties."""
@@ -447,7 +455,6 @@ class TestCluster:
         assert self.cluster.subclusters[0].vector_count == 2
         assert len(self.cluster.subclusters[0].vectors) == 2
 
-
     def test_merge_subclusters_connections(self):
         """Test that we can merge subclusters that have external edges."""
         new_vector_1 = self.random_vec()
@@ -458,12 +465,15 @@ class TestCluster:
         self.cluster.add_subcluster(new_subcluster_2)
 
         new_subcluster_1.connected_subclusters.update(
-            {new_subcluster_2, self.cluster.subclusters[0]})
+            {new_subcluster_2, self.cluster.subclusters[0]}
+        )
         new_subcluster_2.connected_subclusters.update(
-            {new_subcluster_1, self.cluster.subclusters[0]})
+            {new_subcluster_1, self.cluster.subclusters[0]}
+        )
         self.cluster.subclusters[0].connected_subclusters.update(
-            {new_subcluster_1, new_subcluster_2})
-        
+            {new_subcluster_1, new_subcluster_2}
+        )
+
         self.cluster.merge_subclusters(0, 2)
         assert len(self.cluster.subclusters) == 2
         assert self.cluster.subclusters[0].vector_count == 2

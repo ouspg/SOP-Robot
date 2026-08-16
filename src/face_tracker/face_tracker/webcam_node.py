@@ -1,70 +1,60 @@
-import rclpy
-import cv2
 import sys
+from typing import Any, cast
 
+import cv2
+import rclpy
+from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import Node
-
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
-from cv_bridge import CvBridge, CvBridgeError
-
 bridge = CvBridge()
+cv2_api = cast(Any, cv2)
+image_qos = QoSProfile(
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+)
+
 
 class WebcamError(Exception):
     """signal that webcam has stopped working"""
+
     pass
+
 
 class WebCamNode(Node):
     def __init__(self):
-        super().__init__("webcam")
+        super().__init__('webcam')
 
         self.logger = self.get_logger()
 
         # Node parameters
         raw_image_topic = (
-            self.declare_parameter(
-                "raw_image", "/raw_image"
-            )
-            .get_parameter_value()
-            .string_value
-        )
-        
-        self.index = (
-            self.declare_parameter("index", 0)
-            .get_parameter_value().integer_value
-        )
-        self.width = (
-            self.declare_parameter("width", None)
-            .get_parameter_value().integer_value
-        )
-        self.height = (
-            self.declare_parameter("height", None)
-            .get_parameter_value().integer_value
-        )
-        self.fps = (
-            self.declare_parameter("fps", None)
-            .get_parameter_value().integer_value
-        )
-        self.mjpg = (
-            self.declare_parameter("mjpg", False)
-            .get_parameter_value()._bool_value
+            self.declare_parameter('raw_image', '/raw_image').get_parameter_value().string_value
         )
 
-        self.logger.info(f"Webcam node parameters:\n" +
-                         f"index={self.index}\n" +
-                         f"width={self.width}\n" +
-                         f"height={self.height}\n" +
-                         f"fps={self.fps}\n" +
-                         f"mjpg={self.mjpg}")
+        self.index = self.declare_parameter('index', 0).get_parameter_value().integer_value
+        self.width = self.declare_parameter('width', None).get_parameter_value().integer_value
+        self.height = self.declare_parameter('height', None).get_parameter_value().integer_value
+        self.fps = self.declare_parameter('fps', None).get_parameter_value().integer_value
+        self.mjpg = self.declare_parameter('mjpg', False).get_parameter_value()._bool_value
 
-        self.face_img_publisher = self.create_publisher(Image, raw_image_topic, 5)
+        self.logger.info(
+            'Webcam node parameters:\n'
+            + f'index={self.index}\n'
+            + f'width={self.width}\n'
+            + f'height={self.height}\n'
+            + f'fps={self.fps}\n'
+            + f'mjpg={self.mjpg}'
+        )
+
+        self.face_img_publisher = self.create_publisher(Image, raw_image_topic, image_qos)
 
         # TODO: Implement better way to run webcam loop.
         self.webcam_loop()
 
-
     def webcam_loop(self):
-
         self.open_webcam()
 
         while True:
@@ -75,27 +65,28 @@ class WebCamNode(Node):
                     raise WebcamError
 
             except WebcamError:
-                self.logger.error("[*] something went wrong, restarting webcam..")
-                # close and try reopening webcam 
+                self.logger.error('[*] something went wrong, restarting webcam..')
+                # close and try reopening webcam
                 self.close_webcam()
                 self.open_webcam()
+                continue
             try:
                 # Publish modified frame image
-                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(frame, "bgr8"))
+                self.face_img_publisher.publish(bridge.cv2_to_imgmsg(frame, 'bgr8'))
             except CvBridgeError as e:
-                self.logger.warn("Could not convert ros img to opencv image: ", e)
+                self.logger.warning(f'Could not convert ROS image to OpenCV image: {e}')
 
         # TODO: Close webcam properly
         # self.close_webcam()
 
     def open_webcam(self):
-        '''
+        """
         Open webcam handle
-        '''
+        """
         self.cap = cv2.VideoCapture(self.index)
 
         if not self.cap.isOpened():
-            self.logger.fatal("[*] Cannot open a webcam!")
+            self.logger.fatal('[*] Cannot open a webcam!')
             sys.exit(1)
 
         # Set video capture parameters
@@ -106,7 +97,7 @@ class WebCamNode(Node):
             H = self.height
             self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, H)
         if self.mjpg:
-            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+            self.cap.set(cv2.CAP_PROP_FOURCC, cv2_api.VideoWriter_fourcc('M', 'J', 'P', 'G'))
         if self.fps:
             self.cap.set(cv2.CAP_PROP_FPS, self.fps)
 
@@ -114,31 +105,32 @@ class WebCamNode(Node):
         w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        self.logger.info(f"Webcam fps={fps}, shape={w},{h}")
-
+        self.logger.info(f'Webcam fps={fps}, shape={w},{h}')
 
     def close_webcam(self):
-        '''
+        """
         Destroy webcam handle and close all windows
-        '''
-        self.logger.info("closing webcam handle...")
+        """
+        self.logger.info('closing webcam handle...')
         self.cap.release()
         cv2.destroyAllWindows()
-        self.logger.info("Webcam closed!")
+        self.logger.info('Webcam closed!')
+
 
 def main(args=None):
     # Initialize
     rclpy.init(args=args)
-    webcam = WebCamNode()
+    _webcam = WebCamNode()
 
     # Cannot ever get here as webcam loop is in init
 
     # # Do work
-    # rclpy.spin(webcam)
+    # rclpy.spin(_webcam)
 
     # # Shutdown
-    # webcam.destroy_node()
+    # _webcam.destroy_node()
     # rclpy.shutdown()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()

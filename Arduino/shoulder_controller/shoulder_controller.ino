@@ -6,7 +6,7 @@ const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 
 // Servo pins are used as IDs, later logic subtracts 2 from the ID to get index
 // For this to work servo pin has to be >= 2
-const int SERVO_PINS[NUM_SERVOS] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
+const int SERVO_PINS[NUM_SERVOS] = {11, 3, 4, 5, 6, 7, 8, 9, 10};
 
 // All mins and maxs need to have the same index as the corresponding servo pin
 const int ServoMins[NUM_SERVOS] = {10, 10,  20,  0,  0,   0,   0,   55,  0};

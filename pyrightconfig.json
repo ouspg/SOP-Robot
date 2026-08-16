@@ -1,0 +1,50 @@
+{
+    "$schema": "https://raw.githubusercontent.com/DetachHead/basedpyright/main/packages/pyright-internal/src/tests/samples/pyrightconfig.schema.json",
+    "include": [
+        "Arduino",
+        "client",
+        "scripts",
+        "src/face_tracker",
+        "src/face_tracker_movement",
+        "src/full_demo",
+        "src/hand_gestures",
+        "src/jaw_movement",
+        "src/llm_package",
+        "src/robot",
+        "src/sst_package",
+        "src/tts_package",
+        "src/unified_arms"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        ".pixi",
+        ".pixi-packed",
+        ".venv",
+        "build",
+        "install",
+        "log",
+        "src/dynamixel-workbench",
+        "src/dynamixel-workbench-msgs"
+    ],
+    "venvPath": ".pixi/envs",
+    "venv": "default",
+    "pythonVersion": "3.12",
+    "typeCheckingMode": "standard",
+    "executionEnvironments": [
+        {
+            "root": ".",
+            "extraPaths": [
+                "src/face_tracker",
+                "src/face_tracker_movement",
+                "src/full_demo",
+                "src/hand_gestures",
+                "src/jaw_movement",
+                "src/llm_package",
+                "src/sst_package",
+                "src/tts_package",
+                "src/unified_arms",
+                "install/face_tracker_msgs/lib/python3.12/site-packages"
+            ]
+        }
+    ]
+}

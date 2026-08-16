@@ -1,23 +1,58 @@
+from typing import Any
+
+import torch
 from deepface import DeepFace
+from deepface.detectors import DetectorWrapper
 from deepface.models.FacialRecognition import FacialRecognition
 
-class FaceRecognizer(object):
 
-    def __init__(self, logger, model_name, detector_backend):
+class FaceRecognizer:
+    def __init__(
+        self,
+        logger,
+        model_name,
+        detector_backend,
+        *,
+        recognition_enabled=True,
+        inference_device='cuda:0',
+    ):
         """
         Initialize face recognizer, and create embeddings in the intialization
         """
         self.logger = logger
         self.model_name = model_name
         self.detector_backend = detector_backend
+        self.recognition_enabled = recognition_enabled
+        self.inference_device = self._select_device(inference_device)
 
-        # build models once to store them in the memory
-        self.model: FacialRecognition = DeepFace.build_model(model_name=model_name)
+        self._configure_detector()
 
-        logger.info(f"facial recognition model {model_name} is just built")
+        self.model: FacialRecognition | None = None
+        if recognition_enabled:
+            self.model = DeepFace.build_model(model_name=model_name)
+            logger.info(f'Facial recognition model {model_name} is ready.')
 
-        self.logger.info("FaceRecognizer initialized!")
-    
+        self.logger.info(f'Face detector {detector_backend} is ready on {self.inference_device}.')
+
+    def _select_device(self, requested_device: str) -> str:
+        if requested_device.startswith('cuda') and not torch.cuda.is_available():
+            self.logger.warning(
+                f'CUDA device {requested_device} was requested but is unavailable; using CPU.'
+            )
+            return 'cpu'
+        return requested_device
+
+    def _configure_detector(self):
+        detector: Any = DetectorWrapper.build_model(self.detector_backend)
+        model: Any = getattr(detector, 'model', None)
+        if model is None or not hasattr(model, 'to'):
+            if self.inference_device.startswith('cuda'):
+                self.logger.warning(
+                    f'Detector {self.detector_backend} cannot be moved to CUDA; it will use CPU.'
+                )
+            return
+        model.to(self.inference_device)
+
     def extract_faces(self, img):
         """
         Extract faces from image. Discards small faces.
@@ -36,9 +71,16 @@ class FaceRecognizer(object):
             img_path=img,
             detector_backend=self.detector_backend,
             enforce_detection=False,
+            align=self.recognition_enabled,
         )
-        return [face_obj for face_obj in face_objs if face_obj["facial_area"]["w"] < img.shape[0] * 0.8]
-    
+        return [
+            face_obj
+            for face_obj in face_objs
+            if face_obj['confidence'] > 0
+            and face_obj['facial_area']['w'] < img.shape[1] * 0.8
+            and face_obj['facial_area']['h'] < img.shape[0] * 0.8
+        ]
+
     def represent(self, img):
         """
         This function calculates vector representation for one face
@@ -47,9 +89,12 @@ class FaceRecognizer(object):
             The number of dimensions varies based on the reference model
             (e.g., FaceNet returns 128 dimensions, VGG-Face returns 4096 dimensions).
         """
+        if not self.recognition_enabled or self.model is None:
+            return []
+
         target_embedding_obj = DeepFace.represent(
             img_path=img,
             model_name=self.model_name,
-            detector_backend="skip",
-            )
-        return target_embedding_obj[0]["embedding"]
+            detector_backend='skip',
+        )
+        return target_embedding_obj[0]['embedding']

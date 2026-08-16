@@ -3,6 +3,7 @@
 *~
 .o
 *.pyc
+__pycache__/
 
 .vscode/*
 !.vscode/c_cpp_properties.json
@@ -24,6 +25,12 @@ temp_dynamixel_for_launch.yaml
 .goutputstream-GS9RZ1
 4913
 *.db
+*.sqlite3
 *.prof
 .venv/*
-src/speech_recognizer/resource
+.env.local
+.pixi/
+.pixi-packed/
+.pytest_cache/
+.ruff_cache/
+.cache/

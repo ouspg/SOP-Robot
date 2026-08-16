@@ -3,9 +3,24 @@
 <package format="3">
   <name>full_demo</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Launch and coordinate the complete robot demo.</description>
   <maintainer email="vagrant@todo.todo">vagrant</maintainer>
   <license>TODO: License declaration</license>
+
+  <exec_depend>face_tracker</exec_depend>
+  <exec_depend>face_tracker_movement</exec_depend>
+  <exec_depend>face_tracker_msgs</exec_depend>
+  <exec_depend>hand_gestures</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>llm_package</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>robot</exec_depend>
+  <exec_depend>rqt_image_view</exec_depend>
+  <exec_depend>sst_package</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tts_package</exec_depend>
+  <exec_depend>unified_arms</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -14,11 +14,13 @@
           <param name="baud_rate">57600</param>
         </xacro:unless>
       </hardware>
-      <!--joint name="head_jaw_joint">
-        <command_interface name="position"/>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-      </joint-->
+      <xacro:if value="${use_fake_hardware}">
+        <joint name="head_jaw_joint">
+          <command_interface name="position"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+      </xacro:if>
       <joint name="head_pan_joint">
         <command_interface name="position"/>
         <state_interface name="position"/>
