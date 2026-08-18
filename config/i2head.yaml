@@ -1,0 +1,196 @@
+# i2head.yaml - Module definition for InMoov i2Head
+#
+# This YAML file is the single source of truth for all i2Head
+# servo configuration. The same firmware and ROS2 nodes can be
+# used with different modules by swapping this file.
+
+module:
+  name: "InMoov i2Head"
+  description: "i2Head facial expression module with PCA9685 servo driver"
+  driver: "pca9685"
+  i2c_address: "0x40"
+  pwm_frequency: 50
+  num_channels: 16
+
+servos:
+
+  # --- Large servos (PDI-6221MG):
+  head_pan:
+    channel: 14
+    model: "PDI-6221MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 60
+    angle_max: 120
+    home: 90
+    reversed: false
+
+  mouth_jaw:
+    channel: 15
+    model: "PDI-6221MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 30
+    angle_max: 90
+    home: 30
+    reversed: false
+
+  # --- Eyes: 4× PDI-1109MG (micro servos) ---
+  # WARNING - Eyes have not been verified, as the connections are too loose to find good values
+  #           Further development is required for the eyes
+  ## left_eye_horizontal:
+  ##   channel: 3
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+  ## 
+  ## left_eye_vertical:
+  ##   channel: 2
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+  ## 
+  ## right_eye_horizontal:
+  ##   channel: 1
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+  ## 
+  ## right_eye_vertical:
+  ##   channel: 0
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+
+  # --- Eyelids: 4× PDI-1109MG (micro servos) ---
+  # Eyelids have been removed from the model due to plastic griding agains each other
+  # Values have not been verified
+  
+  ## left_eyelid_upper:
+  ##   channel: 0
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+  ## 
+  ## left_eyelid_lower:
+  ##   channel: 0
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+  ## 
+  ## right_eyelid_upper:
+  ##   channel: 0
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+  ## 
+  ## right_eyelid_lower:
+  ##   channel: 9
+  ##   model: "PDI-1109MG"
+  ##   pulse_min: 600
+  ##   pulse_max: 2400
+  ##   angle_min: 0
+  ##   angle_max: 180
+  ##   home: 90
+  ##   reversed: false
+
+  # --- Eyebrows: 4× PDI-1109MG (micro servos) ---
+  left_brow:
+    channel: 9
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 60
+    angle_max: 120
+    home: 90
+    reversed: true
+
+  right_brow:
+    channel: 8
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 60
+    angle_max: 120
+    home: 90
+    reversed: false
+
+  left_inner_brow:
+    channel: 11
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 80
+    angle_max: 100
+    home: 90
+    reversed: true
+
+  right_inner_brow:
+    channel: 10
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 80
+    angle_max: 100
+    home: 90
+    reversed: false
+
+  # --- Cheeks: 2× PDI-1109MG (micro servos) ---
+  left_mouth_corner:
+    channel: 6
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 60
+    angle_max: 120
+    home: 90
+    reversed: true
+
+  right_mouth_corner:
+    channel: 5
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 60
+    angle_max: 120
+    home: 90
+    reversed: false
+
+  # --- Upper lip: 1× PDI-1109MG (micro servo) ---
+  upper_lip:
+    channel: 4
+    model: "PDI-1109MG"
+    pulse_min: 600
+    pulse_max: 2400
+    angle_min: 90
+    angle_max: 105
+    home: 90
+    reversed: false
