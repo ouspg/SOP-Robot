@@ -1,5 +1,37 @@
 # HAND CLIENT
 
+## Shoulder movement tester
+
+Run:
+
+```console
+pixi run python client/shoulder_tester.py
+```
+
+move shoulder servos from -90 to 90 degrees from servo's zero position using index:degree,index:degree syntax.
+
+The current index's are
+
+| Index   | Servo function |
+| ----- | -----------------------   | 
+|   0   | R shoulder lift | 
+|   1   | R upper arm rotation | 
+|   2   | R bicep           | 
+|   3   | R shoulder out   | 
+|   4   | L shoulder lift | 
+|   5   | L upper arm rotation | 
+|   6    | L bicep | 
+|   7    | L shoulder out | 
+
+Example: 
+
+  ```
+  shoulders> 0:10, 1:-15
+  ```
+  moves R shoulder lift servo 10 degrees to the positive direction and R upper arm rotation servo 15 degrees to the negative direction.
+
+
+
 ## How to run
 
 Ensure that you have set up the robot as instructed in [Robot bring-up](../docs/BRINGUP.md) and that r_hand_controller is up and running. If not, refer back to the [bring-up](../docs/BRINGUP.md).

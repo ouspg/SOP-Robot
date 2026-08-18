@@ -59,10 +59,13 @@ class UnifiedArms(Node):
             '/r_hand/r_hand_topic',
             10,
         )
-        self.ids = [2, 3]
-        self.pos = [45, 120]
-        self.zero = [30, 90]
-        self.hold = [70, 70]
+        self.right_arm_servo_indices = range(0, 4)
+        self.left_arm_servo_indices = range(4, 8)
+        self.legacy_positions = {
+            'pos': [15, 30],
+            'zer': [0, 0],
+            'hold': [40, -20],
+        }
         # Create main program subscriber
         self.gesture_subscription = self.create_subscription(
             String,
@@ -72,9 +75,9 @@ class UnifiedArms(Node):
         )
 
         self.SHOULDER_POSITIONS = {
-            'zero': [30.0, 90.0, 10.0, 0.0, 34.0, 80.0, 10.0, 0.0],
-            'rps_1': [55.0, 110.0, 10.0, 0.0, 79.0, 80.0, 45.0, 0.0],
-            'rps_2': [35.0, 70.0, 10.0, 0.0, 79.0, 80.0, 75.0, 0.0],
+            'zero': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            'rps_1': [25.0, 20.0, 0.0, 0.0, 45.0, 0.0, 35.0, 0.0],
+            'rps_2': [5.0, -20.0, 0.0, 0.0, 45.0, 0.0, 65.0, 0.0],
         }
 
         self.HAND_ACTIONS = [
@@ -184,46 +187,49 @@ class UnifiedArms(Node):
         ]
         while len(command) < 8:
             angle = float(input(f'Angle for {joints[i]} joint: '))
-            if isinstance(angle, float) and 0 <= angle <= 180:
+            if isinstance(angle, float) and -90 <= angle <= 90:
                 command.append(angle)
                 i += 1
             else:
-                print('Angle must be int. Safe values are 0 - 180')
+                print('Angle must be a number between -90 and 90')
         self.logger.info('Sending positions')
         self.arm_gesture(command)
 
     def arm_gesture(self, action, hand='both'):
         self.logger.info(f'Action: {action}')
 
-        positions = []
-        if action in self.SHOULDER_POSITIONS:
+        if isinstance(action, list):
+            positions = action
+            servo_indices = range(min(len(positions), 8))
+        elif action in self.SHOULDER_POSITIONS:
+            positions = self.SHOULDER_POSITIONS[action]
             if hand == 'right':
-                # Replace left-hand values with -1.0 to leave them unchanged.
-                positions = [*self.SHOULDER_POSITIONS[action][4:], -1.0, -1.0, -1.0, -1.0]
+                servo_indices = self.right_arm_servo_indices
             elif hand == 'left':
-                # Replace right-hand values with -1.0 to leave them unchanged.
-                positions = [-1.0, -1.0, -1.0, -1.0, *self.SHOULDER_POSITIONS[action][:4]]
+                servo_indices = self.left_arm_servo_indices
             elif hand == 'both':
-                positions = self.SHOULDER_POSITIONS[action]
+                servo_indices = range(len(positions))
             else:
                 self.logger.info(f"Expected 'left', 'right', or 'both' instead of '{hand}'")
-        elif action == 'pos':
-            positions = self.pos
-        elif action == 'zer':
-            positions = self.zero
-        elif action == 'hold':
-            positions = self.hold
-        angles = []
-        for i in range(len(self.ids)):
-            angles.append(f'{self.ids[i]}:{positions[i]}')
+                return
+        elif action in self.legacy_positions:
+            positions = self.legacy_positions[action]
+            servo_indices = range(len(positions))
+        else:
+            self.logger.info(f"Arm action '{action}' is not implemented")
+            return
+
+        angles = [
+            f'{servo_index}:{round(positions[servo_index])}' for servo_index in servo_indices
+        ]
         # Prepare the command to be sent to the Arduino
-        command = ','.join(str(angle) for angle in angles)
+        command = ','.join(angles)
         self.logger.info(command)
         # Note: Could return at the start of function
         # but this leaves room for implementation for fake robot
         if self.serial:
             # Send the command to the Arduino
-            self.serial.write(command.encode())
+            self.serial.write(f'{command}\n'.encode())
 
             # Read the feedback from the Arduino
             feedback = self.serial.readline().decode().strip()
