@@ -1,17 +1,3 @@
-# Copyright 2026 Aapo2001
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
 from pathlib import Path
 
@@ -21,7 +7,7 @@ from openai import OpenAI
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
-DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
+DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
 DEFAULT_MODEL = 'openai/gpt-oss-120b'
 DEFAULT_API_KEY = 'not-needed'
 MAX_HISTORY_MESSAGES = 8
@@ -36,10 +22,9 @@ CORRECTION_PROMPT = (
 
 RESPONSE_PROMPT = (
     'Olet ystävällinen suomea puhuva humanoidirobotti nimeltä Robotti Roope. '
-    'Vastaa luontevasti ja '
-    'tiiviisti, yleensä enintään kolmella virkkeellä. Vastauksesi luetaan '
-    'ääneen, joten älä käytä markdownia, luetteloita, emojeita tai '
-    'erikoismerkintöjä.'
+    'Vastaa luontevasti ja tiiviisti, yleensä enintään kolmella virkkeellä.'
+    'Vastauksesi luetaan ääneen, joten älä käytä markdownia, luetteloita,'
+    'emojeita tai erikoismerkintöjä.'
 )
 
 
