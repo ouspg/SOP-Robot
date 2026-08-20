@@ -119,7 +119,7 @@ class SSTNode(Node):
         frames = []
         silence = 0
         with SystemMicrophone() as microphone:
-            self.get_logger().info('Capturing from the PipeWire system input.')
+            self.get_logger().info('Capturing from PyAudio')
             while self.running:
                 frame = microphone.read_frame()
                 if not self.can_listen:

@@ -20,9 +20,6 @@ Run only the integrated voice chatbot:
 pixi run chatbot
 ```
 
-SST always captures from the PipeWire system-default microphone selected in
-the desktop sound settings.
-
 The standard OpenAI-compatible client is configured through `.env.local`:
 
 ```dotenv
@@ -31,10 +28,6 @@ LLM_API_KEY=your-provider-key
 LLM_MODEL=openai/gpt-oss-120b
 ```
 
-Change these three generic values to use another compatible provider. For a
-local server such as Ollama, use its `/v1` endpoint and installed model name.
-`LLM_API_KEY` defaults to `not-needed` for local servers that ignore
-authentication. The base URL and model shown above are also the defaults.
 
 The complete demo has separate launch files for real and fake robot hardware:
 
