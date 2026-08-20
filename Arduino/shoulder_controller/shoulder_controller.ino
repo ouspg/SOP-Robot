@@ -21,7 +21,7 @@ const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
 
 /*
 servo pin - servo function
-        2 - R shoulder lift
+        11 - R shoulder lift
         3 - R upper arm rotation
         4 - R bicep
         5 - R shoulder out
@@ -67,7 +67,7 @@ void setup() {
   };
 
   for (int i = 0; i < NUM_SERVOS; ++i) {
-    
+
     // Uncomment if you want to check if all servos are in default position on startup
     /*
     //check if potentiometers have moved
@@ -80,7 +80,7 @@ void setup() {
       while(1);
     }
     */
-    
+
     // Write the starting positions, so servos don't move when attached
     servos[i].write(expectedStartingPos[i]);
     servos[i].attach(SERVO_PINS[i]);
@@ -124,7 +124,7 @@ void loop() {
       split = command.indexOf(':', start) + 1;
       end = command.indexOf(',', start);
     }
-    
+
     // get the last pair
     servosToMove[angleIndex] = command.substring(start, split).toInt();
     angles[angleIndex] = command.substring(split).toInt();
@@ -132,8 +132,14 @@ void loop() {
 
     // set angles on specified servos
     for (int i = 0; i < angleIndex; ++i) {
+        // pin 11 has replaced pin 2 
       // !! subtract 2 from the ID to get the index, servo pin has to be >= 2 !!
-      int servoIndex = servosToMove[i] - 2;
+      if (servosToMove[i] == 11){
+          int servoIndex = 0;
+      }
+      else{
+          int servoIndex = servosToMove[i] - 2;
+      }
       // constrain to min and max per servo
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
       servos[servoIndex].write(constrainedAngle);
