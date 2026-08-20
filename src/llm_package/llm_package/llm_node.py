@@ -7,7 +7,7 @@ from openai import OpenAI
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
-DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
+DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
 DEFAULT_MODEL = 'openai/gpt-oss-120b'
 DEFAULT_API_KEY = 'not-needed'
 MAX_HISTORY_MESSAGES = 8
