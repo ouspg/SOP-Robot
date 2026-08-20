@@ -42,7 +42,7 @@ class TTSService(Node):
             self.synthesizer.save_wav(wav, str(self.output))
             self.jaw.publish(message)
             subprocess.run(
-                ['pw-play', str(self.output)],
+                ['paplay', str(self.output)],
                 check=True,
                 timeout=120,
             )

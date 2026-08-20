@@ -8,7 +8,7 @@ from std_msgs.msg import String
 class ttsClientAsync(Node):
     def __init__(self):
         super().__init__('tts_client_async')
-        self.publisher = self.create_publisher(String, 'response', 10)
+        self.publisher = self.create_publisher(String, 'chatbot_response', 10)
 
     def send_request(self, data):
         req = String()

@@ -110,7 +110,7 @@ robot-demo-fake = { cmd = "bash -lc 'source install/local_setup.bash && ros2 lau
 face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
 face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
 unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
-tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package tts_node'", description = "Launch the text-to-speech node" }
+tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package service'", description = "Launch the text-to-speech node" }
 sst = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_package sst.launch.py'", description = "Launch speech-to-text using the system input device" }
 setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
