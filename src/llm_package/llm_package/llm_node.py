@@ -7,9 +7,9 @@ from openai import OpenAI
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
-DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
-DEFAULT_MODEL = 'openai/gpt-oss-120b'
-DEFAULT_API_KEY = 'not-needed'
+DEFAULT_BASE_URL = 'https://api.lehmus-ai.oulu.fi/v1'
+DEFAULT_MODEL = 'azsydsttjnlbfjbgqnwd'
+DEFAULT_API_KEY = 'your-lehmusai-key'
 MAX_HISTORY_MESSAGES = 8
 
 CORRECTION_PROMPT = (

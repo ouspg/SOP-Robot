@@ -175,7 +175,7 @@ class SSTNode(Node):
             pcm_to_float32(pcm),
             language=LANGUAGE,
             beam_size=5,
-            condition_on_previous_text=False,
+            condition_on_previous_text=True,
             vad_filter=True,
         )
         return ' '.join(segment.text.strip() for segment in segments).strip()

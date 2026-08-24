@@ -105,8 +105,8 @@ clean = { cmd = "rm -rf build install log", description = "Remove colcon build o
 robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
 robot-head = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=head'", description = "Launch the real robot head only" }
 robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
-robot-demo-real = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch full_demo real_robot.launch.py'", description = "Launch the complete demo with the real robot" }
-robot-demo-fake = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch full_demo fake_robot.launch.py'", description = "Launch the complete demo with fake robot hardware" }
+robot-demo-real = { cmd = "bash -lc 'bash scripts/start_robot_real.sh'", description = "Launch the complete demo with the real robot" }
+robot-demo-fake = { cmd = "bash -lc 'bash scripts/start_robot_fake.sh'", description = "Launch the complete demo with fake robot hardware" }
 face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
 face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
 unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
@@ -116,5 +116,5 @@ sst = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_pack
 setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
 llm = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run llm_package llm_node'", description = "Launch the conversational language-model node" }
-chatbot = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch full_demo chatbot.launch.py'", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
+chatbot = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot chatbot.launch.py'", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
 setup-runtime = { depends-on = ["sync-submodules", "download-tts-model"], description = "Fetch source dependencies and runtime model assets" }
