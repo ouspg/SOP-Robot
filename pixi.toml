@@ -105,8 +105,12 @@ clean = { cmd = "rm -rf build install log", description = "Remove colcon build o
 robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
 robot-head = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=head'", description = "Launch the real robot head only" }
 robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
-robot-demo-real = { cmd = "bash -lc 'bash scripts/start_robot_real.sh'", description = "Launch the complete demo with the real robot" }
-robot-demo-fake = { cmd = "bash -lc 'bash scripts/start_robot_fake.sh'", description = "Launch the complete demo with fake robot hardware" }
+robot-demo-real = { cmd = "bash scripts/start_robot_real.sh", description = "Launch the complete demo in separate terminal tabs (real robot)" }
+robot-demo-fake = { cmd = "bash scripts/start_robot_fake.sh", description = "Launch the complete demo in separate terminal tabs (fake robot)" }
+robot-demo-real-single = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot real_robot.launch.py'", description = "Launch the complete demo in a single terminal (real robot)" }
+robot-demo-fake-single = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot fake_robot.launch.py'", description = "Launch the complete demo in a single terminal (fake robot)" }
+demo = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot demo.launch.py'", description = "Launch demo application nodes for real hardware" }
+demo-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot demo.fake.launch.py'", description = "Launch demo application nodes for fake hardware" }
 face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
 face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
 unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
