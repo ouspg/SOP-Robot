@@ -45,7 +45,7 @@ class UnifiedArms(Node):
             '/r_hand/r_hand_topic',
             10,
         )
-        self.ids = [2, 3]
+        self.ids = [0, 1]
         self.pos = [45, 120]
         self.zero = [30, 90]
         self.hold = [70, 70]

@@ -1,37 +1,33 @@
 #include <Servo.h>
 
-const int NUM_SERVOS = 9;
+const int NUM_SERVOS = 6;
 
 const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 
-// Servo pins are used as IDs, later logic subtracts 2 from the ID to get index
-// For this to work servo pin has to be >= 2
-const int SERVO_PINS[NUM_SERVOS] = {11, 3, 4, 5, 6, 7, 8, 9, 10};
+const int SERVO_PINS[NUM_SERVOS] = { 3, 5, 6, 9, 10, 11};
 
 // All mins and maxs need to have the same index as the corresponding servo pin
-const int ServoMins[NUM_SERVOS] = {10, 10,  20,  0,  0,   0,   0,   55,  0};
-const int ServoMax[NUM_SERVOS] = { 80, 180, 100, 60, 180, 180, 100, 115, 180};
+const int ServoMins[NUM_SERVOS] = {10, 10,  20, 0, 0, 0};
+const int ServoMax[NUM_SERVOS] = { 80, 180, 100, 180, 180, 100};
 
 // values based on manual measurements from each potentiometer
-const int PotMins[NUM_SERVOS] = {144, 140, 0,    0,    0,    0,    0,    0,    0};
-const int PotMax[NUM_SERVOS] = { 360, 900, 1023, 1023, 1023, 1023, 1023, 1023, 1023};
+const int PotMins[NUM_SERVOS] = {144, 140, 0,    0,    0,    0};
+const int PotMax[NUM_SERVOS] = { 360, 900, 1023, 1023, 1023, 1027};
 
 // Set expected to 0 on empty servos, to not trigger potentiometer check
-const int expectedStartingPos[NUM_SERVOS] = {30, 90, 0, 0, 0, 0, 0, 0};
+const int expectedStartingPos[NUM_SERVOS] = {30, 0, 10, 34, 80, 10};
 
 /*
 servo pin - servo function
-        11 - R shoulder lift
-        3 - R upper arm rotation
-        4 - R bicep
-        5 - R shoulder out
+        3 - R shoulder lift
+        5 - R upper arm rotation
+        6 - R bicep
 
-        6 - L shoulder lift
-        7 - L upper arm rotion
-        8 - L bicep
-        9 - L shoulder out
 
-       10 - ?
+        9 - L shoulder lift
+        10 - L upper arm rotion
+        11 - L bicep
+
 */
 
 // Converts potentiometer values to degrees
@@ -57,9 +53,6 @@ void setup() {
   int currentPosL[NUM_SERVOS] = {
     potToDegree(analogRead(A0), 0),
     potToDegree(analogRead(A1), 1),
-    0,
-    0,
-    0,
     0,
     0,
     0,
@@ -132,14 +125,7 @@ void loop() {
 
     // set angles on specified servos
     for (int i = 0; i < angleIndex; ++i) {
-        // pin 11 has replaced pin 2 
-      // !! subtract 2 from the ID to get the index, servo pin has to be >= 2 !!
-      if (servosToMove[i] == 11){
-          int servoIndex = 0;
-      }
-      else{
-          int servoIndex = servosToMove[i] - 2;
-      }
+      int servoIndex = servosToMove[i];
       // constrain to min and max per servo
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
       servos[servoIndex].write(constrainedAngle);

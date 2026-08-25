@@ -92,6 +92,8 @@ huggingface-hub = ">=0.36.2, <0.37"
 openai = ">=2,<3"
 python-dotenv = ">=1,<2"
 diagrams = ">=0.25.1, <0.26"
+nvidia-cublas-cu12 = ">=12.9.2.10, <13"
+nvidia-cudnn-cu12 = "==9.*"
 
 [tasks]
 sync-submodules = { cmd = "git submodule update --init --recursive src/dynamixel-workbench src/dynamixel-workbench-msgs", description = "Fetch source dependencies checked into .gitmodules" }
@@ -103,7 +105,7 @@ format = { cmd = "ruff check . --fix && ruff format .", description = "Apply Ruf
 clean = { cmd = "rm -rf build install log", description = "Remove colcon build outputs" }
 
 robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
-robot-head = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=head'", description = "Launch the real robot head only" }
+robot-arm = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=arm'", description = "Launch the real robot arms only" }
 robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
 robot-demo-real = { cmd = "bash scripts/start_robot_real.sh", description = "Launch the complete demo in separate terminal tabs (real robot)" }
 robot-demo-fake = { cmd = "bash scripts/start_robot_fake.sh", description = "Launch the complete demo in separate terminal tabs (fake robot)" }
