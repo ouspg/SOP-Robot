@@ -72,7 +72,7 @@ Anyway, you are able to test the face tracking and eye movements like this.
 To launch the complete demo with fake robot hardware, run:
 
 ```console
-gnome-terminal -- bash -c "pixi run robot-demo-fake; exec bash"
+pixi run robot-demo-fake
 ```
 
 This uses `scripts/start_robot_fake.sh` to start simulated robot and controllers, chatbot, face tracker and full demo in their own gnome-terminal window. Press Ctrl+C once to stop the complete
@@ -109,7 +109,7 @@ Launch the robot, face tracking, movement, hand control, and voice chatbot from
 one terminal:
 
 ```console
-gnome-terminal -- bash -c "pixi run robot-demo-real; exec bash"
+pixi run robot-demo-real
 ```
 
 This uses `scripts/start_robot_real.sh`. It starts the real robot and controllers, chatbot, face tracker and full demo in their own gnome-terminal window. Press Ctrl+C once to stop the complete demo.
@@ -128,14 +128,9 @@ This should launch the robot listening server and prints a lot of output. If not
 To launch only the **arm** hardware
 
 ```console
-pixi run ros2 launch robot robot.launch.py robot_parts:=arm
+pixi run robot-arm
 ```
 
-To launch only the **head** hardware
-
-```console
-pixi run robot-head
-```
 
 ### 1.5 Starting the controllers (Not necessary)
 
@@ -304,10 +299,9 @@ Run `pixi run build` again. If you want to clean first:
 
 ```console
 pixi run clean
-pixi run build --cmake-clean-cache
+pixi run build
 ```
 
-After that, try `pixi run build` again.
 
 #### 3. Build fails to dependency issue
 
