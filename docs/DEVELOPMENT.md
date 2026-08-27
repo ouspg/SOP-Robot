@@ -61,7 +61,7 @@ Launch aliases:
 
 ```console
 pixi run robot
-pixi run robot-head
+pixi run robot-arm
 pixi run robot-fake
 ```
 

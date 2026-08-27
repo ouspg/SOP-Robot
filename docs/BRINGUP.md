@@ -72,11 +72,10 @@ Anyway, you are able to test the face tracking and eye movements like this.
 To launch the complete demo with fake robot hardware, run:
 
 ```console
-pixi run robot-demo-fake
+gnome-terminal -- bash -c "pixi run robot-demo-fake; exec bash"
 ```
 
-This uses `full_demo/fake_robot.launch.py` to start each ROS node as its own
-process under one ROS 2 launch service. Press Ctrl+C once to stop the complete
+This uses `scripts/start_robot_fake.sh` to start simulated robot and controllers, chatbot, face tracker and full demo in their own gnome-terminal window. Press Ctrl+C once to stop the complete
 demo.
 
 ### Launching text-to-speech service
@@ -92,7 +91,10 @@ pixi run tts
 Call the service from terminal using client and synthetize speech
 
 ```console
-pixi run ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
+pixi run tts-client
+```
+```console
+Input command: Hei. Tässä on lause joka syntentisoidaan puheeksi.
 ```
 
 ## Bring-up real HW robot
@@ -107,14 +109,10 @@ Launch the robot, face tracking, movement, hand control, and voice chatbot from
 one terminal:
 
 ```console
-pixi run robot-demo-real
+gnome-terminal -- bash -c "pixi run robot-demo-real; exec bash"
 ```
 
-This uses `full_demo/real_robot.launch.py`. ROS 2 starts every node as its own
-process and keeps all output in the current terminal. Press Ctrl+C once to stop
-the complete demo. Startup problems are usually caused by `robot.launch.py`
-being unable to arm or find a servo.
-
+This uses `scripts/start_robot_real.sh`. It starts the real robot and controllers, chatbot, face tracker and full demo in their own gnome-terminal window. Press Ctrl+C once to stop the complete demo.
 ### 1b. Launching the robot (Manual)
 
 You can launch the real robot using a launch file:
@@ -186,7 +184,10 @@ pixi run tts
 Call the service from terminal using client and synthetize speech
 
 ```console
-pixi run ros2 run tts_package client "Tämä lause syntentisoidaan puheeksi."
+pixi run tts-client
+```
+```console
+Input command: Hei. Tässä on lause joka syntentisoidaan puheeksi.
 ```
 
 **Todo: simplify bring up process (add the starting of the controllers to the launch file)**

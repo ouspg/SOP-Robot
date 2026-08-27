@@ -21,6 +21,16 @@ pixi run setup-runtime
 pixi run build
 pixi run robot-fake
 ```
+Setting up Lehmus AI api key:
+
+```console
+cp .env.example .env.local
+```
+
+```code
+LLM_API_KEY=your lehmus ai api key goes here
+```
+
 
 For real Dynamixel hardware, install the U2D2 udev rule once:
 
@@ -46,13 +56,16 @@ Joint -> Servo mappings are defined in two files. Configuration file connects se
 * `client`  - contains client to send actions for robot hand
 * `config`  - dynamixel servo configuration
 * `src`  - all packages
-  * `src/arm_pack`  - not use in current configuration
-  * `src/eye_movement`  - runs action client to create eye motion commands based on the face tracking information
   * `src/face_tracker`  - tracks the faces using camera feed and calculates locations and distances of faces and detects mouth movement.
   * `src/inmoov_description`  - robot files, which define the robot geometry and configuration for simulation (URDF, SRDF & rviz configuration)
   * `src/robot`  - robot launch files & servo controller configurations
   * `src/robot_hardware`  - hardware interface for ros2_controller, communicates with U2D2 via dynamixel workbench
   * `src/tts_package`  - Text-to-speech package for finnish speech synthesis
+  * `src/sst_package` - Speech-to-text package 
+  for finnish speech recognition
+  * `src/llm_package` - OpenAI client package used for using llm model with Lehmus AI API
+  * `src/unified_arms`- unified node for controlling arms thought serial and hands with topics
+  * `src/full_demo` - Main control node for the robot  
 
 ## Servo Table
 

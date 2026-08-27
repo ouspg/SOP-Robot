@@ -41,4 +41,4 @@ pixi run chatbot
 #Dependencies
 
 - openai
-- dotenv
+- python-dotenv
