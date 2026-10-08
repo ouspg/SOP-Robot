@@ -1,0 +1,139 @@
+# Oulun yliopiston tietotekniikan tutkinto-ohjelma
+
+## Perustiedot
+
+**Tutkinto-ohjelma:** Tietotekniikan tutkinto-ohjelma
+**Tutkintonimike:** Tekniikan kandidaatti ja diplomi-insinööri
+**Tutkinnon laajuus:** 180 + 120 opintopistettä
+**Opetuskieli:** Suomi
+**Aloituspaikat yhteishaussa:** 100
+**Aloituspaikat avoimen väylässä:** 5
+**Mediaanipalkka:** 5 705 €/kk
+**Erikoistumisvaihtoehtojen määrä:** 4
+
+## Koulutuksen sisältö
+
+Tietotekniikan tutkinto-ohjelma antaa vahvan perustan digitalisaatiossa keskeisten tietoteknisten laitteiden ja ohjelmistojen suunnitteluun ja toteuttamiseen.
+
+Opiskelija oppii:
+
+* tietotekniikan keskeiset käsitteet
+* tietotekniikan menetelmät ja teknologiat
+* tehokkaiden algoritmien suunnittelua
+* tietoteknisten laitteiden ja ohjelmistojen suunnittelua
+* teknologioiden soveltamista käytännön työtehtävissä
+* teknisten ongelmien ratkaisemista.
+
+Opinnoissa yhdistyvät vahva teoriapohja ja käytännönläheisyys.
+
+## Erikoistumisvaihtoehdot
+
+Kandidaattivaiheen kolmannella vuosikurssilla opiskelija voi erikoistua neljään eri suuntaan:
+
+1. **Tekoäly**
+2. **Soveltava tietotekniikka**
+3. **Tietokonetekniikka**
+4. **Kyberturvallisuus**
+
+### Tekoäly
+
+Tekoälyn opintosuunnassa opiskelija syventyy:
+
+* tekoälyn menetelmiin
+* data-analyysin menetelmiin
+* tekoälyn käytännön sovelluksiin.
+
+### Soveltava tietotekniikka
+
+Soveltavan tietotekniikan opinnoissa perehdytään:
+
+* tietoteknisten laitteiden sovelluskehitykseen
+* tietoteknisten järjestelmien sovelluskehitykseen.
+
+### Tietokonetekniikka
+
+Tietokonetekniikan opintosuunnassa opiskelija oppii kehittämään:
+
+* laskennallisesti tehokkaita ratkaisuja
+* ohjelmistoja sulautettuihin järjestelmiin
+* ratkaisuja esineiden internetiin (IoT)
+* signaalinkäsittelyyn liittyviä ratkaisuja.
+
+### Kyberturvallisuus
+
+Kyberturvallisuuteen erikoistuva opiskelija oppii suunnittelemaan, kehittämään, testaamaan ja arvioimaan kyberturvallisia:
+
+* järjestelmiä
+* ohjelmistoja
+* laitteita.
+
+Opinnot valmistavat toimimaan jatkuvasti muuttuvassa digitaalisessa ympäristössä.
+
+## Tutkimusalueet ja osaaminen
+
+Tietotekniikan koulutukseen liittyviä tutkimusalueita ovat muun muassa:
+
+* tekoäly
+* konenäkö
+* lääketieteen tekniikka
+* ihmiskeskeinen tietotekniikka
+* tietoturva
+* robotiikka
+* esineiden internet (IoT).
+
+Näitä tutkimusalueita hyödynnetään myös opetuksessa.
+
+## Yhteydet työelämään
+
+Tietotekniikan tutkinto-ohjelman henkilöstö tekee yhteistyötä elinkeinoelämän kanssa. Tämän kautta työelämän tarpeet näkyvät opinnoissa ja opiskelijoille tarjoutuu uramahdollisuuksia.
+
+Opiskelijat voivat perehtyä digitaaliseen valmistukseen Fab Labissa, jossa voidaan rakentaa prototyyppejä ja pienoismalleja esimerkiksi 3D-tulostuksen avulla.
+
+## Työllistyminen
+
+Tietotekniikan diplomi-insinöörinä valmistunut voi työskennellä esimerkiksi:
+
+* ICT-alan yrityksissä
+* tutkimuksessa
+* oppilaitoksissa
+* julkishallinnossa
+* tuotekehityksessä
+* teollisessa tuotannossa
+* vaativissa asiantuntijatehtävissä
+* johtotehtävissä.
+
+Työssä voidaan keskittyä esimerkiksi teknisten ongelmien ratkaisemiseen ja uusien teknologioiden kehittämiseen.
+
+### Mahdollisia ammattinimikkeitä
+
+Valmistuneen ammattinimike voi olla esimerkiksi:
+
+* ohjelmistosuunnittelija
+* data-analyytikko
+* suunnitteluinsinööri
+* järjestelmäasiantuntija
+* tekninen asiantuntija
+* projektipäällikkö
+* teknologiajohtaja
+* yrittäjä.
+
+## Opintojen rakenne
+
+Tutkinto koostuu kahdesta vaiheesta:
+
+**Kandidaatin tutkinto:** 180 opintopistettä
+**Diplomi-insinöörin tutkinto:** 120 opintopistettä
+**Yhteensä:** 300 opintopistettä
+
+Tutkinto-ohjelman tarkempi rakenne ja kurssisisällöt löytyvät Oulun yliopiston opinto-oppaasta.
+
+## Koulutuksen keskeinen tavoite
+
+Koulutuksen tavoitteena on antaa opiskelijalle sekä teoreettinen että käytännöllinen osaaminen tietotekniikan alalla. Opiskelija oppii hyödyntämään tietotekniikan menetelmiä ja teknologioita sekä kehittämään tulevaisuuden teknologioita.
+
+## Haku
+
+**Kevään toinen yhteishaku:** 09.03.2027–23.03.2027
+
+**Avoimen väylän haku:** 09.03.2027–23.03.2027
+
