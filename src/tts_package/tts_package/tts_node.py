@@ -13,7 +13,8 @@ class TTSService(Node):
         super().__init__('tts_service')
         self.subscription = self.create_subscription(
             String,
-            'chatbot_response',
+            ##'chatbot_response',
+            'recognized_speech'
             self.callback,
             10,
         )

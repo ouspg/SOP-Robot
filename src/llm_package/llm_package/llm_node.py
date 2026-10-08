@@ -17,14 +17,14 @@ CORRECTION_PROMPT = (
     'Päättele keskusteluhistorian avulla, mitä käyttäjä todennäköisimmin '
     'sanoi. Säilytä käyttäjän tarkoitus, älä lisää uutta sisältöä äläkä '
     'vastaa käyttäjälle. Palauta vain korjattu käyttäjän lause ilman '
-    'selityksiä, lainausmerkkejä tai markdownia.'
+    'selityksiä, lainausmerkkejä tai markdownia. Älä myöskään mainitse kontekstia, elä edes sulkeissa'
 )
 
 RESPONSE_PROMPT = (
     'Olet ystävällinen suomea puhuva humanoidirobotti nimeltä Robotti Roope. '
     'Vastaa luontevasti ja tiiviisti, yleensä enintään kolmella virkkeellä.'
     'Vastauksesi luetaan ääneen, joten älä käytä markdownia, luetteloita,'
-    'emojeita tai erikoismerkintöjä.'
+    'emojeita tai erikoismerkintöjä. Älä myöskään mainitse kontekstia, älä edes sulkeissa'
 )
 
 
@@ -32,7 +32,7 @@ def load_local_environment():
     project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
     load_dotenv(project_root / '.env.local')
 
-
+# toinen url muuttuja tänne joka johtaa defaultti lehmukseen
 class LLMNode(Node):
     def __init__(self):
         super().__init__('llm_node')
@@ -44,6 +44,10 @@ class LLMNode(Node):
                 DEFAULT_BASE_URL,
             )
             or DEFAULT_BASE_URL
+        )
+        self.base_url_speech = (
+            os.environ.get(
+                DEFAULT_BASE_URL,DEFAULT_BASE_URL,)
         )
         self.model = os.environ.get('LLM_MODEL') or DEFAULT_MODEL
         api_key = os.environ.get('LLM_API_KEY') or DEFAULT_API_KEY
@@ -64,9 +68,13 @@ class LLMNode(Node):
             self.speech_callback,
             10,
         )
-
+        #toinen clientti tähän mihin urli defaulttii
         self.client = OpenAI(
             base_url=self.base_url,
+            api_key=api_key,
+        )
+        self.client_speech = OpenAI(
+            base_url=self.base_url_speech,
             api_key=api_key,
         )
         self.history = []
@@ -110,14 +118,14 @@ class LLMNode(Node):
             max_tokens=512,
             empty_error='The transcript correction was empty.',
         )
-
+    # tähän pitää saada tunkattua että käyttää defaultti AI modelia
     def answer_user(self, corrected):
         messages = [
             {'role': 'system', 'content': RESPONSE_PROMPT},
             *self.history,
             {'role': 'user', 'content': corrected},
         ]
-        answer = self.complete(
+        answer = self.complete_answer(
             messages,
             max_tokens=512,
             empty_error='The model response was empty.',
@@ -137,11 +145,11 @@ class LLMNode(Node):
         )
         self.history = self.history[-MAX_HISTORY_MESSAGES:]
         return answer
-
+    #tätä pitää muokata niin että osaa kutsua RAG tehdessä vastauksen ja defaulttia kun tunnistaa puhetta
     def complete(self, messages, max_tokens, empty_error):
         finish_reason = None
         for token_budget in (max_tokens, max_tokens * 2):
-            response = self.client.chat.completions.create(
+            response = self.client_speech.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 max_tokens=token_budget,
@@ -160,6 +168,29 @@ class LLMNode(Node):
             )
 
         raise RuntimeError(f'{empty_error} finish_reason={finish_reason!r}.')
+
+    def complete_answer(self, messages, max_tokens, empty_error):
+            finish_reason = None
+            for token_budget in (max_tokens, max_tokens * 2):
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    max_tokens=token_budget,
+                )
+                choice = response.choices[0]
+                text = str(choice.message.content or '').strip()
+                if text:
+                    return text
+    
+                finish_reason = choice.finish_reason
+                if finish_reason != 'length':
+                    break
+                self.get_logger().warning(
+                    'The LLM exhausted its output budget before returning '
+                    f'text; retrying with {token_budget * 2} tokens.'
+                )
+    
+            raise RuntimeError(f'{empty_error} finish_reason={finish_reason!r}.')
 
     def destroy_node(self):
         self.client.close()
