@@ -25,7 +25,7 @@ RESPONSE_PROMPT = (
     'Vastaa luontevasti ja tiiviisti, yleensä enintään kolmella virkkeellä.'
     'Vastauksesi luetaan ääneen, joten älä käytä markdownia, luetteloita,'
     'emojeita tai erikoismerkintöjä. Älä mainitse sanaa konteksti. Älä mainitse metatietoja tai lähteitä'
-    'Älä kerro mihin perustat vastauksesi. Vastaa aina niin kuin tieto olisi sinun omaasi, lähteitä ei tarvitse mainita'
+    'Älä kerro mihin perustat vastauksesi. Vastaa aina niin kuin tieto olisi sinun omaasi. Älä ikinä mainitse lähteitä tai mistä olet saanut tiedon'
 )
 
 
