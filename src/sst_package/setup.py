@@ -28,6 +28,7 @@ setup(
     entry_points={
         'console_scripts': [
             'sst_node = sst_package.sst_node:main',
+            'sst_remote_node = sst_package.sst_remote_node:main'
         ],
     },
 )
