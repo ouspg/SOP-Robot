@@ -5,6 +5,7 @@ from queue import Empty, Full, Queue
 
 import numpy as np
 import rclpy
+import torch
 import webrtcvad
 from faster_whisper import WhisperModel
 from rclpy.node import Node
@@ -42,11 +43,12 @@ class SSTNode(Node):
         )
 
         self.can_listen = True
-
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.compute_type = 'float16' if torch.cuda.is_available() else 'int8'
         self.model = WhisperModel(
             MODEL_NAME,
-            device='cuda',
-            compute_type='float16',
+            device=self.device,
+            compute_type=self.compute_type,
         )
         self.get_logger().info(f'Faster Whisper model ready with {self.model}.')
         self.vad = webrtcvad.Vad(3)

@@ -19,7 +19,7 @@ ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 AMENT_PREFIX_PATH = "$CONDA_PREFIX"
 CMAKE_PREFIX_PATH = "$CONDA_PREFIX:$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"
 COLCON_PREFIX_PATH = ""
-LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$CONDA_PREFIX/opt/rviz_ogre_vendor/lib"
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.12/site-packages/nvidia/cu13/lib:$CONDA_PREFIX/opt/rviz_ogre_vendor/lib"
 PYTHONPATH = "$CONDA_PREFIX/lib/python3.12/site-packages:$CONDA_PREFIX/lib/python312/site-packages"
 ROS_PACKAGE_PATH = ""
 
@@ -78,8 +78,8 @@ index-strategy = "unsafe-best-match"
 "httpx" = "*"
 "pillow" = "*"
 "progressbar" = "==2.5"
-"tensorflow" = ">=2.19,<2.20"
-"tf-keras" = ">=2.19,<2.20"
+"tensorflow" = { version = "*", extras = ["and-cuda"] }
+"tf-keras" = "*"
 "torch" = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cu130" }
 "torchvision" = { version = "==0.26.0", index = "https://download.pytorch.org/whl/cu130" }
 "torchaudio" = { version = "==2.11.0", index = "https://download.pytorch.org/whl/cu130" }

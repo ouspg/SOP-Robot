@@ -9,7 +9,6 @@ def generate_launch_description():
         name='service',
         output='screen',
         additional_env={
-            'CUDA_VISIBLE_DEVICES': '-1',
             'TF_CPP_MIN_LOG_LEVEL': '2',
         },
     )

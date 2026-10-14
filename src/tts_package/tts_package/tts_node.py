@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 
 import rclpy
+import torch
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 from TTS.api import TTS
@@ -23,14 +24,19 @@ class TTSService(Node):
         project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
         resource_dir = project_root / 'src' / 'tts_package' / 'resource'
         self.output = resource_dir / 'output.wav'
-        synthesizer = TTS(
-            model_path=str(resource_dir / 'model.pth'),
-            config_path=str(resource_dir / 'config.json'),
-        ).synthesizer
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        synthesizer = (
+            TTS(
+                model_path=str(resource_dir / 'model.pth'),
+                config_path=str(resource_dir / 'config.json'),
+            )
+            .to(self.device)
+            .synthesizer
+        )
         if synthesizer is None:
             raise RuntimeError('The configured TTS model did not create a synthesizer.')
         self.synthesizer = synthesizer
-        self.get_logger().info('Finnish TTS ready.')
+        self.get_logger().info(f'Finnish TTS ready on {self.device}.')
 
     def callback(self, message):
         self.publisher.publish(Bool(data=False))
