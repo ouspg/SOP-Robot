@@ -1,13 +1,18 @@
 import contextlib
+import io
+import os
 import threading
 import time
+import wave
+from pathlib import Path
 from queue import Empty, Full, Queue
 
 import numpy as np
 import pyaudio
 import rclpy
 import webrtcvad
-from faster_whisper import WhisperModel
+from dotenv import load_dotenv
+from openai import OpenAI
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
@@ -17,9 +22,16 @@ SAMPLES_PER_FRAME = SAMPLE_RATE * FRAME_MS // 1_000
 SILENCE_FRAMES = 720 // FRAME_MS
 MIN_SPEECH_FRAMES = 180 // FRAME_MS
 MAX_SPEECH_FRAMES = 30 * 1_000 // FRAME_MS
-
+DEFAULT_BASE_URL = 'https://api.lehmus-ai.oulu.fi/v1'
+DEFAULT_MODEL = 'whisper-large-v3'
+DEFAULT_API_KEY = 'your-lehmusai-key'
 MODEL_NAME = 'RASMUS/whisper-large-v3-turbo-finnish-ct2'
 LANGUAGE = 'fi'
+
+
+def load_local_environment():
+    project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
+    load_dotenv(project_root / '.env.local')
 
 
 class SystemMicrophone:
@@ -70,6 +82,17 @@ class SSTNode(Node):
     def __init__(self):
         super().__init__('sst_node')
 
+        load_local_environment()
+        self.base_url = (
+            os.environ.get(
+                'LLM_BASE_URL',
+                DEFAULT_BASE_URL,
+            )
+            or DEFAULT_BASE_URL
+        )
+        self.model = os.environ.get('SST_MODEL') or DEFAULT_MODEL
+        api_key = os.environ.get('LLM_API_KEY') or DEFAULT_API_KEY
+
         self.speech_publisher = self.create_publisher(
             String,
             'recognized_speech',
@@ -84,12 +107,14 @@ class SSTNode(Node):
 
         self.can_listen = True
 
-        self.get_logger().info(f'Loading {MODEL_NAME} on the GPU...')
-        self.model = WhisperModel(
-            MODEL_NAME,
-            device='cuda',
-            compute_type='float16',
+        self.client = OpenAI(
+            base_url=self.base_url,
+            api_key=api_key,
+            timeout=30.0,
+            max_retries=0,
         )
+        self.local_model = None
+        self.get_logger().info(f'Lehmus AI transcription client ready with {self.model}.')
         self.vad = webrtcvad.Vad(3)
 
         self.running = True
@@ -147,7 +172,7 @@ class SSTNode(Node):
         try:
             self.utterances.put_nowait(pcm)
         except Full:
-            self.get_logger().warning('Faster Whisper is busy; dropping an utterance.')
+            self.get_logger().warning('Transcription is busy; dropping an utterance.')
 
     def transcribe_worker(self):
         while self.running:
@@ -160,23 +185,46 @@ class SSTNode(Node):
 
             started = time.perf_counter()
             try:
-                text = self.transcribe_local(pcm)
+                text = self.transcribe_remote(pcm)
                 latency_ms = (time.perf_counter() - started) * 1_000
                 if text:
-                    self.get_logger().info(f'[Faster Whisper] {text} ({latency_ms:.0f} ms)')
+                    self.get_logger().info(f'[Whisper] {text} ({latency_ms:.0f} ms)')
                     self.speech_publisher.publish(String(data=text))
             except Exception as error:
-                self.get_logger().error(f'Faster Whisper transcription failed: {error}')
+                self.get_logger().error(f'Whisper transcription failed: {error}')
             finally:
                 self.utterances.task_done()
 
+    def transcribe_remote(self, pcm):
+        with io.BytesIO() as audio:
+            with wave.open(audio, 'wb') as wav:
+                wav.setnchannels(1)
+                wav.setsampwidth(2)
+                wav.setframerate(SAMPLE_RATE)
+                wav.writeframes(pcm)
+
+            response = self.client.audio.transcriptions.create(
+                model=self.model,
+                file=('utterance.wav', audio.getvalue(), 'audio/wav'),
+                language=LANGUAGE,
+            )
+        return response.text.strip()
+
     def transcribe_local(self, pcm):
-        segments, _ = self.model.transcribe(
+        if self.local_model is None:
+            from faster_whisper import WhisperModel
+
+            self.local_model = WhisperModel(
+                MODEL_NAME,
+                device='cuda',
+                compute_type='float16',
+            )
+        segments, _ = self.local_model.transcribe(
             pcm_to_float32(pcm),
             language=LANGUAGE,
             beam_size=5,
-            condition_on_previous_text=True,
-            vad_filter=True,
+            condition_on_previous_text=False,
+            vad_filter=False,
         )
         return ' '.join(segment.text.strip() for segment in segments).strip()
 
@@ -187,6 +235,7 @@ class SSTNode(Node):
 
         self.listen_thread.join(timeout=2)
         self.transcribe_thread.join(timeout=2)
+        self.client.close()
         return super().destroy_node()
 
 
