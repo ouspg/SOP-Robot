@@ -1,12 +1,12 @@
 # LLM Package
 
 This package provides an LLM client for Lehmus AI using OpenAI's SDK.
-This package receives speech transcripts from the SST package using the `recognized_speech` topic and after the first turn, corrects likely recognition errors using the conversation history before generating chatbot responses. Chatbot responses are published to `chatbot_response` topic for TTS to read out loud.
+This package receives speech transcripts from the SST package using the `recognized_speech` topic, then llm generates a response. The response is published to `chatbot_response` topic for TTS to read out loud.
 
   More information about Lehmus AI can be found at [Lehmus AI: Tietoturvallinen Generetiivisen tekoälyn alusta](https://ict.oulu.fi/24009/), [Tervetuloa Lehmus AI-alustalle: Pikakäyttöopas/](https://ict.oulu.fi/24049/).
 
 ```text
-SST -> LLM correction -> LLM response -> TTS
+SST -> LLM response -> TTS
 ```
 ## Usage
 
@@ -38,7 +38,7 @@ pixi run chatbot
 ```
 
 
-#Dependencies
+## Dependencies
 
 - openai
 - python-dotenv

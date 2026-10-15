@@ -1,6 +1,7 @@
 import contextlib
 import threading
 import time
+from collections import deque
 from queue import Empty, Full, Queue
 
 import numpy as np
@@ -16,11 +17,13 @@ from .microphone import SystemMicrophone
 SAMPLE_RATE = 16_000
 FRAME_MS = 30
 SAMPLES_PER_FRAME = SAMPLE_RATE * FRAME_MS // 1_000
+PRE_ROLL_FRAMES = 300 // FRAME_MS
 SILENCE_FRAMES = 720 // FRAME_MS
 MIN_SPEECH_FRAMES = 180 // FRAME_MS
 MAX_SPEECH_FRAMES = 30 * 1_000 // FRAME_MS
 MODEL_NAME = 'RASMUS/whisper-large-v3-turbo-finnish-ct2'
 LANGUAGE = 'fi'
+
 
 def pcm_to_float32(pcm):
     return np.frombuffer(pcm, dtype='<i2').astype(np.float32) / 32768.0
@@ -50,7 +53,17 @@ class SSTNode(Node):
             device=self.device,
             compute_type=self.compute_type,
         )
-        self.get_logger().info(f'Faster Whisper model ready with {self.model}.')
+        self.get_logger().info('Warming up Faster Whisper before opening the microphone.')
+        segments, _ = self.model.transcribe(
+            np.zeros(SAMPLE_RATE, dtype=np.float32),
+            language=LANGUAGE,
+            beam_size=5,
+            condition_on_previous_text=False,
+            vad_filter=False,
+        )
+        # Decoding is lazy; consume the generator to actually warm up inference.
+        list(segments)
+        self.get_logger().info('Faster Whisper ready.')
         self.vad = webrtcvad.Vad(3)
 
         self.running = True
@@ -79,30 +92,44 @@ class SSTNode(Node):
     def listen(self):
         frames = []
         silence = 0
+        speech_frames = 0
+        pre_roll = deque(maxlen=PRE_ROLL_FRAMES)
         with SystemMicrophone() as microphone:
-            self.get_logger().info('Capturing from PyAudio')
+            state = 'listening' if self.can_listen else 'paused'
+            self.get_logger().info(f'Microphone {state} (PyAudio capture started).')
             while self.running:
                 frame = microphone.read_frame()
                 if not self.can_listen:
                     frames = []
                     silence = 0
+                    speech_frames = 0
+                    pre_roll.clear()
                     continue
 
                 if self.vad.is_speech(frame, SAMPLE_RATE):
+                    if not frames:
+                        frames.extend(pre_roll)
+                        pre_roll.clear()
                     frames.append(frame)
+                    speech_frames += 1
                     silence = 0
                 elif frames:
                     frames.append(frame)
                     silence += 1
+                else:
+                    # Keep quiet consonants captured before VAD detects speech.
+                    pre_roll.append(frame)
 
                 utterance_complete = silence >= SILENCE_FRAMES or len(frames) >= MAX_SPEECH_FRAMES
                 if not frames or not utterance_complete:
                     continue
 
-                if len(frames) - silence >= MIN_SPEECH_FRAMES:
+                if speech_frames >= MIN_SPEECH_FRAMES:
                     self.queue_utterance(b''.join(frames))
+                pre_roll.extend(frames[-PRE_ROLL_FRAMES:])
                 frames = []
                 silence = 0
+                speech_frames = 0
 
     def queue_utterance(self, pcm):
         try:
@@ -137,7 +164,14 @@ class SSTNode(Node):
             language=LANGUAGE,
             beam_size=5,
             condition_on_previous_text=False,
-            vad_filter=False,
+            vad_filter=True,
+            vad_parameters={
+                'threshold': 0.5,
+                'neg_threshold': 0.35,
+                'min_speech_duration_ms': 250,
+                'min_silence_duration_ms': 500,
+                'speech_pad_ms': 200,
+            },
         )
         return ' '.join(segment.text.strip() for segment in segments).strip()
 

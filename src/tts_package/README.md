@@ -33,7 +33,3 @@ pixi run tts-client
 Input command: Hei. Tässä on lause joka syntentisoidaan puheeksi.
 ```
 Service will now try to synthentize sentence into .wav file located in 'src/tts_package/resource/output.wav' which will then be played automatically.
-
-## Potential future improvements
-
-* Implement this feature to work with potential speech-to-text and chatbot features.
