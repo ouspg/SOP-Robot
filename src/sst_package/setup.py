@@ -23,11 +23,12 @@ setup(
     zip_safe=True,
     maintainer='Aapo Pihlajaniemi',
     maintainer_email='apihlaja20@student.oulu.fi',
-    description='Finnish speech recognition with local Faster Whisper.',
+    description='Finnish speech recognition with local Faster Whisper and remote with Lehmus AI.',
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [
             'sst_node = sst_package.sst_node:main',
+            'sst_remote_node = sst_package.sst_remote_node:main'
         ],
     },
 )

@@ -11,20 +11,13 @@ DEFAULT_BASE_URL = 'https://api.lehmus-ai.oulu.fi/v1'
 DEFAULT_MODEL = 'azsydsttjnlbfjbgqnwd'
 DEFAULT_API_KEY = 'your-lehmusai-key'
 MAX_HISTORY_MESSAGES = 8
-
-CORRECTION_PROMPT = (
-    'Korjaa viimeisin Faster Whisperin tuottama suomenkielinen litterointi. '
-    'Päättele keskusteluhistorian avulla, mitä käyttäjä todennäköisimmin '
-    'sanoi. Säilytä käyttäjän tarkoitus, älä lisää uutta sisältöä äläkä '
-    'vastaa käyttäjälle. Palauta vain korjattu käyttäjän lause ilman '
-    'selityksiä, lainausmerkkejä tai markdownia.'
-)
-
+MAX_WORD_COUNT = 25
 RESPONSE_PROMPT = (
     'Olet ystävällinen suomea puhuva humanoidirobotti nimeltä Robotti Roope. '
-    'Vastaa luontevasti ja tiiviisti, yleensä enintään kolmella virkkeellä.'
+    'Vastaa luontevasti ja tiiviisti, enintään yhdellä tai kahdella virkkeellä'
+    f'käyttäen enintään {MAX_WORD_COUNT} sanaa.'
     'Vastauksesi luetaan ääneen, joten älä käytä markdownia, luetteloita,'
-    'emojeita tai erikoismerkintöjä.'
+    'emojeita, lyhenteitä tai erikoismerkintöjä.'
 )
 
 
@@ -88,28 +81,11 @@ class LLMNode(Node):
         self.response_publisher.publish(String(data=answer))
 
     def generate_response(self, transcript):
-        self.get_logger().info(f'Faster Whisper: {transcript}')
-        if self.history:
-            corrected = self.correct_transcript(transcript)
-            self.get_logger().info(f'Interpreted user: {corrected}')
-        else:
-            corrected = transcript
-            self.get_logger().info('First turn: using the Faster Whisper transcript directly.')
-        answer = self.answer_user(corrected)
+        self.get_logger().info(f'SST: {transcript}')
+        answer = self.answer_user(transcript)
         self.get_logger().info(f'Robot: {answer}')
         return answer
 
-    def correct_transcript(self, transcript):
-        messages = [
-            {'role': 'system', 'content': CORRECTION_PROMPT},
-            *self.history,
-            {'role': 'user', 'content': f'Faster Whisperin litterointi:\n{transcript}'},
-        ]
-        return self.complete(
-            messages,
-            max_tokens=512,
-            empty_error='The transcript correction was empty.',
-        )
 
     def answer_user(self, corrected):
         messages = [

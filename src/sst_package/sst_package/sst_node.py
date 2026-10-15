@@ -1,65 +1,28 @@
 import contextlib
 import threading
 import time
+from collections import deque
 from queue import Empty, Full, Queue
 
 import numpy as np
-import pyaudio
 import rclpy
+import torch
 import webrtcvad
 from faster_whisper import WhisperModel
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
+from .microphone import SystemMicrophone
+
 SAMPLE_RATE = 16_000
 FRAME_MS = 30
 SAMPLES_PER_FRAME = SAMPLE_RATE * FRAME_MS // 1_000
+PRE_ROLL_FRAMES = 300 // FRAME_MS
 SILENCE_FRAMES = 720 // FRAME_MS
 MIN_SPEECH_FRAMES = 180 // FRAME_MS
 MAX_SPEECH_FRAMES = 30 * 1_000 // FRAME_MS
-
 MODEL_NAME = 'RASMUS/whisper-large-v3-turbo-finnish-ct2'
 LANGUAGE = 'fi'
-
-
-class SystemMicrophone:
-    def __init__(self):
-        self.audio = None
-        self.stream = None
-
-    def __enter__(self):
-        self.audio = pyaudio.PyAudio()
-        try:
-            self.stream = self.audio.open(
-                format=pyaudio.paInt16,
-                channels=1,
-                rate=SAMPLE_RATE,
-                input=True,
-                frames_per_buffer=SAMPLES_PER_FRAME,
-            )
-        except Exception:
-            self.audio.terminate()
-            self.audio = None
-            raise
-        return self
-
-    def __exit__(self, exception_type, exception, traceback):
-        if self.stream is not None:
-            if self.stream.is_active():
-                self.stream.stop_stream()
-            self.stream.close()
-            self.stream = None
-        if self.audio is not None:
-            self.audio.terminate()
-            self.audio = None
-
-    def read_frame(self):
-        if self.stream is None:
-            raise RuntimeError('The system microphone is not open.')
-        return self.stream.read(
-            SAMPLES_PER_FRAME,
-            exception_on_overflow=False,
-        )
 
 
 def pcm_to_float32(pcm):
@@ -83,13 +46,24 @@ class SSTNode(Node):
         )
 
         self.can_listen = True
-
-        self.get_logger().info(f'Loading {MODEL_NAME} on the GPU...')
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.compute_type = 'float16' if torch.cuda.is_available() else 'int8'
         self.model = WhisperModel(
             MODEL_NAME,
-            device='cuda',
-            compute_type='float16',
+            device=self.device,
+            compute_type=self.compute_type,
         )
+        self.get_logger().info('Warming up Faster Whisper before opening the microphone.')
+        segments, _ = self.model.transcribe(
+            np.zeros(SAMPLE_RATE, dtype=np.float32),
+            language=LANGUAGE,
+            beam_size=5,
+            condition_on_previous_text=False,
+            vad_filter=False,
+        )
+        # Decoding is lazy; consume the generator to actually warm up inference.
+        list(segments)
+        self.get_logger().info('Faster Whisper ready.')
         self.vad = webrtcvad.Vad(3)
 
         self.running = True
@@ -118,36 +92,50 @@ class SSTNode(Node):
     def listen(self):
         frames = []
         silence = 0
+        speech_frames = 0
+        pre_roll = deque(maxlen=PRE_ROLL_FRAMES)
         with SystemMicrophone() as microphone:
-            self.get_logger().info('Capturing from PyAudio')
+            state = 'listening' if self.can_listen else 'paused'
+            self.get_logger().info(f'Microphone {state} (PyAudio capture started).')
             while self.running:
                 frame = microphone.read_frame()
                 if not self.can_listen:
                     frames = []
                     silence = 0
+                    speech_frames = 0
+                    pre_roll.clear()
                     continue
 
                 if self.vad.is_speech(frame, SAMPLE_RATE):
+                    if not frames:
+                        frames.extend(pre_roll)
+                        pre_roll.clear()
                     frames.append(frame)
+                    speech_frames += 1
                     silence = 0
                 elif frames:
                     frames.append(frame)
                     silence += 1
+                else:
+                    # Keep quiet consonants captured before VAD detects speech.
+                    pre_roll.append(frame)
 
                 utterance_complete = silence >= SILENCE_FRAMES or len(frames) >= MAX_SPEECH_FRAMES
                 if not frames or not utterance_complete:
                     continue
 
-                if len(frames) - silence >= MIN_SPEECH_FRAMES:
+                if speech_frames >= MIN_SPEECH_FRAMES:
                     self.queue_utterance(b''.join(frames))
+                pre_roll.extend(frames[-PRE_ROLL_FRAMES:])
                 frames = []
                 silence = 0
+                speech_frames = 0
 
     def queue_utterance(self, pcm):
         try:
             self.utterances.put_nowait(pcm)
         except Full:
-            self.get_logger().warning('Faster Whisper is busy; dropping an utterance.')
+            self.get_logger().warning('Transcription is busy; dropping an utterance.')
 
     def transcribe_worker(self):
         while self.running:
@@ -160,23 +148,30 @@ class SSTNode(Node):
 
             started = time.perf_counter()
             try:
-                text = self.transcribe_local(pcm)
+                text = self.transcribe(pcm)
                 latency_ms = (time.perf_counter() - started) * 1_000
                 if text:
-                    self.get_logger().info(f'[Faster Whisper] {text} ({latency_ms:.0f} ms)')
+                    self.get_logger().info(f'[Whisper] {text} ({latency_ms:.0f} ms)')
                     self.speech_publisher.publish(String(data=text))
             except Exception as error:
-                self.get_logger().error(f'Faster Whisper transcription failed: {error}')
+                self.get_logger().error(f'Whisper transcription failed: {error}')
             finally:
                 self.utterances.task_done()
 
-    def transcribe_local(self, pcm):
+    def transcribe(self, pcm):
         segments, _ = self.model.transcribe(
             pcm_to_float32(pcm),
             language=LANGUAGE,
             beam_size=5,
-            condition_on_previous_text=True,
+            condition_on_previous_text=False,
             vad_filter=True,
+            vad_parameters={
+                'threshold': 0.5,
+                'neg_threshold': 0.35,
+                'min_speech_duration_ms': 250,
+                'min_silence_duration_ms': 500,
+                'speech_pad_ms': 200,
+            },
         )
         return ' '.join(segment.text.strip() for segment in segments).strip()
 
