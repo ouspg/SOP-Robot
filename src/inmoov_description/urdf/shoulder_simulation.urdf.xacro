@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Share servo travel, offsets and linkage scaling with UnifiedArms. -->
+  <xacro:property name="shoulder_simulation" value="${xacro.load_yaml('$(find inmoov_description)/config/shoulder_simulation.yaml')['joints']}"/>
+  <xacro:macro name="simulated_arm_limits" params="joint">
+    <xacro:property name="settings" value="${shoulder_simulation[joint]}"/>
+    <xacro:property name="${joint}_type" value="${'revolute' if settings.get('enabled', True) else 'fixed'}" scope="parent"/>
+    <xacro:property name="a" value="${(settings['min_degrees'] - settings['neutral_degrees']) * settings['direction'] * settings['joint_degrees_per_servo_degree'] * pi / 180}"/>
+    <xacro:property name="b" value="${(settings['max_degrees'] - settings['neutral_degrees']) * settings['direction'] * settings['joint_degrees_per_servo_degree'] * pi / 180}"/>
+    <!-- Startup writes bypass constrain() in the firmware. Include the zero
+         startup pose even when a subsequent command must move away from it. -->
+    <xacro:property name="${joint}_lower" value="${min(a, b, 0)}" scope="parent"/>
+    <xacro:property name="${joint}_upper" value="${max(a, b, 0)}" scope="parent"/>
+    <xacro:property name="${joint}_velocity" value="${pi}" scope="parent"/>
+    <xacro:property name="${joint}_neutral_yaw" value="${settings.get('neutral_yaw_degrees', 0) * pi / 180}" scope="parent"/>
+  </xacro:macro>
+  <xacro:simulated_arm_limits joint="r_shoulder_lift_joint"/>
+  <xacro:simulated_arm_limits joint="r_elbow_flex_joint"/>
+  <xacro:simulated_arm_limits joint="r_upper_arm_roll_joint"/>
+  <xacro:simulated_arm_limits joint="l_shoulder_lift_joint"/>
+  <xacro:simulated_arm_limits joint="l_elbow_flex_joint"/>
+  <xacro:simulated_arm_limits joint="l_upper_arm_roll_joint"/>
+  <xacro:simulated_arm_limits joint="r_shoulder_out_joint"/>
+  <xacro:simulated_arm_limits joint="l_shoulder_out_joint"/>
+  <xacro:simulated_arm_limits joint="r_wrist_roll_joint"/>
+  <xacro:simulated_arm_limits joint="l_wrist_roll_joint"/>
+</robot>

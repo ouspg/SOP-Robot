@@ -116,6 +116,7 @@ demo-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robo
 face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
 face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
 unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
+unified-arms-fake = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node --ros-args -p simulation:=true'", description = "Launch the fake unified arm and hand gesture controller" }
 tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package service'", description = "Launch the text-to-speech node" }
 tts-client = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package client'", description = "Launch the text-to-speech client" }
 sst = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_package sst.launch.py'", description = "Launch speech-to-text using the system input device" }

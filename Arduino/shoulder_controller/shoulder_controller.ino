@@ -7,26 +7,25 @@ const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 const int SERVO_PINS[NUM_SERVOS] = { 3, 4, 5, 8, 9, 10};
 
 // All mins and maxs need to have the same index as the corresponding servo pin
-const int ServoMins[NUM_SERVOS] = {10, 10,  20, 0, 0, 0};
-const int ServoMax[NUM_SERVOS] = { 80, 180, 100, 180, 180, 100};
+const int ServoMins[NUM_SERVOS] = {10, 20,  10, 0, 0, 0};
+const int ServoMax[NUM_SERVOS] = { 80, 100, 180, 180, 100, 180};
 
 // values based on manual measurements from each potentiometer
 const int PotMins[NUM_SERVOS] = {144, 140, 0,    0,    0,    0};
 const int PotMax[NUM_SERVOS] = { 360, 900, 1023, 1023, 1023, 1027};
 
 // Set expected to 0 on empty servos, to not trigger potentiometer check
-const int expectedStartingPos[NUM_SERVOS] = {30, 0, 10, 34, 80, 10};
+const int expectedStartingPos[NUM_SERVOS] = {30, 10, 90, 34, 10, 80};
 
 /*
 servo pin - servo function
         3 - R shoulder lift
-        5 - R upper arm rotation
         4 - R bicep
+        5 - R upper arm rotation
 
-
-        9 - L shoulder lift
+        8 - L shoulder lift
+        9 - L bicep
         10 - L upper arm rotion
-        11 - L bicep
 
 */
 
