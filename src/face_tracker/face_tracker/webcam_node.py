@@ -3,6 +3,7 @@ from typing import Any, cast
 
 import cv2
 import rclpy
+import threading
 from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
@@ -51,8 +52,9 @@ class WebCamNode(Node):
 
         self.face_img_publisher = self.create_publisher(Image, raw_image_topic, image_qos)
 
-        # TODO: Implement better way to run webcam loop.
-        self.webcam_loop()
+        # Start webcam loop in a separate thread to avoid blocking spin
+        self.webcam_thread = threading.Thread(target=self.webcam_loop, daemon=True)
+        self.webcam_thread.start()
 
     def webcam_loop(self):
         self.open_webcam()
@@ -114,6 +116,9 @@ class WebCamNode(Node):
         self.logger.info('closing webcam handle...')
         self.cap.release()
         cv2.destroyAllWindows()
+    def destroy_node(self):
+        self.close_webcam()
+        super().destroy_node()
         self.logger.info('Webcam closed!')
 
 
@@ -122,14 +127,13 @@ def main(args=None):
     rclpy.init(args=args)
     _webcam = WebCamNode()
 
-    # Cannot ever get here as webcam loop is in init
-
-    # # Do work
-    # rclpy.spin(_webcam)
-
-    # # Shutdown
-    # _webcam.destroy_node()
-    # rclpy.shutdown()
+    try:
+        rclpy.spin(_webcam)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        _webcam.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

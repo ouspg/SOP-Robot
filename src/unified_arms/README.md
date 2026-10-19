@@ -48,29 +48,6 @@ directly, but subsequent commands are clamped. Simulation starts at the same
 neutral pose and includes it in the URDF limits. Sending `zero` or `zer`
 therefore commands 20° and 10° for those two servos (−5° bicep and −10° rotation).
 
-Shoulder-out is disabled in the fake URDF, hardware interfaces, controllers
-and gesture commands. Wrists use a
-0–180° servo range centered on 90° (−90–90° joint rotation). At startup and
-after a wrist reset, the right wrist uses a thumb-up neutral pose; the left
-palm faces the user. Wrist rotation is measured from each hand's neutral pose,
-with 90° of travel in each direction. The fake URDF applies a −90° right-hand
-mounting offset and a 180° left-hand offset; joint angle 0 remains neutral.
-Wrist controls remain available in simulation independently of the six-servo
-Arduino firmware.
-
-For example, `hold` commands 70° on both servos, producing −20° shoulder lift
-and −30° elbow flexion. `pos` requests 45° lift and 120° bicep; the bicep
-command is clamped to its firmware maximum of 100°, producing −7.5° shoulder
-lift and −45° elbow flexion.
-
-For a custom pose, send `pose:` followed by six servo angles in firmware order:
-right lift, bicep, rotation, then left lift, bicep, rotation. Values 7 and 8
-are reserved for the disabled shoulder-out joints and are ignored. Right
-and left wrist angles remain values 9 and 10. Supported pose lengths are 6,
-8, and 10 so existing poses keep their field order.
-Use `-1` to leave an individual joint unchanged. Omitted extra axes retain
-their previous positions. For example:
-
 ```console
 pixi shell
 source install/local_setup.bash
@@ -83,17 +60,6 @@ for example `l_arm_rps_1` or `r_arm_pose:50,50,75,-1,-1,-1,0,0,110,-1`.
 Real commands select the same physical joints, clamp angles, and send only
 the selected IDs in ascending firmware order, terminated by a newline.
 Simulation-only axes are omitted from Arduino commands.
-
-Calibration lives in `inmoov_description/config/shoulder_simulation.yaml` and
-also sets the fake URDF joint limits. Direction follows the existing URDF
-servo mapping; neutral angles come from firmware startup positions. Shoulder
-lift and bicep joints on both arms use an estimated 0.5 degrees of joint travel
-per servo degree, based on the real robot moving about half as far as the
-previous simulation. Other axes retain their existing scaling. Adjust
-`joint_degrees_per_servo_degree` per joint when more precise measurements are
-available. This scaling affects simulated motion and URDF limits; physical
-servo commands retain the firmware angles. The fake robot starts in the
-Arduino's power-on pose, before command clamping is applied.
 
 ### Parameters
 

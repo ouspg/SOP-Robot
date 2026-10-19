@@ -98,31 +98,33 @@ nvidia-cudnn-cu12 = "==9.*"
 [tasks]
 sync-submodules = { cmd = "git submodule update --init --recursive src/dynamixel-workbench src/dynamixel-workbench-msgs", description = "Fetch source dependencies checked into .gitmodules" }
 build = { cmd = "colcon build --symlink-install", depends-on = ["sync-submodules"], inputs = ["src"], outputs = ["install/setup.sh"], description = "Build the ROS 2 workspace" }
-test = { cmd = "colcon test --python-testing pytest --event-handlers console_direct+ && colcon test-result --verbose", description = "Run ROS 2 package tests" }
+test = { cmd = "bash -c 'source install/local_setup.bash && colcon test --python-testing pytest --event-handlers console_direct+ && colcon test-result --verbose'", description = "Run ROS 2 package tests" }
 lint = { cmd = "ruff check . && ruff format --check .", description = "Run Ruff lint and formatting checks" }
 typecheck = { cmd = "basedpyright", description = "Run BasedPyright across the Python workspace" }
 format = { cmd = "ruff check . --fix && ruff format .", description = "Apply Ruff lint and formatting fixes" }
 clean = { cmd = "rm -rf build install log", description = "Remove colcon build outputs" }
 
-robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
-robot-arm = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=arm'", description = "Launch the real robot arms only" }
-robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
-robot-demo-real = { cmd = "bash scripts/start_robot_real.sh", description = "Launch the complete demo in separate terminal tabs (real robot)" }
-robot-demo-fake = { cmd = "bash scripts/start_robot_fake.sh", description = "Launch the complete demo in separate terminal tabs (fake robot)" }
-robot-demo-real-single = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot real_robot.launch.py'", description = "Launch the complete demo in a single terminal (real robot)" }
-robot-demo-fake-single = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot fake_robot.launch.py'", description = "Launch the complete demo in a single terminal (fake robot)" }
-demo = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot demo.launch.py'", description = "Launch demo application nodes for real hardware" }
-demo-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot demo.fake.launch.py'", description = "Launch demo application nodes for fake hardware" }
-face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
-face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
-unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
-unified-arms-fake = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node --ros-args -p simulation:=true'", description = "Launch the fake unified arm and hand gesture controller" }
-tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package service'", description = "Launch the text-to-speech node" }
-tts-client = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package client'", description = "Launch the text-to-speech client" }
-sst = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_package sst.launch.py'", description = "Launch speech-to-text using the system input device" }
-sst-remote = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_package sst-remote.launch.py'", description = "Launch speech-to-text using the system input device" }
+robot = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot robot.launch.py \"$@\"' --", description = "Launch the real robot stack" }
+robot-head = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot robot.launch.py robot_parts:=head \"$@\"' --", description = "Launch the real robot head only" }
+robot-arm = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot robot.launch.py robot_parts:=arm \"$@\"' --", description = "Launch the real robot arms only" }
+robot-fake = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot robot.fake.launch.py \"$@\"' --", description = "Launch the fake robot stack" }
+robot-demo-real = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot real_robot.launch.py \"$@\"' --", description = "Launch the complete real demo with selected application logs" }
+robot-demo-fake = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot fake_robot.launch.py \"$@\"' --", description = "Launch the complete fake demo with selected application logs" }
+demo = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot demo.launch.py \"$@\"' --", description = "Launch demo application nodes for real hardware" }
+demo-fake = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot demo.fake.launch.py \"$@\"' --", description = "Launch demo application nodes for fake hardware" }
+face-tracker = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch face_tracker face_tracker.launch.py \"$@\"' --", description = "Launch the face tracker" }
+face-tracker-movement = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run face_tracker_movement face_tracker_movement_node \"$@\"' --", description = "Launch face-tracker-driven movement" }
+unified-arms = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run unified_arms unified_arms_node \"$@\"' --", description = "Launch the arm and hand gesture controller" }
+unified-arms-fake = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run unified_arms unified_arms_node --ros-args -p simulation:=true \"$@\"' --", description = "Launch the simulated arm and hand gesture controller" }
+hand-gestures = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run hand_gestures hand_gestures_node \"$@\"' --", description = "Launch the hand gestures node" }
+hand-client-tester = { cmd = "bash -c 'source install/local_setup.bash && exec python client/hand_client_tester.py \"$@\"' --", description = "Run the interactive hand gesture client" }
+head-gestures-tester = { cmd = "bash -c 'source install/local_setup.bash && exec python client/head_gesture_client.py \"$@\"' --", description = "Run the interactive head gesture client" }
+tts = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run tts_package service \"$@\"' --", description = "Launch the text-to-speech node" }
+tts-client = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run tts_package client \"$@\"' --", description = "Launch the text-to-speech client" }
+sst = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch sst_package sst.launch.py \"$@\"' --", description = "Launch speech-to-text using the system input device" }
+sst-remote = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch sst_package sst-remote.launch.py \"$@\"' --", description = "Launch remote speech-to-text through Lehmus AI" }
 setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
-llm = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run llm_package llm_node'", description = "Launch the conversational language-model node" }
-chatbot = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot chatbot.launch.py'", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
+llm = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run llm_package llm_node \"$@\"' --", description = "Launch the conversational language-model node" }
+chatbot = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 launch robot chatbot.launch.py \"$@\"' --", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
 setup-runtime = { depends-on = ["sync-submodules", "download-tts-model"], description = "Fetch source dependencies and runtime model assets" }
