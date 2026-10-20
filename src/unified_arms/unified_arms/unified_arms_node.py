@@ -33,7 +33,7 @@ class UnifiedArms(Node):
 
         self.declare_parameter('simulation', False)
         self.declare_parameter('movement_duration', 0.5)
-        self.simulation = bool(self.get_parameter('simulation').value)
+        self.simulation = self.get_parameter('simulation').get_parameter_value().bool_value
         self.serial = None
         # Initialize the serial connection
         if not self.simulation:
@@ -278,7 +278,7 @@ class UnifiedArms(Node):
 
     def publish_simulated_positions(self, positions):
         """Publish partial trajectories to each arm without resetting other joints."""
-        duration = float(self.get_parameter('movement_duration').value)
+        duration = self.get_parameter('movement_duration').get_parameter_value().double_value
         if not isfinite(duration) or duration <= 0:
             self.logger.error('movement_duration must be positive')
             return

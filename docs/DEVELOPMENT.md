@@ -1,7 +1,7 @@
 # Development Environment Setup
 
 This workspace targets Ubuntu 22.04 with ROS 2 Humble installed by Pixi into a
-project-local `.pixi/` directory. Ansible is no longer part of the install path.
+project-local `.pixi/` directory.
 
 ## Prerequisites
 
@@ -24,6 +24,12 @@ git clone --recurse-submodules https://github.com/ouspg/SOP-Robot.git
 cd SOP-Robot
 pixi run setup-runtime
 pixi run build
+```
+
+Test the setup by running the robot launch command on a simulated robot:
+
+```console
+pixi run robot-fake
 ```
 
 `pixi run setup-runtime` initializes the source submodules and downloads the
@@ -49,20 +55,41 @@ Run tests:
 pixi run test
 ```
 
-Open an activated shell when you want to run ROS commands directly:
-
-```console
-pixi shell
-source install/local_setup.sh
-ros2 launch robot robot.fake.launch.py
-```
-
-Launch aliases:
+Run the robot launch command for whole robot on real robot:
 
 ```console
 pixi run robot
+```
+
+Run the robot head launch command on real robot:
+
+```console
+pixi run robot-head
+```
+
+Run the robot arm launch command on real robot:
+
+```console
 pixi run robot-arm
+```
+
+Run the robot fake launch command on simulated robot:
+
+```console
 pixi run robot-fake
+```
+
+Launch the complete application and hardware stack in one terminal:
+
+```console
+pixi run robot-demo-fake
+# With real hardware:
+pixi run robot-demo-real
+```
+
+```console
+pixi shell
+source install/local_setup.bash
 ```
 
 ## Visual Studio Code

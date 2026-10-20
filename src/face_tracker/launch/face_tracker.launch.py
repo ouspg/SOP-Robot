@@ -1,5 +1,8 @@
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -9,7 +12,9 @@ def generate_launch_description():
         namespace='face_tracker',
         parameters=[
             {
-                'lip_movement_detection': False,
+                'lip_movement_detection': ParameterValue(
+                    LaunchConfiguration('lip_movement_detection'), value_type=bool
+                ),
                 'face_recognition': False,
                 'correlation_tracking': True,
                 'cluster_similarity_threshold': 0.3,
@@ -45,4 +50,10 @@ def generate_launch_description():
         ],
     )
 
-    return LaunchDescription([tracker_node, webcam_node])
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument('lip_movement_detection', default_value='false'),
+            tracker_node,
+            webcam_node,
+        ]
+    )
