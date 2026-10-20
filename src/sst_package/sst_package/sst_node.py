@@ -19,8 +19,8 @@ FRAME_MS = 30
 SAMPLES_PER_FRAME = SAMPLE_RATE * FRAME_MS // 1_000
 PRE_ROLL_FRAMES = 300 // FRAME_MS
 SILENCE_FRAMES = 720 // FRAME_MS
-MIN_SPEECH_FRAMES = 180 // FRAME_MS
-MAX_SPEECH_FRAMES = 30 * 1_000 // FRAME_MS
+MIN_SPEECH_FRAMES = 360 // FRAME_MS
+MAX_SPEECH_FRAMES = 60 * 1_000 // FRAME_MS
 MODEL_NAME = 'RASMUS/whisper-large-v3-turbo-finnish-ct2'
 LANGUAGE = 'fi'
 
@@ -166,10 +166,10 @@ class SSTNode(Node):
             condition_on_previous_text=False,
             vad_filter=True,
             vad_parameters={
-                'threshold': 0.5,
-                'neg_threshold': 0.35,
-                'min_speech_duration_ms': 250,
-                'min_silence_duration_ms': 500,
+                'threshold': 0.3,
+                'neg_threshold': 0.15,
+                'min_speech_duration_ms': 500,
+                'min_silence_duration_ms': 1000,
                 'speech_pad_ms': 200,
             },
         )

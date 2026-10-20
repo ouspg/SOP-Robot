@@ -37,9 +37,9 @@ def generate_launch_description():
             {
                 'raw_image': '/image_raw',
                 'index': 0,
-                'width': 1920,
-                'height': 1080,
-                'fps': 60,
+                'width': 1280,
+                'height': 960,
+                'fps': 30,
                 'mjpg': True,
             }
         ],
