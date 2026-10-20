@@ -59,23 +59,7 @@ class FaceTrackerMovementNode(Node):
             Face, '/face_tracker_movement/focused_face', 10
         )
 
-        # Set movement limits and coefficients as parameters
-        self.head_vertical_lower_limit = self.declare_parameter('head_vertical_lower_limit', 0.0).get_parameter_value().double_value
-        self.head_vertical_upper_limit = self.declare_parameter('head_vertical_upper_limit', 2.0).get_parameter_value().double_value
-        self.head_pan_lower_limit = self.declare_parameter('head_pan_lower_limit', -2.0).get_parameter_value().double_value
-        self.head_pan_upper_limit = self.declare_parameter('head_pan_upper_limit', 2.0).get_parameter_value().double_value
-        self.eye_vertical_lower_limit = self.declare_parameter('eye_vertical_lower_limit', -0.5).get_parameter_value().double_value
-        self.eye_vertical_upper_limit = self.declare_parameter('eye_vertical_upper_limit', 0.5).get_parameter_value().double_value
-        self.eye_horizontal_lower_limit = self.declare_parameter('eye_horizontal_lower_limit', -0.6).get_parameter_value().double_value
-        self.eye_horizontal_upper_limit = self.declare_parameter('eye_horizontal_upper_limit', 0.6).get_parameter_value().double_value
-
-        self.camera_angle_head_pan_coeff = self.declare_parameter('camera_angle_head_pan_coeff', 0.5).get_parameter_value().double_value
-        self.camera_angle_eye_vertical_coeff = self.declare_parameter('camera_angle_eye_vertical_coeff', 0.5).get_parameter_value().double_value
-
-        self.head_pan_multiplicator = self.declare_parameter('head_pan_multiplicator', -1.0).get_parameter_value().double_value
-        self.head_vertical_multiplicator = self.declare_parameter('head_vertical_multiplicator', 1.0).get_parameter_value().double_value
-
-        # Simulation-specific starting states
+        # Set initial values
         if simulation:
             self.logger.info('Running face_tracker_movement in simulation mode')
             self.logger.debug(
@@ -83,19 +67,32 @@ class FaceTrackerMovementNode(Node):
                 'coordinates remain fixed while the head moves.'
             )
 
-            self.start_head_state: list[float] = [0.0, 0.0, 0.0, 1.0]
-            self.eyes_center_position: list[float] = [0.0, 0.0]
-        else:
-            self.start_head_state: list[float] = [0.0, 0.0, 0.0, 1.0]
-            self.eyes_center_position: list[float] = [0.0, 0.0]
+            # Set initial values for simulation environment
+            # Movement limits
+            self.head_vertical_lower_limit = 0
+            self.head_vertical_upper_limit = 2
+            self.head_pan_lower_limit = -2.0
+            self.head_pan_upper_limit = 2.0
+            self.eye_vertical_lower_limit = -0.5
+            self.eye_vertical_upper_limit = 0.5
+            self.eye_horizontal_lower_limit = -0.6
+            self.eye_horizontal_upper_limit = 0.6
 
-        # Memory for prior coordinates and movement tuning
-        self.last_face_coords: dict[str, list[float]] = {}
-        self.movement_tuning = {
-            'acceleration': self.declare_parameter('movement_tuning_acceleration', 1.0).get_parameter_value().double_value,
-            'deceleration': self.declare_parameter('movement_tuning_deceleration', 1.0).get_parameter_value().double_value,
-            'max_velocity': self.declare_parameter('movement_tuning_max_velocity', 1.0).get_parameter_value().double_value,
-        }
+            # starting states
+            self.start_head_state: list[float] = [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+            ]  # Should not be modified in runtime.
+            self.eyes_center_position: list[float] = [
+                0.0,
+                0.0,
+            ]  # Should not be modified in runtime.
+
+            # Set movement directions
+            self.head_pan_multiplicator = -1
+            self.head_vertical_multiplicator = 1
             self.eye_vertical_multiplicator = -1
             self.eye_horizontal_multiplicator = -1
 
@@ -229,10 +226,6 @@ class FaceTrackerMovementNode(Node):
 
         # TODO: This likely need not run at 30 FPS; consider moving it to its own timer.
         self.update_blocked_faces()
-
-        # Update the last known position for each face
-        for face in msg.faces:
-            self.last_face_coords[face.id] = [face.x, face.y]
 
         face = self.select_face_to_track(msg.faces)
 

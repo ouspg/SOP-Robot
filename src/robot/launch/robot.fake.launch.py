@@ -16,8 +16,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -44,9 +43,6 @@ def generate_launch_description():
     robot_description = {'robot_description': robot_description_content}
 
     controller = os.path.join(get_package_share_directory('robot'), 'controllers', 'robot.yaml')
-    shoulders = os.path.join(
-        get_package_share_directory('robot'), 'controllers', 'shoulders.fake.yaml'
-    )
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare('inmoov_description'), 'config', 'inmoov.rviz']
     )
@@ -54,14 +50,14 @@ def generate_launch_description():
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        output=LaunchConfiguration('hardware_output'),
+        output='screen',
         parameters=[robot_description],
     )
     spawn_jsb_controller = Node(
         package='controller_manager',
         executable='spawner',
         arguments=['joint_state_broadcaster'],
-        output=LaunchConfiguration('hardware_output'),
+        output='screen',
     )
 
     rviz_node = Node(
@@ -69,14 +65,17 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         arguments=['-d', rviz_config_file],
-        output=LaunchConfiguration('hardware_output'),
+        output='screen',
     )
 
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[robot_description, controller, shoulders],
-        output=LaunchConfiguration('hardware_output'),
+        parameters=[robot_description, controller],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        },
     )
 
     controllers_to_start = [
@@ -85,7 +84,6 @@ def generate_launch_description():
         'jaw_controller',
         'r_hand_controller',
         'r_shoulder_controller',
-        'l_shoulder_controller',
         'l_hand_controller',
     ]
 
@@ -93,11 +91,11 @@ def generate_launch_description():
         Node(
             package='controller_manager',
             executable='spawner',
-            output=LaunchConfiguration('hardware_output'),
             arguments=[controller_name, '-c', '/controller_manager'],
         )
         for controller_name in controllers_to_start
     ]
+
 
     nodes = [
         ros2_control_node,
@@ -107,9 +105,4 @@ def generate_launch_description():
         rviz_node,
     ]
 
-    return LaunchDescription(
-        [
-            DeclareLaunchArgument('hardware_output', default_value='screen'),
-            *nodes,
-        ]
-    )
+    return LaunchDescription(nodes)

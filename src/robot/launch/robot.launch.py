@@ -17,8 +17,7 @@ import sys
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -67,14 +66,14 @@ def generate_launch_description():
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        output=LaunchConfiguration('hardware_output'),
+        output='screen',
         parameters=[robot_description],
     )
     spawn_jsb_controller = Node(
         package='controller_manager',
         executable='spawner',
         arguments=['joint_state_broadcaster'],
-        output=LaunchConfiguration('hardware_output'),
+        output='screen',
     )
 
     _rviz_node = Node(
@@ -82,21 +81,24 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         arguments=['-d', rviz_config_file],
-        output=LaunchConfiguration('hardware_output'),
+        output='screen',
     )
 
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
         parameters=[robot_description, controller],
-        output=LaunchConfiguration('hardware_output'),
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        },
     )
 
     controllers_to_start = [
         'head_controller',
         'eyes_controller',
         # "jaw_controller",
-        'r_hand_controller',
+        "r_hand_controller",
         # "r_shoulder_controller",
         'l_hand_controller',
     ]
@@ -105,11 +107,11 @@ def generate_launch_description():
         Node(
             package='controller_manager',
             executable='spawner',
-            output=LaunchConfiguration('hardware_output'),
             arguments=[controller_name, '-c', '/controller_manager'],
         )
         for controller_name in controllers_to_start
     ]
+
 
     nodes = [
         ros2_control_node,
@@ -119,12 +121,7 @@ def generate_launch_description():
         # _rviz_node
     ]
 
-    return LaunchDescription(
-        [
-            DeclareLaunchArgument('hardware_output', default_value='screen'),
-            *nodes,
-        ]
-    )
+    return LaunchDescription(nodes)
 
 
 # Generates a "launch-time" configuration file for Dynamixel servos.
