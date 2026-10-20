@@ -10,12 +10,12 @@ pixi run build
 This will take a while on first run. Pixi launch tasks source the local ROS
 overlay for you.
 
-For manual ROS commands, either prefix the command with `pixi run` or enter an
-activated shell first:
+For manual ROS commands, enter an activated shell and source the workspace
+overlay first. Pixi launch tasks do this automatically:
 
 ```console
 pixi shell
-source install/local_setup.sh
+source install/local_setup.bash
 ```
 
 Now continue instructions in [Bring-up fake (simulated) robot][] or [Bring-up real HW robot][].
@@ -60,14 +60,16 @@ This opens the view to see the camera feed and what face detection recognizes.
 To get the eyes moving. (Don't be scared about eyes flipping awkwardly to the side. More about this at the end...)
 
 ```console
-pixi run ros2 run face_tracker_movement face_tracker_movement_node --ros-args -p functionality:=eyes -p simulation:=true
+pixi run face-tracker-movement --ros-args -p functionality:=eyes -p simulation:=true
 ```
 
 Success! You are done. Eyes should "follow" your face. This implementation has a flaw that it is made for the real hardware, so the eye_movement node controls the eyes like it would have the real hardware. In other words, the eyes have different "zero" position in simulation compared to real hardware.
 
 Anyway, you are able to test the face tracking and eye movements like this.
 
-**Note: currently, only jaw, eyes, right hand & head pan movement can be simulated**
+The fake robot includes jaw, eyes, hands, head and shoulder controllers.
+The complete demo starts the simulated arm controller automatically; to use it
+separately, run `pixi run unified-arms-fake` alongside `pixi run robot-fake`.
 
 To launch the complete demo with fake robot hardware, run:
 
@@ -75,8 +77,10 @@ To launch the complete demo with fake robot hardware, run:
 pixi run robot-demo-fake
 ```
 
-This uses `scripts/start_robot_fake.sh` to start simulated robot and controllers, chatbot, face tracker and full demo in their own gnome-terminal window. Press Ctrl+C once to stop the complete
-demo.
+This launches `fake_robot.launch.py` in the current terminal. It starts the
+simulated hardware and controllers, then starts the chatbot, face tracker,
+full demo, hand and arm control, face movement and image viewer after five
+seconds. Press Ctrl+C in that terminal to stop the complete demo.
 
 ### Launching text-to-speech service
 
@@ -112,7 +116,29 @@ one terminal:
 pixi run robot-demo-real
 ```
 
-This uses `scripts/start_robot_real.sh`. It starts the real robot and controllers, chatbot, face tracker and full demo in their own gnome-terminal window. Press Ctrl+C once to stop the complete demo.
+This launches `real_robot.launch.py` in the current terminal. It starts the
+real hardware and controllers, then starts the same application nodes as the
+fake demo after five seconds. Press Ctrl+C in that terminal to stop the
+complete demo.
+
+Both complete demos show chatbot and full-demo output in the terminal and
+save supporting application output in the ROS launch log directory (normally
+`~/.ros/log`). Hardware processes write to their own log files. Standalone
+hardware launches show their output on screen; redirect it with:
+
+```console
+pixi run robot-fake hardware_output:=own_log
+```
+
+Pixi tasks forward extra arguments to ROS. For example, enable lip movement
+detection in either demo with:
+
+```console
+pixi run robot-demo-fake lip_movement_detection:=true
+```
+
+Lip movement detection requires the predictor and model files installed with
+the face tracker package.
 ### 1b. Launching the robot (Manual)
 
 You can launch the real robot using a launch file:
@@ -125,7 +151,13 @@ This should launch the robot listening server and prints a lot of output. If not
 
 [Troubleshooting]:#troubleshooting
 
-To launch only the **arm** hardware
+To launch only the **head** hardware:
+
+```console
+pixi run robot-head
+```
+
+To launch only the **arm** hardware:
 
 ```console
 pixi run robot-arm
