@@ -15,7 +15,7 @@ def generate_launch_description():
                 'lip_movement_detection': ParameterValue(
                     LaunchConfiguration('lip_movement_detection'), value_type=bool
                 ),
-                'face_recognition': False,
+                'face_recognition': True,
                 'correlation_tracking': True,
                 'cluster_similarity_threshold': 0.3,
                 'subcluster_similarity_threshold': 0.2,
@@ -43,7 +43,7 @@ def generate_launch_description():
                 'raw_image': '/image_raw',
                 'index': 0,
                 'width': 1280,
-                'height': 960,
+                'height': 720,
                 'fps': 30,
                 'mjpg': True,
             }

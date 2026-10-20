@@ -82,9 +82,9 @@ class UnifiedArms(Node):
                 key=lambda settings: settings['pose_index'],
             )
         ]
-        self.pos = [45, 120, -1, -1, -1, -1]
+        self.pos = [45, 45, -1, -1, -1, -1]
         self.zero = self.neutral_pose[:6]
-        self.hold = [70, 70, -1, -1, -1, -1]
+        self.hold = [70, -1, 70, -1, -1, -1]
         # Create main program subscriber
         self.gesture_subscription = self.create_subscription(
             String,
@@ -95,8 +95,8 @@ class UnifiedArms(Node):
 
         self.SHOULDER_POSITIONS = {
             'zero': self.neutral_pose[:8],
-            'rps_1': [55.0, 10.0, 110.0, 79.0, 45.0, 80.0, 0.0, 0.0],
-            'rps_2': [35.0, 10.0, 70.0, 79.0, 75.0, 80.0, 0.0, 0.0],
+            'rps_1': [55.0, 110.0, 10.0, 79.0, 80.0, 45.0, 0.0, 0.0],
+            'rps_2': [35.0, 70.0, 10.0, 79.0, 80.0, 75.0, 0.0, 0.0],
         }
 
         self.HAND_ACTIONS = [
@@ -200,11 +200,11 @@ class UnifiedArms(Node):
         i = 0
         joints = [
             'R_shoulder lift',
-            'R_bicep',
             'R_upper arm roll',
+            'R_bicep',
             'L_shoulder lift',
-            'L_bicep',
             'L_upper arm roll',
+            'L_bicep',
         ]
         if self.simulation:
             joints.extend(['R_shoulder out', 'L_shoulder out', 'R_wrist roll', 'L_wrist roll'])

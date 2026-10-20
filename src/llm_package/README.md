@@ -1,7 +1,14 @@
 # LLM Package
 
 This package provides an LLM client for Lehmus AI using OpenAI's SDK.
-This package receives speech transcripts from the SST package using the `recognized_speech` topic, then llm generates a response. The response is published to `chatbot_response` topic for TTS to read out loud.
+This package receives speech transcripts on `recognized_speech` and publishes responses on `chatbot_response`.
+The robot chatbot launch places the speech nodes in namespaces matching their package names:
+`/sst_package`, `/llm_package`, and `/tts_package` (equivalent to passing
+`--ros-args -r __ns:=/llm_package` to the LLM node).
+In the full demo, `full_demo` forwards `/sst_package/recognized_speech` to
+`/llm_package/recognized_speech` and `/llm_package/chatbot_response` to
+`/tts_package/chatbot_response`. It controls listening through `/sst_package/can_listen`
+and monitors TTS readiness on `/tts_package/can_listen`.
 
   More information about Lehmus AI can be found at [Lehmus AI: Tietoturvallinen Generetiivisen tekoälyn alusta](https://ict.oulu.fi/24009/), [Tervetuloa Lehmus AI-alustalle: Pikakäyttöopas/](https://ict.oulu.fi/24049/).
 
@@ -31,7 +38,8 @@ Run the LLM client with the following command:
 pixi run llm
 ```
 
-Run the whole chatbot pipeline with the following command:
+Start the namespaced speech nodes with the following command (the full demo supplies
+the coordinator that routes messages between them):
 
 ```terminal
 pixi run chatbot

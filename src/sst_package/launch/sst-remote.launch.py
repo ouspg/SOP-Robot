@@ -5,6 +5,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     sst_remote_node = Node(
         package='sst_package',
+        namespace='sst_package',
         executable='sst_remote_node',
         name='sst_remote_node',
         output='screen',

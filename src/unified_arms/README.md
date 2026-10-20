@@ -23,10 +23,11 @@ pixi run bash -c 'source install/local_setup.bash && ros2 run unified_arms unifi
 
 Both arms support shoulder lift, upper-arm rotation, elbow flexion and wrist
 rotation. The two shoulder-out joints are fixed at rest because the Arduino
-has no channels for them. `wave`, `rock`, `rps_1` and `rps_2` use all six
-physical arm servos. `zero` and `zer` request the firmware's startup
-positions and reset the wrists, applying the normal command limits. The legacy
-`hold` and `pos` commands target right shoulder lift and bicep (IDs 0 and 1),
+has no channels for them. `wave`, `rock`, `rps_1` and `rps_2` target all six
+arm channels; hardware commands omit the disconnected left bicep (pin `-1`).
+`zero` and `zer` request the firmware's startup positions and reset the wrists,
+applying the normal command limits. The legacy
+`hold` and `pos` commands target right shoulder lift and bicep (IDs 0 and 2),
 leaving rotation unchanged.
 
 The six Arduino channels use the firmware's integer angles and clamps:
@@ -34,29 +35,30 @@ The six Arduino channels use the firmware's integer angles and clamps:
 | ID / pose index | Pin | Joint | Servo range | Startup angle | Commanded joint range |
 | --- | --- | --- | --- | --- | --- |
 | 0 | 3 | Right shoulder lift | 10–80° | 30° | −25–10° |
-| 1 | 4 | Right elbow / bicep | 20–100° | 10° | −45–−5° |
-| 2 | 5 | Right upper-arm rotation | 10–180° | 0° | −180–−10° |
+| 1 | 4 | Right upper-arm rotation | 10–180° | 10° | −170–0° |
+| 2 | 5 | Right elbow / bicep | 20–100° | 10° | −45–−5° |
 | 3 | 8 | Left shoulder lift | 0–180° | 34° | −73–17° |
-| 4 | 9 | Left elbow / bicep | 0–100° | 10° | −45–5° |
-| 5 | 10 | Left upper-arm rotation | 0–180° | 80° | −80–100° |
+| 4 | 9 | Left upper-arm rotation | 0–180° | 80° | −80–100° |
+| 5 | -1 (normally 10) | Left elbow / bicep | 0–100° | 80° | −10–40° |
 
-IDs are array indices, not GPIO pin numbers. These values mirror `SERVO_PINS`,
-`ServoMins`, `ServoMax`, and `expectedStartingPos` in the Arduino sketch.
-The right bicep starts at 10° despite its 20° command minimum; right rotation
-starts at 0° despite its 10° minimum. Firmware startup writes these values
-directly, but subsequent commands are clamped. Simulation starts at the same
-neutral pose and includes it in the URDF limits. Sending `zero` or `zer`
-therefore commands 20° and 10° for those two servos (−5° bicep and −10° rotation).
+IDs are array indices, not GPIO pin numbers. Pose order is right lift,
+rotation, bicep, then left lift, rotation, bicep. These values mirror
+`SERVO_PINS`, `ServoMins`, `ServoMax`, and `expectedStartingPos` in the Arduino
+sketch. The disconnected left bicep remains available in simulation.
+The right bicep starts at 10° despite its 20° command minimum. Firmware
+startup writes this value directly, but subsequent commands are clamped.
+Simulation includes the startup pose in its URDF limits. Sending `zero` or
+`zer` therefore commands 20° for the right bicep (−5° joint angle).
 
 ```console
 pixi shell
 source install/local_setup.bash
 ros2 topic pub --once /arms/arm_action std_msgs/msg/String \
-  '{data: "pose:50,50,75,64,60,110,0,0,110,65"}'
+  '{data: "pose:50,75,50,64,110,60,0,0,110,65"}'
 ```
 
 Prefix a preset or custom pose with `r_arm_` or `l_arm_` to select one arm,
-for example `l_arm_rps_1` or `r_arm_pose:50,50,75,-1,-1,-1,0,0,110,-1`.
+for example `l_arm_rps_1` or `r_arm_pose:50,75,50,-1,-1,-1,0,0,110,-1`.
 Real commands select the same physical joints, clamp angles, and send only
 the selected IDs in ascending firmware order, terminated by a newline.
 Simulation-only axes are omitted from Arduino commands.

@@ -5,6 +5,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     sst_node = Node(
         package='sst_package',
+        namespace='sst_package',
         executable='sst_node',
         name='sst_node',
         output='screen',

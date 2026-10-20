@@ -4,29 +4,28 @@ const int NUM_SERVOS = 6;
 
 const int POT_PINS[6] = {A0, A1, A2, A3, A4, A5};
 
-const int SERVO_PINS[NUM_SERVOS] = { 3, 4, 5, 8, 9, 10};
+const int SERVO_PINS[NUM_SERVOS] = { 3, 4, 5, 8, 9, -1};
 
 // All mins and maxs need to have the same index as the corresponding servo pin
-const int ServoMins[NUM_SERVOS] = {10, 20,  10, 0, 0, 0};
-const int ServoMax[NUM_SERVOS] = { 80, 100, 180, 180, 100, 180};
+const int ServoMins[NUM_SERVOS] = {10, 10,  20, 0, 0, 0};
+const int ServoMax[NUM_SERVOS] = { 80, 180, 100, 180, 180, 100};
 
 // values based on manual measurements from each potentiometer
 const int PotMins[NUM_SERVOS] = {144, 140, 0,    0,    0,    0};
 const int PotMax[NUM_SERVOS] = { 360, 900, 1023, 1023, 1023, 1027};
 
 // Set expected to 0 on empty servos, to not trigger potentiometer check
-const int expectedStartingPos[NUM_SERVOS] = {30, 10, 90, 34, 10, 80};
+const int expectedStartingPos[NUM_SERVOS] = {30, 10, 10, 34, 80, 80};
 
 /*
 servo pin - servo function
         3 - R shoulder lift
-        4 - R bicep
-        5 - R upper arm rotation
+        4 - R upper arm rotation
+        5 - R bicep
 
         8 - L shoulder lift
-        9 - L bicep
-        10 - L upper arm rotion
-
+        9 - L upper arm rotation
+        10 - L bicep (currently disconnected: SERVO_PINS[5] = -1)
 */
 
 // Converts potentiometer values to degrees
@@ -41,7 +40,6 @@ int potToDegree(int value, int servoIndex) {
 }
 
 Servo servos[NUM_SERVOS];
-
 void setup() {
   SerialUSB.begin(115200);
   while (!SerialUSB) {
@@ -49,14 +47,7 @@ void setup() {
   }
 
   // Has to be NUM_SERVOS long, to not break loops
-  int currentPosL[NUM_SERVOS] = {
-    potToDegree(analogRead(A0), 0),
-    potToDegree(analogRead(A1), 1),
-    0,
-    0,
-    0,
-    0
-  };
+
 
   for (int i = 0; i < NUM_SERVOS; ++i) {
 
@@ -73,6 +64,10 @@ void setup() {
     }
     */
 
+    if (SERVO_PINS[i] < 0) {
+      continue;
+    }
+
     // Write the starting positions, so servos don't move when attached
     servos[i].write(expectedStartingPos[i]);
     servos[i].attach(SERVO_PINS[i]);
@@ -83,7 +78,9 @@ void loop() {
   // Moves all joints to default position when serial connection is lost
   if (!SerialUSB.dtr()) {
     for (int i = 0; i < NUM_SERVOS; ++i) {
-      servos[i].write(expectedStartingPos[i]);
+      if (SERVO_PINS[i] >= 0) {
+        servos[i].write(expectedStartingPos[i]);
+      }
     }
     SerialUSB.end();
 
@@ -125,6 +122,9 @@ void loop() {
     // set angles on specified servos
     for (int i = 0; i < angleIndex; ++i) {
       int servoIndex = servosToMove[i];
+      if (servoIndex < 0 || servoIndex >= NUM_SERVOS || SERVO_PINS[servoIndex] < 0) {
+        continue;
+      }
       // constrain to min and max per servo
       int constrainedAngle = constrain(angles[i], ServoMins[servoIndex], ServoMax[servoIndex]);
       servos[servoIndex].write(constrainedAngle);
@@ -133,6 +133,8 @@ void loop() {
     // Send back the received angles
     SerialUSB.print("Received angles: ");
     for (int i = 0; i < angleIndex; ++i) {
+      SerialUSB.print(servosToMove[i]);
+      SerialUSB.print(":");
       SerialUSB.print(angles[i]);
       if (i < angleIndex - 1) {
         SerialUSB.print(",");

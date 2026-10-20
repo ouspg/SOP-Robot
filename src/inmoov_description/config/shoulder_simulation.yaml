@@ -1,6 +1,6 @@
 # Mirror SERVO_PINS, ServoMins, ServoMax and expectedStartingPos in the Arduino.
 # IDs and the first six pose values follow the firmware's array order:
-# right lift/bicep/rotation, then left lift/bicep/rotation. Shoulder-out follows
+# right lift/rotation/bicep, then left lift/rotation/bicep. Shoulder-out follows
 # at reserved indices 6/7 but is disabled; optional wrists use indices 8/9.
 # Neutral angles match firmware startup, which bypasses command clamping.
 # Shoulder lift and bicep travel use an estimated 0.5 linkage scale, based on
@@ -16,24 +16,24 @@ joints:
     neutral_degrees: 30
     direction: -1
     joint_degrees_per_servo_degree: 0.5
-  r_elbow_flex_joint:
+  r_upper_arm_roll_joint:
     servo_id: 1
     servo_pin: 4
     pose_index: 1
-    min_degrees: 20
-    max_degrees: 100
+    min_degrees: 10
+    max_degrees: 180
     neutral_degrees: 10
     direction: -1
-    joint_degrees_per_servo_degree: 0.5
-  r_upper_arm_roll_joint:
+    joint_degrees_per_servo_degree: 1.0
+  r_elbow_flex_joint:
     servo_id: 2
     servo_pin: 5
     pose_index: 2
     min_degrees: 10
-    max_degrees: 180
-    neutral_degrees: 90
+    max_degrees: 75
+    neutral_degrees: 10
     direction: -1
-    joint_degrees_per_servo_degree: 1.0
+    joint_degrees_per_servo_degree: 0.5
   l_shoulder_lift_joint:
     servo_id: 3
     servo_pin: 8
@@ -43,24 +43,25 @@ joints:
     neutral_degrees: 34
     direction: -1
     joint_degrees_per_servo_degree: 0.5
-  l_elbow_flex_joint:
+  l_upper_arm_roll_joint:
     servo_id: 4
     servo_pin: 9
     pose_index: 4
-    min_degrees: 0
-    max_degrees: 100
-    neutral_degrees: 10
-    direction: -1
-    joint_degrees_per_servo_degree: 0.5
-  l_upper_arm_roll_joint:
-    servo_id: 5
-    servo_pin: 10
-    pose_index: 5
     min_degrees: 0
     max_degrees: 180
     neutral_degrees: 80
     direction: 1
     joint_degrees_per_servo_degree: 1.0
+  l_elbow_flex_joint:
+    servo_id: 5
+    # Pin 10 in the wiring order; disconnected in the current firmware.
+    servo_pin: -1
+    pose_index: 5
+    min_degrees: 0
+    max_degrees: 100
+    neutral_degrees: 80
+    direction: -1
+    joint_degrees_per_servo_degree: 0.5
   r_shoulder_out_joint:
     enabled: false
     pose_index: 6

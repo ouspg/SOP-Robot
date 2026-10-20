@@ -104,7 +104,7 @@ typecheck = { cmd = "basedpyright", description = "Run BasedPyright across the P
 format = { cmd = "ruff check . --fix && ruff format .", description = "Apply Ruff lint and formatting fixes" }
 clean = { cmd = "rm -rf build install log", description = "Remove colcon build outputs" }
 
-robot = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
+robot = { cmd = "bash -c 'source install/local_setup.sh && ros2 launch robot robot.launch.py'", description = "Launch the real robot stack" }
 robot-arm = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.launch.py robot_parts:=arm'", description = "Launch the real robot arms only" }
 robot-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot robot.fake.launch.py'", description = "Launch the fake robot stack" }
 robot-demo-real = { cmd = "bash scripts/start_robot_real.sh", description = "Launch the complete demo in separate terminal tabs (real robot)" }
@@ -112,10 +112,16 @@ robot-demo-fake = { cmd = "bash scripts/start_robot_fake.sh", description = "Lau
 robot-demo-real-single = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot real_robot.launch.py'", description = "Launch the complete demo in a single terminal (real robot)" }
 robot-demo-fake-single = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot fake_robot.launch.py'", description = "Launch the complete demo in a single terminal (fake robot)" }
 demo = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot demo.launch.py'", description = "Launch demo application nodes for real hardware" }
+full-demo = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run full_demo full_demo_node'", description = "Launch full_demo_node" }
 demo-fake = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch robot demo.fake.launch.py'", description = "Launch demo application nodes for fake hardware" }
 face-tracker = { cmd = "bash -lc 'source install/local_setup.sh && ros2 launch face_tracker face_tracker.launch.py'", description = "Launch the face tracker" }
 face-tracker-movement = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run face_tracker_movement face_tracker_movement_node'", description = "Launch face-tracker-driven movement" }
-unified-arms = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run unified_arms unified_arms_node'", description = "Launch the unified arm and hand gesture controller" }
+face-tracker-debug-image = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run rqt_image_view rqt_image_view /face_tracker/image_face'", description = "Launch face-tracker-driven movement" }
+unified-arms = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run unified_arms unified_arms_node \"$@\"' --", description = "Launch the arm and hand gesture controller" }
+unified-arms-fake = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run unified_arms unified_arms_node --ros-args -p simulation:=true \"$@\"' --", description = "Launch the simulated arm and hand gesture controller" }
+hand-gestures = { cmd = "bash -c 'source install/local_setup.bash && exec ros2 run hand_gestures hand_gestures_node \"$@\"' --", description = "Launch the hand gestures node" }
+hand-client-tester = { cmd = "bash -c 'source install/local_setup.bash && exec python client/hand_client_tester.py \"$@\"' --", description = "Run the interactive hand gesture client" }
+head-gestures-tester = { cmd = "bash -c 'source install/local_setup.bash && exec python client/head_gesture_client.py \"$@\"' --", description = "Run the interactive head gesture client" }
 tts = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package service'", description = "Launch the text-to-speech node" }
 tts-client = { cmd = "bash -lc 'source install/local_setup.sh && ros2 run tts_package client'", description = "Launch the text-to-speech client" }
 sst = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch sst_package sst.launch.py'", description = "Launch speech-to-text using the system input device" }
