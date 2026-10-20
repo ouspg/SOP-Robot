@@ -114,11 +114,21 @@
     <child link="face_link"/>
   </joint>
 
+  <xacro:property name="r_wrist_roll_joint_neutral_yaw" value="0.0" />
+  <xacro:property name="l_wrist_roll_joint_neutral_yaw" value="0.0" />
+  <xacro:property name="r_shoulder_out_joint_type" value="revolute" />
+  <xacro:property name="l_shoulder_out_joint_type" value="revolute" />
+  <xacro:if value="$(arg use_fake_hardware)">
+    <xacro:include filename="$(find inmoov_description)/urdf/shoulder_simulation.urdf.xacro" />
+  </xacro:if>
+
   <xacro:arm side="r" flip="1" covers="yes" />
 
-  <joint name="r_shoulder_out_joint" type="revolute">
-   <axis xyz="1 0 0"/>
-   <limit effort="1000.0" lower="${r_shoulder_out_joint_lower}" upper="${r_shoulder_out_joint_upper}" velocity="${r_shoulder_out_joint_velocity}" />
+  <joint name="r_shoulder_out_joint" type="${r_shoulder_out_joint_type}">
+   <xacro:if value="${r_shoulder_out_joint_type == 'revolute'}">
+    <axis xyz="1 0 0"/>
+    <limit effort="1000.0" lower="${r_shoulder_out_joint_lower}" upper="${r_shoulder_out_joint_upper}" velocity="${r_shoulder_out_joint_velocity}" />
+   </xacro:if>
    <origin rpy="0 0 0" xyz="0 -0.143 0.298"/>
    <parent link="torso_link"/>
    <child link="r_shoulder_base_link"/>
@@ -129,16 +139,18 @@
   <joint name="r_wrist_roll_joint" type="revolute">
    <axis xyz="0 0 1"/>
    <limit effort="1000.0" lower="${r_wrist_roll_joint_lower}" upper="${r_wrist_roll_joint_upper}" velocity="${r_wrist_roll_joint_velocity}" />
-   <origin rpy="0 0 0" xyz="-0.0144 0.01  -0.2885"/>
+   <origin rpy="0 0 ${r_wrist_roll_joint_neutral_yaw}" xyz="-0.0144 0.01  -0.2885"/>
    <parent link="r_forearm_link"/>
    <child link="r_hand_link"/>
   </joint>
 
   <xacro:arm side="l" flip="-1" covers="yes" />
 
-  <joint name="l_shoulder_out_joint" type="revolute">
-   <axis xyz="1 0 0"/>
-   <limit effort="1000.0" lower="${l_shoulder_out_joint_lower}" upper="${l_shoulder_out_joint_upper}" velocity="${l_shoulder_out_joint_velocity}" />
+  <joint name="l_shoulder_out_joint" type="${l_shoulder_out_joint_type}">
+   <xacro:if value="${l_shoulder_out_joint_type == 'revolute'}">
+    <axis xyz="1 0 0"/>
+    <limit effort="1000.0" lower="${l_shoulder_out_joint_lower}" upper="${l_shoulder_out_joint_upper}" velocity="${l_shoulder_out_joint_velocity}" />
+   </xacro:if>
    <origin rpy="0 0 0" xyz="0 0.143 0.298"/>
    <parent link="torso_link"/>
    <child link="l_shoulder_base_link"/>
@@ -149,7 +161,7 @@
   <joint name="l_wrist_roll_joint" type="revolute">
    <axis xyz="0 0 1"/>
    <limit effort="1000.0" lower="${l_wrist_roll_joint_lower}" upper="${l_wrist_roll_joint_upper}" velocity="${l_wrist_roll_joint_velocity}" />
-   <origin rpy="0 0 0" xyz="-0.0144 -0.01  -0.2885"/>
+   <origin rpy="0 0 ${l_wrist_roll_joint_neutral_yaw}" xyz="-0.0144 -0.01  -0.2885"/>
    <parent link="l_forearm_link"/>
    <child link="l_hand_link"/>
   </joint>

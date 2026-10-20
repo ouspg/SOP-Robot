@@ -1,0 +1,40 @@
+controller_manager:
+  ros__parameters:
+    l_shoulder_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+r_shoulder_controller:
+  ros__parameters:
+    joints:
+    - r_shoulder_lift_joint
+    - r_elbow_flex_joint
+    - r_upper_arm_roll_joint
+    - r_wrist_roll_joint
+    write_op_modes:
+    - r_shoulder_lift_joint
+    - r_elbow_flex_joint
+    - r_upper_arm_roll_joint
+    - r_wrist_roll_joint
+
+l_shoulder_controller:
+  ros__parameters:
+    joints:
+    - l_shoulder_lift_joint
+    - l_elbow_flex_joint
+    - l_upper_arm_roll_joint
+    - l_wrist_roll_joint
+    allow_partial_joints_goal: true
+    command_interfaces:
+    - position
+    state_interfaces:
+    - position
+    state_publish_rate: 20.0
+    action_monitor_rate: 20.0
+
+joint_state_broadcaster:
+  ros__parameters:
+    extra_joints:
+    - head_roll_joint
+    - head_tilt_joint
+    - waist_pan_joint
+    - waist_roll_joint

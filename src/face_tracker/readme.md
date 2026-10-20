@@ -4,8 +4,13 @@ This package contains a node that publishes image with the detected faces for de
 ![](./img/example.png)
 
 ## Parameters
-These can be modifien in:
-`launch/face_tracker.test.launch.py`
+Defaults below refer to `launch/face_tracker.launch.py`.
+`face_tracker.test.launch.py` uses a lighter test configuration.
+
+Launch the camera and tracker with `pixi run face-tracker`. Enable lip movement
+detection with `pixi run face-tracker lip_movement_detection:=true`; the complete
+real and fake demo tasks accept the same argument. This requires the predictor
+and lip-movement model files installed with the package.
 
 face_tracker_node:
 
@@ -23,7 +28,7 @@ face_tracker_node:
 | detection_interval        | Run detection every N frames and track between runs                                  | 10                                            |
 | detection_scale           | Scale applied before face detection                                                   | 0.5                                           |
 | publish_debug_image       | Draw annotations and publish the full debug image                                     | True in launch                                |
-| debug_image_scale         | Debug-preview scale; 0.5 publishes 640x480 from a 1280x960 camera                    | 0.5                                           |
+| debug_image_scale         | Debug-preview scale; 0.5 publishes 960x540 from a 1920x1080 camera                  | 0.5                                           |
 | image_topic               | Input rgb image                                                                      | /image_raw                                    |
 | image_face_topic          | Output image with faces surrounded by triangles and face landmarks shown as circle   | image_face                                    |
 | face_topic                | Output face and face landmark positions in the frame                                 | faces - face_tracker_msgs.msg.Faces           |
@@ -39,9 +44,9 @@ Webcam_node:
 | ---------------- | :-----------------------------------------------------------: | ---------: |
 | raw_image        | Raw image output topic                                        | /image_raw |
 | index            | Device index, 0 for /dev/video0.                              | 0          |
-| width            | Device width in pixels. Specify 0 for default.                | 1280       |
-| height           | Device height in pixels. Specify 0 for default.               | 960        |
-| fps              | Framerate. Specify 0 to publish at default (device) framerate | 30         |
+| width            | Device width in pixels. Specify 0 for default.                | 1920       |
+| height           | Device height in pixels. Specify 0 for default.               | 1080       |
+| fps              | Framerate. Specify 0 to publish at default (device) framerate | 60         |
 | mjpg             | Use mjpg compression, Specify False for default               | True       |
 
 Command `v4l2-ctl --list-formats-ext` can be used to determine, which webcam parameters can be used, if you are not satisfied with the default parameters. Using mjpg compression usually allows larger resolution and fps, but the image quality is lower.
@@ -50,8 +55,10 @@ Command `v4l2-ctl --list-formats-ext` can be used to determine, which webcam par
 The following launches the camera and face detector nodes. By default, it uses the first camera (`/dev/video0`).
 
 ```console
-ros2 launch face_tracker face_tracker.test.launch.py
+pixi run face-tracker
 ```
+
+For manual ROS commands, run `pixi shell` and `source install/local_setup.bash`.
 
 To view the camera feed, run: `ros2 run rqt_image_view rqt_image_view` and select the appropriate topic from the list.
 

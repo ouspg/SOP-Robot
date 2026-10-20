@@ -38,12 +38,17 @@ For real Dynamixel hardware, install the U2D2 udev rule once:
 pixi run setup-udev
 ```
 
-The launch tasks source `install/local_setup.sh` for you. If you enter
+The launch tasks source `install/local_setup.bash` for you. If you enter
 `pixi shell` for manual ROS commands, source the overlay first:
 
 ```console
-source install/local_setup.sh
+source install/local_setup.bash
 ```
+
+Launch the complete demo from one terminal with `pixi run robot-demo-fake`
+for simulation or `pixi run robot-demo-real` for real hardware. Press Ctrl+C
+in that terminal to stop the stack. See [Robot bring-up](./docs/BRINGUP.md)
+for individual components and logging options.
 
 ## The Robot
 
