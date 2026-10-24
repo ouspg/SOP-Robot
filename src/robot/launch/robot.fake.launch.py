@@ -43,6 +43,9 @@ def generate_launch_description():
     robot_description = {'robot_description': robot_description_content}
 
     controller = os.path.join(get_package_share_directory('robot'), 'controllers', 'robot.yaml')
+    shoulder_controller = os.path.join(
+        get_package_share_directory('robot'), 'controllers', 'shoulders.fake.yaml'
+    )
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare('inmoov_description'), 'config', 'inmoov.rviz']
     )
@@ -71,7 +74,7 @@ def generate_launch_description():
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[robot_description, controller],
+        parameters=[robot_description, controller, shoulder_controller],
         output={
             'stdout': 'screen',
             'stderr': 'screen',
@@ -81,9 +84,10 @@ def generate_launch_description():
     controllers_to_start = [
         'head_controller',
         'eyes_controller',
-        'jaw_controller',
+        #'jaw_controller',
         'r_hand_controller',
         'r_shoulder_controller',
+        'l_shoulder_controller',
         'l_hand_controller',
     ]
 

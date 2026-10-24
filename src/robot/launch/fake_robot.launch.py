@@ -61,6 +61,7 @@ def generate_launch_description():
         executable='unified_arms_node',
         name='unified_arms',
         output='screen',
+        parameters=[{'simulation': True}]
     )
     face_movement = Node(
         package='face_tracker_movement',
