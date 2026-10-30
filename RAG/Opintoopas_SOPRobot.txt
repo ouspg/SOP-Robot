@@ -21,15 +21,15 @@ Tietotekniikan kandiopinnot Oulussa tarjoavat monipuolisen osaamisen tietoteknii
 
 Kandidaatin tutkinnon kuvaus
 Kandidaatin tutkintoon ei saa sisällyttää syventävän tason opintoja.
-Kieliopintoja voi sisällyttää kandi- ja diplomitutkintoon yhteensä 18 opintopistettä. Di-vaiheessa kieliopintoja saa olla max 10 op.
-DI-vaiheen valinnaisiin otetaan aine- ja syventävän tason kursseja. Muiden alojen perustason kursseja (poislukien kieliopinnot) voidaan hyväksyä DI-tutkintoon, jos opiskelija osoittaa, että tämä kurssi on tärkeä osa jotain opintokokonaisuutta.
-Englanti on opetuskielenä osassa kandidaatinvaiheen opintoja ja pääosin diplomi-insinöörivaiheessa, jossa opiskellaan samoissa ryhmissä kansainvälisten vaihto- ja maisteriohjelmaopiskelijoiden kanssa.
+Kieliopintoja voi sisällyttää kandi- ja diplomitutkintoon yhteensä 18 opintopistettä. Diplomi-insinööri vaiheessa kieliopintoja saa olla max 10 op.
+Diplomi-insinööri vaiheen valinnaisiin otetaan aine- ja syventävän tason kursseja. Muiden alojen perustason kursseja (pois lukien kieliopinnot) voidaan hyväksyä DI-tutkintoon, jos opiskelija osoittaa, että tämä kurssi on tärkeä osa jotain opintokokonaisuutta.
+Englanti on opetuskielenä osassa kandidaatinvaiheen opintoja ja pääosin diplomi-insinööri vaiheessa, jossa opiskellaan samoissa ryhmissä kansainvälisten vaihto- ja maisteriohjelmaopiskelijoiden kanssa.
 Kaikilla tieto- ja sähkötekniikan tiedekunnan tutkinto-ohjelmien opiskelijoilla on mahdollisuus lähteä vaihtoon ja suorittaa opintoja ulkomaisessa korkeakoulussa. Vaihtokohteita on lukuisia niin Euroopassa, kuin Euroopan ulkopuolella. Vaihtoon lähtö on suositeltavaa kolmannen vuosikurssin syyslukukaudella. Vaihdossa on tavoitteena suorittaa 25-30 opintopistettä sisältäen tutkintoon soveltuvia pakollisia- tai vapaavalintaisia opintoja. ​
-DI-opinnoissa opiskelija jatkaa syventymistä valitsemaansa suuntautumiseen. Myös DI-vaihe sisältää valinnaisia opintoja ja näin edelleen tukee oman asiantuntijaprofiilin kehittymistä juuri omiin tarpeisiin soveltuvaksi. DI-opinnot suoritettuaan opiskelija on valmis toimimaan asiantuntijana vaativissa tietotekniikan alan tehtävissä, kuten esimerkiksi uusien algoritmien, ohjelmistojen, laitteiden tai järjestelmien suunnittelussa ja toteutuksessa. DI-tutkinto antaa myös valmiudet tieteellisiin jatko-opintoihin.
+Diplomi-insinööri opinnoissa opiskelija jatkaa syventymistä valitsemaansa suuntautumiseen. Myös Diplomi-insinööri vaihe sisältää valinnaisia opintoja ja näin edelleen tukee oman asiantuntijaprofiilin kehittymistä juuri omiin tarpeisiin soveltuvaksi. Diplomi-insinööri opinnot suoritettuaan opiskelija on valmis toimimaan asiantuntijana vaativissa tietotekniikan alan tehtävissä, kuten esimerkiksi uusien algoritmien, ohjelmistojen, laitteiden tai järjestelmien suunnittelussa ja toteutuksessa. Diplomi-insinööritutkinto antaa myös valmiudet tieteellisiin jatko-opintoihin.
 
 
 Osaamistavoitteet
-Tietotekniikan tutkinto-ohjelmassa koulutus painottuu tietoteknisten laitteiden, palveluiden ja järjestelmien tutkimuksessa, kehityksessä ja tuotannossa tarvittavien laaja-alaisten taitojen antamiseen. Tutkinto-ohjelma tarjoaa valmiuksia mm. kehittää ratkaisuja tekoälypohjaiseen data-analyysiin, esineiden internetiin (IoT), vuorovaikutteisiin järjestelmiin ja kyberturvallisuuteen. Koulutus perustuu korkeatasoisen tutkimuksen tuottamaan uusimpaan tietoon ja valmentaa tiedon soveltamiseen ja jatkuvaan uuden oppimiseen myös työelämässä.
+Tietotekniikan tutkinto-ohjelmassa koulutus painottuu tietoteknisten laitteiden, palveluiden ja järjestelmien tutkimuksessa, kehityksessä ja tuotannossa tarvittavien laaja-alaisten taitojen antamiseen. Tutkinto-ohjelma tarjoaa valmiuksia mm. kehittää ratkaisuja tekoälypohjaiseen data-analyysiin, esineiden internetiin, vuorovaikutteisiin järjestelmiin ja kyberturvallisuuteen. Koulutus perustuu korkeatasoisen tutkimuksen tuottamaan uusimpaan tietoon ja valmentaa tiedon soveltamiseen ja jatkuvaan uuden oppimiseen myös työelämässä.
 
 Tietotekniikan kandidaatin tutkinnon suorittanut
 
@@ -53,19 +53,19 @@ Suuntautumiskohtaiset oppimistavoitteet:
 
 Kyberturvallisuus
 
-Kandidaatintutkinnon suorittanut tuntee laaja-alaisesti kyberturvallisuusalan perusteet ja ilmiöt. Hänellä on hyvät perustaidot kyberturvallisuustestauksesta sekä muut tarvittavat tekniset perustaidot ja valmius jatkokouluttautua erilaisiin kyberturvallisuusalan tehtäviin. DI-tutkinnon suorittanut on syvällisesti perehtynyt kyberturvallisuuden ilmiöihin ja alaan, on erikoistunut johonkin kyberturvallisuuden osa-alueeseen ja hallitsee laajasti ohjelmistojen, laitteiden ja verkko- sekä pilvipalveluiden kyberturvallisuuden.
+Kandidaatintutkinnon suorittanut tuntee laaja-alaisesti kyberturvallisuusalan perusteet ja ilmiöt. Hänellä on hyvät perustaidot kyberturvallisuustestauksesta sekä muut tarvittavat tekniset perustaidot ja valmius jatkokouluttautua erilaisiin kyberturvallisuusalan tehtäviin. Diplomi-insinööritutkinnon suorittanut on syvällisesti perehtynyt kyberturvallisuuden ilmiöihin ja alaan, on erikoistunut johonkin kyberturvallisuuden osa-alueeseen ja hallitsee laajasti ohjelmistojen, laitteiden ja verkko- sekä pilvipalveluiden kyberturvallisuuden.
 
 Soveltava tietotekniikka
 
-Kandidaatintutkinnon suorittanut tuntee arkea parantavat digitaaliteknologiat ja lähestymistavat (VR/XR, IoT ja HCI), osaa käyttää yhteisöllistä versionhallintaa kuten Git ja hyödyntää erilaisia sovelluskehitysalustoja. Ihmislähtöinen näkökulma on tärkeässä roolissa. DI-tutkinnon suorittaneella on laaja näkemys sovelletun tietotekniikan eri aloista, sekä kyky rakentaa monimutkaisia järjestelmiä hyödyntäen eri teknologioita fyysisissä ja virtuaalisissa ympäristöissä.
+Kandidaatintutkinnon suorittanut tuntee arkea parantavat digitaaliteknologiat ja lähestymistavat, osaa käyttää yhteisöllistä versionhallintaa ja hyödyntää erilaisia sovelluskehitysalustoja. Ihmislähtöinen näkökulma on tärkeässä roolissa. Diplomi-insinööritutkinnon suorittaneella on laaja näkemys sovelletun tietotekniikan eri aloista, sekä kyky rakentaa monimutkaisia järjestelmiä hyödyntäen eri teknologioita fyysisissä ja virtuaalisissa ympäristöissä.
 
 Tekoäly
 
-Kandidaatintutkinnon suorittanut tuntee koneoppimisen ja tekoälyn perusteet. DI-tutkinnon suorittanut hallitsee tekoälyn ratkaisut sisältäen koneoppimisen menetelmät, erilaisten datalähteiden ja signaalien käsittelyn sekä data-analyysin ja datapohjaisen päättelyn, ja osaa soveltaa menetelmiä esimerkiksi konenäön, puheentunnistuksen ja tiedon louhinnan alueilla.
+Kandidaatintutkinnon suorittanut tuntee koneoppimisen ja tekoälyn perusteet. Diplomi-insinööri-tutkinnon suorittanut hallitsee tekoälyn ratkaisut sisältäen koneoppimisen menetelmät, erilaisten datalähteiden ja signaalien käsittelyn sekä data-analyysin ja datapohjaisen päättelyn, ja osaa soveltaa menetelmiä esimerkiksi konenäön, puheentunnistuksen ja tiedon louhinnan alueilla.
 
 Tietokonetekniikka
 
-Kandidaatin tutkinnon suorittaneella on kattavat perustiedot ja -taidot sulautettujen järjestelmien laitteistoihin, prosessoreihin, ohjelmistoihin, signaalinkäsittelyyn, elinkaariin ja turvallisuuteen liittyen. DI-tutkinnon suorittanut hallitsee syvällisesti esineiden internetin sovellukset ja fyysiset laitteet sekä matalan energiankulutuksen toteutukset.
+Kandidaatin tutkinnon suorittaneella on kattavat perustiedot ja -taidot sulautettujen järjestelmien laitteistoihin, prosessoreihin, ohjelmistoihin, signaalinkäsittelyyn, elinkaariin ja turvallisuuteen liittyen. Diplomi-insinööritutkinnon suorittanut hallitsee syvällisesti esineiden internetin sovellukset ja fyysiset laitteet sekä matalan energiankulutuksen toteutukset.
 
 
 Uramahdollisuudet
@@ -87,7 +87,7 @@ Suomi
 
 
 Lisätietoja opetuskielestä
-Suomi ja englanti. Opetus on DI-vaiheen opinnoissa pääosin englanninkielistä, mutta opintosuorituksia on mahdollista tehdä myös suomeksi.
+Suomi ja englanti. Opetus on Diplomi-insinööri vaiheen opinnoissa pääosin englanninkielistä, mutta opintosuorituksia on mahdollista tehdä myös suomeksi.
 
 
 Pääasiallinen opetusaika
@@ -119,11 +119,11 @@ Soveltava tietotekniikka keskittyy interaktiivisiin järjestelmiin, joissa ihmin
 
 Tekoäly keskittyy tekoälyn eri aloihin, kuten koneoppimiseen, konenäköön ja tiedonlouhintaan. Opintosuunta tarjoaa opiskelijoille vankan teoreettisen ymmärryksen ja käytännön taidot digitaalisen datan käsittelyssä ja analysoinnissa sekä kyvyn luoda älykkäitä ratkaisuja tosielämän ongelmiin modernien tekoälytekniikoiden avulla.
 
-Tietokonetekniikka keskittyy sekä laitteistoihin että ohjelmistoihin, painottaen sulautettujen järjestelmien kehitystä. Opintoihin kuuluu myös signaalinkäsittelyä sovelluksineen sekä projektityöskentelyä modernien signaaliprosessorien ja sulautettujen järjestelmin parissa. Erikoistuminen antaa opiskelijoille hyvän pohjan esineiden internetin (IoT) sovellusten parissa työskentelyyn.
+Tietokonetekniikka keskittyy sekä laitteistoihin että ohjelmistoihin, painottaen sulautettujen järjestelmien kehitystä. Opintoihin kuuluu myös signaalinkäsittelyä sovelluksineen sekä projektityöskentelyä modernien signaaliprosessorien ja sulautettujen järjestelmin parissa. Erikoistuminen antaa opiskelijoille hyvän pohjan esineiden internetin sovellusten parissa työskentelyyn.
 
 Kyberturvallisuus kattaa nykyaikaisen tietoturvan eri näkökulmat, kuten mahdolliset haavoittuvuudet, hyökkäysvektorit ja ennaltaehkäisevät menetelmät käyttäjän, ohjelmiston ja laitteiston tasolla. Opintojen painopiste on käytännön harjoituksissa ja projektityössä tukena hyvä teoreettinen ymmärrys aiheesta.
 
-Lisäksi kandidaatin- ja DI-vaiheen opintoihin sisällytetään valinnaisia opintojaksoja tutkinnon edellyttämä määrä.
+Lisäksi kandidaatin- ja Diplomi-insinöörivaiheen opintoihin sisällytetään valinnaisia opintojaksoja tutkinnon edellyttämä määrä.
 
 
 Opintojen rakenne
