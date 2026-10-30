@@ -56,7 +56,7 @@ Tietokonetekniikan opintosuunnassa opiskelija oppii kehittämään:
 
 * laskennallisesti tehokkaita ratkaisuja
 * ohjelmistoja sulautettuihin järjestelmiin
-* ratkaisuja esineiden internetiin (IoT)
+* ratkaisuja esineiden internetiin 
 * signaalinkäsittelyyn liittyviä ratkaisuja.
 
 ### Kyberturvallisuus
