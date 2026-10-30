@@ -79,7 +79,7 @@ Tietotekniikan koulutukseen liittyviä tutkimusalueita ovat muun muassa:
 * ihmiskeskeinen tietotekniikka
 * tietoturva
 * robotiikka
-* esineiden internet (IoT).
+* esineiden internet.
 
 Näitä tutkimusalueita hyödynnetään myös opetuksessa.
 
@@ -93,7 +93,7 @@ Opiskelijat voivat perehtyä digitaaliseen valmistukseen Fab Labissa, jossa void
 
 Tietotekniikan diplomi-insinöörinä valmistunut voi työskennellä esimerkiksi:
 
-* ICT-alan yrityksissä
+* Tieto- ja viestintätekniikan alan yrityksissä
 * tutkimuksessa
 * oppilaitoksissa
 * julkishallinnossa
@@ -139,4 +139,4 @@ Koulutuksen tavoitteena on antaa opiskelijalle sekä teoreettinen että käytän
 
 ## Naisten osuus tietotekniikalla
 
-Naisia valmistuu yhä enemmän ICT-alalta, ja valmistuneiden osuus on kasvussa kaikissa koulutusasteissa. Ammattioppilaitoksista valmistuneista naisten osuus on kasvanut vuodesta 2019 yhteensä 52 prosenttia. Ammattikorkeakouluista valmistuneista naisten osuus on kasvanut 38 prosenttia ja yliopistosta valmistuneiden 28 prosenttia. 
+Naisia valmistuu yhä enemmän tieto- ja viestintätekniikan alalta, ja valmistuneiden osuus on kasvussa kaikissa koulutusasteissa. Ammattioppilaitoksista valmistuneista naisten osuus on kasvanut vuodesta 2019 yhteensä 52 prosenttia. Ammattikorkeakouluista valmistuneista naisten osuus on kasvanut 38 prosenttia ja yliopistosta valmistuneiden 28 prosenttia. 
