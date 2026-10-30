@@ -2,7 +2,7 @@ Kiltahuone
 
 
 Yleistä:
-OTiT:n viihtyisä kiltahuone sijaitsee X-oven käytävällä X2 oven
+Oulun tietoteekkarien viihtyisä kiltahuone sijaitsee X-oven käytävällä X2 oven
 vieressä olevassa pommisuojassa. Kiltahuoneelle on helpot
 opasteet ovelta ja sinne kyllä löytää jos kulkee silmät auki.
 Kiltahuoneen ovelta huokuu ystävällinen ja lämmin tunnelma.
@@ -47,4 +47,4 @@ myös kiltahuoneen oveen, voit täyttää hakemuksen täällä. Tämän
 jälkeen hakemus menee hallituksen käsittelyyn seuraavaan
 hallituksen kokoukseen.
 Jos et vielä omista 24/7-korttia yliopistolle, voit tilata sen Oulun
-yliopiston ICT:n sivuilta.
+yliopiston tieto-ja viestintätekniikna sivuilta.
