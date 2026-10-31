@@ -4,6 +4,6 @@
 
 gnome-terminal  --tab -- bash -c "pixi run robot; exec bash"
 sleep 5
-gnome-terminal   --tab  -- bash -c "pixi run chatbot; exec bash"
+gnome-terminal   --tab  -- bash -c "pixi run chatbot-nodes; exec bash"
 gnome-terminal   --tab -- bash -c "pixi run face-tracker; exec bash"
 gnome-terminal   --tab -- bash -c "echo 'Waiting 5s for controllers to start...'; sleep 5; pixi run demo; exec bash"

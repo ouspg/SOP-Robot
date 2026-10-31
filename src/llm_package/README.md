@@ -38,12 +38,16 @@ Run the LLM client with the following command:
 pixi run llm
 ```
 
-Start the namespaced speech nodes with the following command (the full demo supplies
-the coordinator that routes messages between them):
+Run the voice chatbot on its own (SST, LLM and TTS connected directly, without face
+tracking) with the following command:
 
 ```terminal
 pixi run chatbot
 ```
+
+`pixi run chatbot-nodes` starts the same namespaced nodes without connecting them, so the
+full demo's `full_demo` coordinator can route messages between them. The `robot-demo-real`
+and `robot-demo-fake` scripts use it.
 
 
 ## Dependencies

@@ -129,5 +129,6 @@ sst-remote = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch s
 setup-udev = { cmd = "bash scripts/setup_dynamixel_udev.sh", description = "Install Dynamixel U2D2 udev rules (requires sudo)" }
 download-tts-model = { cmd = "bash scripts/download_tts_model.sh", description = "Download the TTS model files used by tts_package" }
 llm = { cmd = "bash -lc 'source install/local_setup.bash && ros2 run llm_package llm_node'", description = "Launch the conversational language-model node" }
-chatbot = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot chatbot.launch.py'", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
+chatbot = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot chatbot.launch.py standalone:=true'", description = "Launch the integrated SST, LLM, and TTS voice chatbot" }
+chatbot-nodes = { cmd = "bash -lc 'source install/local_setup.bash && ros2 launch robot chatbot.launch.py'", description = "Launch the SST, LLM, and TTS nodes for the full_demo coordinator" }
 setup-runtime = { depends-on = ["sync-submodules", "download-tts-model"], description = "Fetch source dependencies and runtime model assets" }
