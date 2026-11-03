@@ -39,6 +39,8 @@ class UnifiedClientTester(Node):
             'pos',
             'zer',
             'hold',
+            'test2',
+            'swingarms',
         ]
         self.exit_commands = ['quit', 'exit']
         self.logger = self.get_logger()
