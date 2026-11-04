@@ -68,6 +68,7 @@ scipy = "*"
 yaml-cpp = "*"
 ruff = ">=0.13,<0.14"
 basedpyright = ">=1.39.8,<2"
+ros-humble-rclpy = ">=3.3.21,<4"
 
 [pypi-options]
 index-strategy = "unsafe-best-match"

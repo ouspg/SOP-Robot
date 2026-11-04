@@ -1,4 +1,6 @@
+import random
 from enum import Enum
+from math import isfinite
 from time import time
 
 import rclpy
@@ -6,6 +8,8 @@ from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
 from face_tracker_msgs.msg import Face, Faces
+
+COMPOUND_GESTURE_ACTIONS = ('wave', 'rock', 'swingarms')
 
 
 class State(Enum):
@@ -56,8 +60,30 @@ class FullDemoNode(Node):
         self.robot_state = State.IDLE
         self.get_logger().info('switched state to IDLE')
 
+        self.declare_parameter('random_gesture_interval', 120.0) #Time between gestures in seconds
+        random_gesture_interval = self.get_parameter('random_gesture_interval').value
+        if (
+            not isinstance(random_gesture_interval, (int, float))
+            or not isfinite(random_gesture_interval)
+            or random_gesture_interval <= 0
+        ):
+            raise ValueError('random_gesture_interval must be greater than zero')
+        self.random_gesture_timer = self.create_timer(
+            float(random_gesture_interval), self.trigger_random_gesture
+        )
+
         # Stores faces that have been greeted to not keep saying hello over and over again
         self.face_greet_time = {}  # Store the last greet time for each face_id
+
+    def trigger_random_gesture(self):
+        """Select and request a random or compound arm action while idle."""
+        if self.robot_state == State.IDLE and self.tts_ready:
+            if random.random() < 0.7:
+                action = 'random'
+            else:
+                action = random.choice(COMPOUND_GESTURE_ACTIONS)
+            self.arm_action_publisher.publish(String(data=action))
+            self.get_logger().info(f'Randomly selected arm action: {action}')
 
     def say_hello(self, greeting):
         if self.tts_ready and self.robot_state == State.IDLE:

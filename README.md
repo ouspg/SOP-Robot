@@ -72,6 +72,13 @@ Joint -> Servo mappings are defined in two files. Configuration file connects se
   * `src/unified_arms`- unified node for controlling arms thought serial and hands with topics
   * `src/full_demo` - Main control node for the robot  
 
+While the robot is idle, `full_demo_node` selects an arm action every 120 seconds by
+default: a randomized arm-and-hand action 70% of the time, or one of `wave`, `rock`,
+`rotate`, and `swingarms` 30% of the time. The `random` action is implemented by
+`unified_arms_node` and runs for 40-60 seconds using the original randomized joint ranges.
+It does not command the head. The interval can be changed with the
+`random_gesture_interval` parameter on `full_demo_node`.
+
 ## Servo Table
 
 **Note: Servos can be configured using [Dynamixel Wizard 2.0](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/)**

@@ -11441,6 +11441,7 @@ packages:
   - numpy >=1.23,<3
   - python_abi 3.12.* *_cp312
   license: Apache-2.0
+  run_exports: {}
   size: 625678
   timestamp: 1778997826003
 - conda: https://prefix.dev/robostack-humble/linux-64/ros-humble-rcpputils-2.4.6-np2py312h2ed9cc7_18.conda
