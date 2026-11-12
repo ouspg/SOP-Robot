@@ -15,8 +15,8 @@ def generate_launch_description():
                 'lip_movement_detection': ParameterValue(
                     LaunchConfiguration('lip_movement_detection'), value_type=bool
                 ),
-                'face_recognition': True,
-                'correlation_tracking': True,
+                'face_recognition': False,
+                'correlation_tracking': False,
                 'cluster_similarity_threshold': 0.3,
                 'subcluster_similarity_threshold': 0.2,
                 'pair_similarity_maximum': 1.0,

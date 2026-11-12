@@ -87,9 +87,9 @@ class UnifiedArms(Node):
                 key=lambda settings: settings['pose_index'],
             )
         ]
-        self.pos = [45, 45, -1, -1, -1, -1]
+        self.pos = [45, -1, 45, -1, -1, -1]
         self.zero = self.neutral_pose[:6]
-        self.hold = [70, -1, 70, -1, -1, -1]
+        self.hold = [70, -1, 60, -1, -1, -1]
         # Create main program subscriber
         self.gesture_subscription = self.create_subscription(
             String,
