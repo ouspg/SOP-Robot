@@ -2,9 +2,10 @@
 ROS2 package setup script to run inmoov_i2 package
 """
 
-from setuptools import setup
-from glob import glob
 import os
+from glob import glob
+
+from setuptools import setup
 
 package_name = "inmoov_i2"
 

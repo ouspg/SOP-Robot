@@ -1,15 +1,11 @@
-import math
-import random
-from typing import Dict, List
 
-import rclpy
+from builtin_interfaces.msg import Duration
+from core.util import run_node
 from rclpy.node import Node
 from std_msgs.msg import String
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from builtin_interfaces.msg import Duration
-from interface.msg import FacsAU
 
-from core.util import run_node
+from interface.msg import FacsAU
 
 
 class ActiveAU:
@@ -56,14 +52,14 @@ class FACSNode(Node):
         self.neutral_after_sec = self.get_parameter("neutral_after_sec").value
 
         # AU definitions: au_id → {servo_name: {neutral, activated}}
-        self.au_defs: Dict[int, dict] = {}
+        self.au_defs: dict[int, dict] = {}
         # Expression definitions: name → {aus: {au_id: intensity}, duration, sequence}
-        self.expr_defs: Dict[str, dict] = {}
+        self.expr_defs: dict[str, dict] = {}
         # Currently active AUs (au_id → ActiveAU)
-        self.active_aus: Dict[int, ActiveAU] = {}
+        self.active_aus: dict[int, ActiveAU] = {}
         self.last_expression_time = 0.0
         # Cached servo angles for smooth (damped) transitions
-        self.current_angles: Dict[str, float] = {}
+        self.current_angles: dict[str, float] = {}
         self._neutral_timer = None
         self._seq_timer = None
         self._seq_steps = []
@@ -98,8 +94,9 @@ class FACSNode(Node):
             return
 
         try:
-            import yaml
             import os
+
+            import yaml
         except ImportError:
             self.get_logger().error("yaml not available, cannot load FACS config")
             return
@@ -140,7 +137,7 @@ class FACSNode(Node):
         self.get_logger().info(
             f"AU {msg.au_id}: intensity={msg.intensity:.2f}, priority={msg.priority}"
         )
-        
+
         self.active_aus[msg.au_id] = ActiveAU(
             msg.au_id, min(1.0, msg.intensity), msg.priority, msg.duration_ns)
 
@@ -168,7 +165,7 @@ class FACSNode(Node):
             self._schedule_neutral()
             self.get_logger().info(f"Expression end: {name}")
 
-    def _apply_expression_aus(self, au_map: Dict[int, float], duration_sec: float):
+    def _apply_expression_aus(self, au_map: dict[int, float], duration_sec: float):
         """Clear all active AUs and apply a new set (used by expressions)."""
         self.active_aus.clear()
         duration_ns = int(duration_sec * 1e9)
@@ -215,13 +212,13 @@ class FACSNode(Node):
             return
 
         # Group AUs by priority
-        priority_groups: Dict[int, List[ActiveAU]] = {}
+        priority_groups: dict[int, list[ActiveAU]] = {}
         for au in self.active_aus.values():
             priority_groups.setdefault(au.priority, []).append(au)
 
         # Only the highest-priority level is expressed
         top_priority = max(priority_groups.keys())
-        blended: Dict[str, float] = {}
+        blended: dict[str, float] = {}
 
         for au in priority_groups[top_priority]:
             cfg = self.au_defs.get(au.au_id)
@@ -267,7 +264,7 @@ class FACSNode(Node):
             au.intensity = 0
         self._blend_and_publish()
         self.active_aus.clear()
-        
+
 
 def main(args=None):
     run_node(FACSNode)

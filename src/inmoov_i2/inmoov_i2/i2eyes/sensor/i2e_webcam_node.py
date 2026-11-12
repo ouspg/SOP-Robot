@@ -4,12 +4,12 @@ i2e_webcam_node.py
 This Module implements i2eyes Webcam Sensor Node
 """
 
-from rclpy.node import Node
 import cv2
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
 from core.sensor import SensorBase, SensorNodeBase
 from core.util import run_node
+from cv_bridge import CvBridge
+from rclpy.node import Node
+from sensor_msgs.msg import Image
 
 bridge = CvBridge()
 
@@ -20,7 +20,9 @@ class I2eCv2Webcam:
 
     def __init__(self, video_in: int | str, width: int, height: int, fps: int, node: Node = None):
 
-        cv2.setLogLevel(2)
+        # Some OpenCV builds omit the optional Python logging API.
+        if hasattr(cv2, "setLogLevel"):
+            cv2.setLogLevel(2)
 
         self.node = node
         self.capture = cv2.VideoCapture(video_in)
@@ -31,13 +33,13 @@ class I2eCv2Webcam:
             return
 
         self.node.get_logger().info(f"Webcam opened at index {video_in}")
-        
+
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.capture.set(cv2.CAP_PROP_FPS, fps)
         self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 
-        
+
 
     def is_valid(self) -> bool:
         return self.capture.isOpened()

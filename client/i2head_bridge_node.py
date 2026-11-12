@@ -14,16 +14,15 @@ Usage:
     -p joint_config:=config/i2head.yaml
 """
 
-import rclpy
-from rclpy.node import Node
-from trajectory_msgs.msg import JointTrajectory
-from std_msgs.msg import String
+import os
+import time
+
 import serial
 import yaml
-import os
-
 from core.util import run_node
-import time
+from rclpy.node import Node
+from std_msgs.msg import String
+from trajectory_msgs.msg import JointTrajectory
 
 
 class I2HeadBridgeNode(Node):
@@ -83,7 +82,7 @@ class I2HeadBridgeNode(Node):
 
                 if feedback == "HOME_OK":
                     break
-                        
+
                 self._flush_serial()
                 self._send_config_to_arduino()
             except serial.SerialException as e:

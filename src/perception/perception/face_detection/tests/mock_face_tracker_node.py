@@ -1,8 +1,10 @@
 import os
+
 import cv2
-import numpy as np
+
 from perception.face_detection.core.face_analyzer import FaceAnalyzer
 from perception.face_detection.core.lip_movement_net import LipMovementDetector
+
 
 # Dummy logger to satisfy logger calls in FaceAnalyzer
 class DummyLogger:

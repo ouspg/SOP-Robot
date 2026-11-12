@@ -1,10 +1,10 @@
 import math
-import rclpy
+
+from core.util import run_node
 from rclpy.node import Node
 
-from face_tracker_msgs.msg import Faces, Face
+from face_tracker_msgs.msg import Face, Faces
 from interface.msg import HeadMovementGoal
-from core.util import run_node
 
 
 class FaceTrackNode(Node):

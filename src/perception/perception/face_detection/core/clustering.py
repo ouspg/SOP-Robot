@@ -9,7 +9,6 @@ Modified for SOP-Robot project.
 import logging
 import time
 import uuid
-from typing import List, Dict, Optional
 
 import numpy as np
 from scipy.spatial.distance import cosine
@@ -20,18 +19,18 @@ CONVERSATION_THRESHOLD = 15  # seconds
 class Subcluster:
     """Represents a subcluster and tracks connected subclusters over time."""
 
-    def __init__(self, initial_vector: np.ndarray, store_vectors: bool = False, logger: Optional[logging.Logger] = None):
+    def __init__(self, initial_vector: np.ndarray, store_vectors: bool = False, logger: logging.Logger | None = None):
         self.logger = logger or logging.getLogger(__name__)
-        self.vectors: List[np.ndarray] = [initial_vector] if store_vectors else []
+        self.vectors: list[np.ndarray] = [initial_vector] if store_vectors else []
         self.centroid: np.ndarray = initial_vector
         self.vector_count: int = 1
         self.store_vectors = store_vectors
-        self.connected_subclusters: set["Subcluster"] = set()
+        self.connected_subclusters: set[Subcluster] = set()
 
         # Conversation tracking
         now = time.time()
         self.last_seen: float = now
-        self.conversations: List[Dict] = [{"start_time": now, "end_time": now, "duration": 0.0}]
+        self.conversations: list[dict] = [{"start_time": now, "end_time": now, "duration": 0.0}]
         self.total_time_on_camera: float = 0.0
 
     def add(self, vector: np.ndarray):
@@ -59,13 +58,13 @@ class Subcluster:
 class Cluster:
     """Represents a cluster containing multiple subclusters."""
 
-    def __init__(self, subcluster: Subcluster, logger: Optional[logging.Logger] = None):
+    def __init__(self, subcluster: Subcluster, logger: logging.Logger | None = None):
         self.logger = logger or logging.getLogger(__name__)
-        self.subclusters: List[Subcluster] = [subcluster]
+        self.subclusters: list[Subcluster] = [subcluster]
         self.id: str = str(uuid.uuid4())
 
     @classmethod
-    def from_dict(cls, data: Dict, logger: Optional[logging.Logger] = None) -> "Cluster":
+    def from_dict(cls, data: dict, logger: logging.Logger | None = None) -> "Cluster":
         cluster = cls(subcluster=None, logger=logger)
         cluster.id = data["id"]
         cluster.subclusters = [Subcluster(**sc_data) for sc_data in data["subclusters"]]
@@ -102,12 +101,12 @@ class Cluster:
             for sc in self.subclusters:
                 sc.connected_subclusters.discard(sc2)
 
-    def calculate_conversation_list(self) -> List[Dict]:
+    def calculate_conversation_list(self) -> list[dict]:
         """Return combined conversations from all subclusters."""
         return Cluster._merge_conversations([sc.conversations for sc in self.subclusters])
 
     @staticmethod
-    def _merge_conversations(conversation_lists: List[List[Dict]]) -> List[Dict]:
+    def _merge_conversations(conversation_lists: list[list[dict]]) -> list[dict]:
         merged = []
         all_convs = [conv for lst in conversation_lists for conv in lst]
         all_convs = sorted(all_convs, key=lambda x: x["start_time"])
@@ -120,7 +119,7 @@ class Cluster:
                 merged[-1]["duration"] = merged[-1]["end_time"] - merged[-1]["start_time"]
         return merged
 
-    def as_dict(self) -> Dict:
+    def as_dict(self) -> dict:
         return {"id": self.id, "conversations": self.calculate_conversation_list()}
 
 
@@ -133,16 +132,16 @@ class LinksCluster:
         subcluster_similarity_threshold: float,
         pair_similarity_maximum: float,
         store_vectors: bool = False,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
     ):
         self.logger = logger or logging.getLogger(__name__)
-        self.clusters: List[Cluster] = []
+        self.clusters: list[Cluster] = []
         self.cluster_similarity_threshold = cluster_similarity_threshold
         self.subcluster_similarity_threshold = subcluster_similarity_threshold
         self.pair_similarity_maximum = pair_similarity_maximum
         self.store_vectors = store_vectors
 
-    def predict(self, new_vector: np.ndarray) -> Dict:
+    def predict(self, new_vector: np.ndarray) -> dict:
         """Assign a new vector to a cluster/subcluster or create a new one."""
         if not self.clusters:
             cluster = Cluster(Subcluster(new_vector, store_vectors=self.store_vectors), logger=self.logger)
@@ -224,7 +223,7 @@ class LinksCluster:
                 self.clusters[cluster_idx].subclusters.pop(sc_idx)
                 self.clusters.append(Cluster(sc, logger=self.logger))
 
-    def get_all_vectors(self) -> List[np.ndarray]:
+    def get_all_vectors(self) -> list[np.ndarray]:
         """Return all stored vectors."""
         if not self.store_vectors:
             raise RuntimeError("Vectors not stored; cannot retrieve.")

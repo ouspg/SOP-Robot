@@ -1,6 +1,6 @@
-import pytest
 import math
-import random
+
+import pytest
 
 from behaviour.gesture.node.head_gesture_node import HeadGestureNode
 

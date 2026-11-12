@@ -1,9 +1,9 @@
 import rclpy
-from rclpy.node import Node
-from rclpy.action import ActionClient
-from control_msgs.action import FollowJointTrajectory
-from trajectory_msgs.msg import JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
+from control_msgs.action import FollowJointTrajectory
+from rclpy.action import ActionClient
+from rclpy.node import Node
+from trajectory_msgs.msg import JointTrajectoryPoint
 
 ARM = [
     "l_shoulder_lift_joint",

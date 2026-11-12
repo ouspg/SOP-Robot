@@ -1,8 +1,7 @@
-import pytest
 import math
 from unittest.mock import MagicMock
 
-from face_tracker_msgs.msg import Face, Point2
+from face_tracker_msgs.msg import Point2
 
 
 class MockFace:

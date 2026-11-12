@@ -1,7 +1,9 @@
-from typing import List, Dict, Any
+from typing import Any
+
+import numpy as np
 from deepface import DeepFace
 from deepface.models.FacialRecognition import FacialRecognition
-import numpy as np
+
 
 class FaceRecognizer:
     """Face recognition utility using DeepFace for detection and embedding extraction."""
@@ -24,7 +26,7 @@ class FaceRecognizer:
         self.logger.info(f"Facial recognition model '{model_name}' loaded into memory.")
         self.logger.info("FaceRecognizer initialized!")
 
-    def extract_faces(self, img: np.ndarray) -> List[Dict[str, Any]]:
+    def extract_faces(self, img: np.ndarray) -> list[dict[str, Any]]:
         """
         Detect faces in an image and filter out very large faces.
 
@@ -49,7 +51,7 @@ class FaceRecognizer:
             if face_obj["facial_area"]["w"] < img.shape[0] * 0.8
         ]
 
-    def represent(self, img: np.ndarray) -> List[float]:
+    def represent(self, img: np.ndarray) -> list[float]:
         """
         Compute the embedding vector for a given face image.
 

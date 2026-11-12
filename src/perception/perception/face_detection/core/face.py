@@ -1,6 +1,7 @@
-import dlib
 import math
-from typing import List, Optional, Dict
+
+import dlib
+
 
 class Face:
     """Represents a detected face with tracking, lip movement, and clustering info."""
@@ -12,8 +13,8 @@ class Face:
         top: int,
         bottom: int,
         image,
-        representation: List[float],
-        cluster_dict: Optional[Dict] = None,
+        representation: list[float],
+        cluster_dict: dict | None = None,
     ):
         self.left = left
         self.right = right
@@ -22,13 +23,13 @@ class Face:
         self.diagonal = math.sqrt((right - left) ** 2 + (bottom - top) ** 2)
 
         self.image = image
-        self.representation: List[float] = representation
-        self.cluster_dict: Optional[Dict] = cluster_dict
+        self.representation: list[float] = representation
+        self.cluster_dict: dict | None = cluster_dict
 
         self.rect = dlib.rectangle(left, top, right, bottom)
-        self.correlation_tracker: Optional[dlib.correlation_tracker] = None
+        self.correlation_tracker: dlib.correlation_tracker | None = None
 
-        self.speaking: Optional[bool] = None
+        self.speaking: bool | None = None
         self.concurrent_validations = 0
         self.identity_is_valid = False
 
@@ -49,7 +50,7 @@ class Face:
         self.top = int(pos.top())
         self.bottom = int(pos.bottom())
 
-    def as_dict(self) -> Dict:
+    def as_dict(self) -> dict:
         """
         Return the face attributes as a dictionary.
 

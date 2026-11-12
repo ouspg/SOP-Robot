@@ -1,17 +1,18 @@
 import os
+
 import cv2
-import rclpy
+from ament_index_python.packages import get_package_share_directory
+from core.util import run_node
+from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from ament_index_python.packages import get_package_share_directory
 
-from face_tracker_msgs.msg import Faces, Face as FaceMsg, Point2, Occurance
+from face_tracker_msgs.msg import Face as FaceMsg
+from face_tracker_msgs.msg import Faces, Occurance, Point2
 from perception.face_detection.core.face_analyzer import FaceAnalyzer
 from perception.face_detection.core.lip_movement_net import LipMovementDetector
 from perception.face_detection.util.fps_tracker import FPSTracker
 from perception.face_detection.util.ros_utils import CvBridgePublisher
-from core.util import run_node
-from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
 
@@ -78,7 +79,6 @@ class FaceDetectionNode(Node):
             face_detection_model=face_detection_model,
         )
 
-        #FPS is drawn onto the
         self.fps_tracker = FPSTracker()
 
         self.face_img_pub = CvBridgePublisher(self, face_image_topic)
@@ -122,15 +122,23 @@ class FaceDetectionNode(Node):
                 )
             )
 
-        # Draw FPS on frame
-        cv2.putText(frame, f"{self.fps_tracker.fps:.2f}", (10, 20), self.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        # Keep statistics outside the camera image and its face annotations.
+        debug_frame = cv2.copyMakeBorder(frame, 70, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+        statistics = (
+            f"Faces in frame: {len(faces)}",
+            f"Clusters: {len(self.face_analyzer.cluster.clusters)}",
+            f"FPS: {self.fps_tracker.fps:.2f}",
+        )
+        for row, text in enumerate(statistics):
+            cv2.putText(debug_frame, text, (10, 20 + row * 20), self.font, 0.5,
+                        (255, 255, 255), 1, cv2.LINE_AA)
 
         # Publish results
         try:
-            self.face_img_pub.publish(frame)
+            self.face_img_pub.publish(debug_frame)
         except CvBridgeError as e:
             self.logger.warn("Could not convertros img to opencv image: :", e)
-    
+
         if len(msg_faces) > 0:
             self.face_pub.publish(Faces(faces=msg_faces))
 

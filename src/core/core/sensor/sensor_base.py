@@ -7,6 +7,7 @@ including the abstract method 'read', which must be implemented by subclasses.
 """
 
 from abc import ABC, abstractmethod
+
 from rclpy.node import Node
 
 

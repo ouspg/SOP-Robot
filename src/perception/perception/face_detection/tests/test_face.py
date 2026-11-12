@@ -1,4 +1,5 @@
 import math
+
 import pytest
 
 from perception.face_detection.core.face import Face

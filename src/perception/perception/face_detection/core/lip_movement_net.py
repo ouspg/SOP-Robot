@@ -19,37 +19,36 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 
-import datetime
 import argparse
-
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Bidirectional
-from tensorflow.keras.layers import GRU, SimpleRNN
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.models import load_model
-from tensorflow.keras.optimizers import Adam, RMSprop
-from tensorflow.keras import metrics
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_score, recall_score, roc_auc_score, f1_score
-from sklearn.preprocessing import MinMaxScaler
-import time
-
-import progressbar
-from progressbar import ETA, Percentage, RotatingMarker
-
-import os
-import numpy as np
-#from scipy.misc import imresize
-
-import cv2
-import dlib
-import math
 import csv
+import datetime
+import math
+import os
+import time
 from queue import Queue
 
+#from scipy.misc import imresize
+import cv2
+import dlib
+import numpy as np
+import progressbar
+from progressbar import ETA, Percentage, RotatingMarker
+from sklearn.metrics import (
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.preprocessing import MinMaxScaler
+from tf_keras import metrics
+
+# The bundled HDF5 models use the Keras 2 format, unsupported by Keras 3.
+from tf_keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+from tf_keras.layers import GRU, Bidirectional, Dense, Dropout, SimpleRNN
+from tf_keras.models import Sequential, load_model
+from tf_keras.optimizers import Adam, RMSprop
+from tf_keras.utils import to_categorical
 
 np.random.seed(int(time.time()))
 
@@ -155,7 +154,7 @@ def load_sequences_into_memory(dataset_top_dir, type_name):
                     lip_separation_sequence = []
                     for facial_landmark_file_name in facial_landmark_file_names:
                         facial_landmark_file_path = os.path.join(sequence_dir, facial_landmark_file_name)
-                        with open(facial_landmark_file_path, 'r') as f_obj:
+                        with open(facial_landmark_file_path) as f_obj:
                             reader = csv.reader(f_obj)
                             for coords in reader:
                                 part_61 = (int(coords[2 * 61]), int(coords[2 * 61 + 1]))
@@ -201,7 +200,7 @@ def step_decay(epoch):
     return lrate
 
 
-class LipMovementNet(object):
+class LipMovementNet:
     def __init__(self, num_rnn_layers=1, num_neurons_in_rnn_layer=100, is_bidirectional=False, use_gru=False,
                  dropout=0.0,
                  num_output_dense_layers=1,
@@ -552,7 +551,7 @@ def test_video(video_path, shape_predictor_file, model):
 
             for k in CLASS_HASH:
                 if y_pred_max == CLASS_HASH[k]:
-                    state = k;
+                    state = k
                     break
 
             # redraw the label
@@ -640,7 +639,7 @@ def train_in_grid_search_mode(path_to_grid_options_csv, path_to_grid_results_csv
     if os.path.exists(path_to_grid_results_csv):
         global num_grid_combos_completed
         num_grid_combos_completed = 0
-        fp_obj0 = open(path_to_grid_results_csv, 'r')
+        fp_obj0 = open(path_to_grid_results_csv)
         reader = csv.reader(fp_obj0)
         for results_row in reader:
             num_rnn_layers = results_row[0]
@@ -658,13 +657,13 @@ def train_in_grid_search_mode(path_to_grid_options_csv, path_to_grid_results_csv
 
     global NUM_GRID_COMBINATIONS
     NUM_GRID_COMBINATIONS = 0
-    fp_obj1 = open(path_to_grid_options_csv, 'r')
+    fp_obj1 = open(path_to_grid_options_csv)
     reader = csv.reader(fp_obj1)
     for grid_options in reader:
         NUM_GRID_COMBINATIONS += 1
     fp_obj1.close()
 
-    fp_obj1 = open(path_to_grid_options_csv, 'r')
+    fp_obj1 = open(path_to_grid_options_csv)
     reader = csv.reader(fp_obj1)
 
     exists_file = os.path.exists(path_to_grid_results_csv)
@@ -711,10 +710,10 @@ def train_in_grid_search_mode(path_to_grid_options_csv, path_to_grid_results_csv
     fp_obj2.close()
 
 
-class LipMovementDetector(object):
+class LipMovementDetector:
     def __init__(self, model_path, shape_predictor_path):
         self.input_sequence = Queue(FRAME_SEQ_LEN)
-        self.model = load_model(model_path)
+        self.model = load_model(model_path, compile=False)
         self.shape_predictor = dlib.shape_predictor(shape_predictor_path)
 
     def initialize_input_sequence(self, num_of_faces):

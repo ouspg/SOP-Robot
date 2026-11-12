@@ -13,8 +13,9 @@ Usage:
 """
 
 import sys
-import serial
 import time
+
+import serial
 import yaml
 
 DEFAULT_PORT = "/dev/ttyACM0"
@@ -76,14 +77,14 @@ def main():
 
         if feedback == "HOME_OK":
             break
-        
-        
+
+
     send_cfg(ser, servos)
     print(f"Configured {len(servos)} servos\n")
 
     for name, cfg in servos:
-        print(f"{name} : ch {cfg.get('channel')}");
-    
+        print(f"{name} : ch {cfg.get('channel')}")
+
     print("Commands:")
     print("  ch:ang,ch:ang,...  Set servo channels to angles (Arduino clamps/inverts)")
     print("  home               Move all to home")
@@ -122,10 +123,10 @@ def main():
                     ser.readline()
                     time.sleep(0.05)
             print("Sweep done")
-            
+
             ser.write(b"HOME\n")
             print(ser.readline().decode().strip())
-            
+
             continue
 
         # Parse and send channel:angle pairs (Arduino clamps/inverts)

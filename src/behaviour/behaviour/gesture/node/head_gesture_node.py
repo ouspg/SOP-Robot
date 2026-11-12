@@ -1,19 +1,16 @@
 import math
 import random
 import time
-from typing import Optional, List
 
-import rclpy
-from rclpy.node import Node
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
-from std_msgs.msg import String
-
 from core.util import run_node
+from rclpy.node import Node
+from std_msgs.msg import String
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
 class HeadGestureNode(Node):
-    
+
     def __init__(self):
         super().__init__("head_gesture")
 
@@ -74,10 +71,10 @@ class HeadGestureNode(Node):
         self.SHAKE_REPETITIONS = self.get_parameter("shake_repetitions").value
         self.SHAKE_DURATION = self.get_parameter("shake_duration").value
 
-        self.head_pan_deg: Optional[float] = None
-        self.eye_h_deg: Optional[float] = None
-        self.eye_v_deg: Optional[float] = None
-        self.jaw_deg: Optional[float] = None
+        self.head_pan_deg: float | None = None
+        self.eye_h_deg: float | None = None
+        self.eye_v_deg: float | None = None
+        self.jaw_deg: float | None = None
 
         self.joint_cmd_pub = self.create_publisher(
             JointTrajectory, self.I2HEAD_TOPIC, 10
@@ -92,7 +89,7 @@ class HeadGestureNode(Node):
 
         self.get_logger().info("Node [head_gesture] Initialized.")
         self.get_logger().info(
-            f"  Sub: /head_gesture_command (std_msgs/String)"
+            "  Sub: /head_gesture_command (std_msgs/String)"
         )
         self.get_logger().info(
             f"  Pub: {self.I2HEAD_TOPIC} (trajectory_msgs/JointTrajectory)"
@@ -101,7 +98,7 @@ class HeadGestureNode(Node):
 
     def _print_help(self):
         self.get_logger().info("commands {shake, glance}.")
-        
+
     def _clamp(self, value: float, min_val: float, max_val: float) -> float:
         return max(min_val, min(max_val, value))
 

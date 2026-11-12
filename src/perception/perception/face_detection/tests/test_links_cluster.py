@@ -6,10 +6,10 @@ https://github.com/QEDan/links_clustering/tree/master
 """
 # pylint: disable=W0201, E1101
 
-import numpy as np
 import random
 
-from links_cluster import LinksCluster, Cluster, Subcluster, CONVERSATION_TRESHOLD
+import numpy as np
+from links_cluster import CONVERSATION_TRESHOLD, Cluster, LinksCluster, Subcluster
 
 
 class TestLinksCluster:
@@ -27,7 +27,7 @@ class TestLinksCluster:
 
     def random_vec(self):
         """Generate random vector of the correct shape."""
-        return np.random.random((self.vector_dim))
+        return np.random.random(self.vector_dim)
 
     def rotate_vec(self, vector, angle):
         """Rotate a vector in the x-y plane by angle (radians).
@@ -183,7 +183,7 @@ class TestLinksCluster:
         np.testing.assert_array_almost_equal(
             self.cluster.clusters[0].subclusters[0].centroid,
             np.mean([vector, vector2], axis=0))
-        
+
         # Test conversation times
         assert self.cluster.clusters[0].subclusters[0].current_conversation == current_conversation_merged
 
@@ -222,7 +222,7 @@ class TestLinksCluster:
         end_times_2 = times[3::4]
 
         assert len(start_times) == len(start_times_2) == len(end_times) == len(end_times_2)
-        
+
         conversation_list = []
         conversation_list_2 = []
         conversation_list_merged = []
@@ -246,14 +246,14 @@ class TestLinksCluster:
 
         self.cluster.clusters[0].subclusters[0].conversations = conversation_list
         self.cluster.clusters[0].subclusters[1].conversations = conversation_list_2
-        
+
         convs = self.cluster.clusters[0].calculate_conversation_list()
         convs_sorted = sorted(convs, key=lambda x: x["start_time"])
         assert convs != []
         assert convs == convs_sorted
         for i in range(1, len(convs)):
             assert convs[i]["start_time"] >= convs[i - 1]["end_time"] + CONVERSATION_TRESHOLD
-    
+
     def test_merge_subclusters_times_overlapping(self):
         """
         Test that merging subclusters works as expected with 
@@ -297,10 +297,10 @@ class TestLinksCluster:
         np.testing.assert_array_almost_equal(
             self.cluster.clusters[0].subclusters[0].centroid,
             np.mean([vector, vector2], axis=0))
-        
+
         # Test conversation times
         assert self.cluster.clusters[0].subclusters[0].current_conversation == current_conversation_merged
-        
+
     def test_merge_subclusters_times_non_overlapping(self):
         """
         Test that merging subclusters works as expected with 
@@ -349,7 +349,7 @@ class TestLinksCluster:
         np.testing.assert_array_almost_equal(
             self.cluster.clusters[0].subclusters[0].centroid,
             np.mean([vector, vector2], axis=0))
-        
+
         # Test conversation times
         assert self.cluster.clusters[0].subclusters[0].current_conversation == current_conversation_merged
         assert self.cluster.clusters[0].subclusters[0].conversations == conversations
@@ -365,7 +365,7 @@ class TestSubcluster:
 
     def random_vec(self):
         """Generate random vector of the correct shape."""
-        return np.random.random((self.vector_dim))
+        return np.random.random(self.vector_dim)
 
     def test_init(self):
         """Test basic class initialization properties."""
@@ -419,7 +419,7 @@ class TestCluster:
 
     def random_vec(self):
         """Generate random vector of the correct shape."""
-        return np.random.random((self.vector_dim))
+        return np.random.random(self.vector_dim)
 
     def test_init(self):
         """Test basic class initialization properties."""
@@ -463,7 +463,7 @@ class TestCluster:
             {new_subcluster_1, self.cluster.subclusters[0]})
         self.cluster.subclusters[0].connected_subclusters.update(
             {new_subcluster_1, new_subcluster_2})
-        
+
         self.cluster.merge_subclusters(0, 2)
         assert len(self.cluster.subclusters) == 2
         assert self.cluster.subclusters[0].vector_count == 2

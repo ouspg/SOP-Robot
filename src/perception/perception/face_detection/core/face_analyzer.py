@@ -1,11 +1,12 @@
+
 import cv2
 import numpy as np
-from typing import List, Optional
 
-from perception.face_detection.core.lip_movement_net import LipMovementDetector
-from perception.face_detection.core.face_recognition import FaceRecognizer
-from perception.face_detection.core.face import Face
 from perception.face_detection.core.clustering import LinksCluster
+from perception.face_detection.core.face import Face
+from perception.face_detection.core.face_recognition import FaceRecognizer
+from perception.face_detection.core.lip_movement_net import LipMovementDetector
+
 
 class FaceAnalyzer:
     """Analyze frames to detect faces, perform recognition, track faces, and detect lip movement."""
@@ -13,7 +14,7 @@ class FaceAnalyzer:
     def __init__(
         self,
         logger,
-        lip_movement_detector: Optional[LipMovementDetector] = None,
+        lip_movement_detector: LipMovementDetector | None = None,
         face_recognizer_enabled: bool = True,
         correlation_tracker: bool = True,
         cluster_similarity_threshold: float = 0.3,
@@ -45,11 +46,11 @@ class FaceAnalyzer:
             logger=self.logger,
         )
 
-        self.faces: List[Face] = []
+        self.faces: list[Face] = []
         self.frame_counter = 0
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
-    def on_frame_received(self, frame: np.ndarray) -> List[dict]:
+    def on_frame_received(self, frame: np.ndarray) -> list[dict]:
         """Process a single video frame: detection, recognition, lip movement, and drawing."""
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -70,19 +71,15 @@ class FaceAnalyzer:
                 face.speaking = self.lip_movement_detector.test_video_frame(gray_frame, face.rect, i)
             self.draw_face_info(frame, face)
 
-        # Display info on frame
-        cv2.putText(frame, f"Faces in frame: {len(self.faces)}", (10, 20), self.font, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Clusters: {len(self.cluster.clusters)}", (10, 40), self.font, 0.5, (255, 255, 255), 1)
-
         # Increment frame counter for correlation tracking
         if self.correlation_tracker_enabled:
             self.frame_counter = (self.frame_counter + 1) % 5
 
         return [face.as_dict() for face in self.faces]
 
-    def analyze_frame(self, frame: np.ndarray) -> List[Face]:
+    def analyze_frame(self, frame: np.ndarray) -> list[Face]:
         """Detect faces, compute embeddings, perform recognition and clustering."""
-        faces: List[Face] = []
+        faces: list[Face] = []
 
         if not self.face_recognizer:
             return faces

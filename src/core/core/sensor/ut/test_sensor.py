@@ -7,8 +7,10 @@ This module implements Unit Tests for SensorBase and SensorNodeBase modules
 import pytest
 import rclpy
 from rclpy.node import Node
-from core.sensor import SensorNodeBase, SensorBase
 from std_msgs.msg import String
+
+from core.sensor import SensorBase, SensorNodeBase
+
 
 class MockSensor(SensorBase):
     """

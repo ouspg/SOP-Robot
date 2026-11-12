@@ -1,9 +1,9 @@
 import sys
+import threading
 from typing import Any, cast
 
 import cv2
 import rclpy
-import threading
 from cv_bridge import CvBridge, CvBridgeError
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy

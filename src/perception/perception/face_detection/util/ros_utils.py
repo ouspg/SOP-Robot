@@ -1,5 +1,6 @@
-from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+
 
 class CvBridgePublisher:
     def __init__(self, node, topic_name: str, queue_size: int = 10):
