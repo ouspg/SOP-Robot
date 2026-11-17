@@ -13,20 +13,15 @@ DEFAULT_API_KEY = 'your-lehmusai-key'
 MAX_HISTORY_MESSAGES = 8
 MAX_WORD_COUNT = 25
 
-CORRECTION_PROMPT = (
-    'Korjaa viimeisin Faster Whisperin tuottama suomenkielinen litterointi. '
-    'Päättele keskusteluhistorian avulla, mitä käyttäjä todennäköisimmin '
-    'sanoi. Säilytä käyttäjän tarkoitus, älä lisää uutta sisältöä äläkä '
-    'vastaa käyttäjälle. Palauta vain korjattu käyttäjän lause ilman '
-    'selityksiä, lainausmerkkejä tai markdownia.'
-)
 
 RESPONSE_PROMPT = (
     'Olet ystävällinen suomea puhuva humanoidirobotti nimeltä Robotti Roope. '
     'Vastaa luontevasti ja tiiviisti, yleensä enintään 1 tai 2 virkkeellä.'
     'Vastauksesi luetaan ääneen, joten älä käytä markdownia, lyhenteitä, luetteloita,'
-    'emojeita tai erikoismerkintöjä. Älä mainitse sanaa konteksti. Älä mainitse metatietoja tai lähteitä'
-    'Älä kerro mihin perustat vastauksesi. Vastaa aina niin kuin tieto olisi sinun omaasi. Älä ikinä mainitse lähteitä tai mistä olet saanut tiedon'
+    'emojeita tai erikoismerkintöjä. '
+    'Älä mainitse sanaa konteksti. Älä mainitse metatietoja tai lähteitä'
+    'Älä kerro mihin perustat vastauksesi. Vastaa aina niin kuin tieto olisi sinun omaasi.'
+    ' Älä ikinä mainitse lähteitä tai mistä olet saanut tiedon'
 )
 
 
@@ -34,25 +29,14 @@ def load_local_environment():
     project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
     load_dotenv(project_root / '.env.local')
 
-# toinen url muuttuja tänne joka johtaa defaultti lehmukseen
 class LLMNode(Node):
     def __init__(self):
         super().__init__('llm_node')
 
         load_local_environment()
-        self.base_url = (
-            os.environ.get(
-                'LLM_BASE_URL',
-                DEFAULT_BASE_URL,
-            )
-            or DEFAULT_BASE_URL
-        )
-        self.base_url_speech = (
-            os.environ.get(
-                DEFAULT_BASE_URL,DEFAULT_BASE_URL,)
-        )
-        self.model = os.environ.get('LLM_MODEL') or DEFAULT_MODEL
-        api_key = os.environ.get('LLM_API_KEY') or DEFAULT_API_KEY
+        self.base_url = os.environ.get('LLM_BASE_URL', DEFAULT_BASE_URL)
+        self.model = os.environ.get('LLM_MODEL', DEFAULT_MODEL)
+        api_key = os.environ.get('LLM_API_KEY', DEFAULT_API_KEY)
 
         self.response_publisher = self.create_publisher(
             String,
@@ -70,13 +54,8 @@ class LLMNode(Node):
             self.speech_callback,
             10,
         )
-        #toinen clientti tähän mihin urli defaulttii
         self.client = OpenAI(
             base_url=self.base_url,
-            api_key=api_key,
-        )
-        self.client_speech = OpenAI(
-            base_url=self.base_url_speech,
             api_key=api_key,
         )
         self.history = []
@@ -89,7 +68,9 @@ class LLMNode(Node):
 
         self.can_listen_publisher.publish(Bool(data=False))
         try:
-            answer = self.generate_response(transcript)
+            self.get_logger().info(f'Received from SST: {transcript}')
+            answer = self.answer_user(transcript)
+            self.get_logger().info(f'Robot: {answer}')
         except Exception as error:
             self.get_logger().error(f'LLM generation failed: {error}')
             self.can_listen_publisher.publish(Bool(data=True))
@@ -97,35 +78,11 @@ class LLMNode(Node):
 
         self.response_publisher.publish(String(data=answer))
 
-    def generate_response(self, transcript):
-        self.get_logger().info(f'Faster Whisper: {transcript}')
-       # if self.history:
-        #    corrected = self.correct_transcript(transcript)
-         #   self.get_logger().info(f'Interpreted user: {corrected}')
-        #else:
-         #   corrected = transcript
-            #self.get_logger().info('First turn: using the Faster Whisper transcript directly.')
-        answer = self.answer_user(transcript)
-        self.get_logger().info(f'Robot: {answer}')
-        return answer
-
-    def correct_transcript(self, transcript):
-        messages = [
-            {'role': 'system', 'content': CORRECTION_PROMPT},
-            *self.history,
-            {'role': 'user', 'content': f'Faster Whisperin litterointi:\n{transcript}'},
-        ]
-        return self.complete(
-            messages,
-            max_tokens=512,
-            empty_error='The transcript correction was empty.',
-        )
-    # tähän pitää saada tunkattua että käyttää defaultti AI modelia
-    def answer_user(self, corrected):
+    def answer_user(self, transcript):
         messages = [
             {'role': 'system', 'content': RESPONSE_PROMPT},
             *self.history,
-            {'role': 'user', 'content': corrected},
+            {'role': 'user', 'content': transcript},
         ]
         answer = self.complete_answer(
             messages,
@@ -137,7 +94,7 @@ class LLMNode(Node):
             [
                 {
                     'role': 'user',
-                    'content': corrected,
+                    'content': transcript,
                 },
                 {
                     'role': 'assistant',
@@ -147,29 +104,7 @@ class LLMNode(Node):
         )
         self.history = self.history[-MAX_HISTORY_MESSAGES:]
         return answer
-    #tätä pitää muokata niin että osaa kutsua RAG tehdessä vastauksen ja defaulttia kun tunnistaa puhetta
-    def complete(self, messages, max_tokens, empty_error):
-        finish_reason = None
-        for token_budget in (max_tokens, max_tokens * 2):
-            response = self.client_speech.chat.completions.create(
-                model=DEFAULT_MODEL,
-                messages=messages,
-                max_tokens=token_budget,
-            )
-            choice = response.choices[0]
-            text = str(choice.message.content or '').strip()
-            if text:
-                return text
 
-            finish_reason = choice.finish_reason
-            if finish_reason != 'length':
-                break
-            self.get_logger().warning(
-                'The LLM exhausted its output budget before returning '
-                f'text; retrying with {token_budget * 2} tokens.'
-            )
-
-        raise RuntimeError(f'{empty_error} finish_reason={finish_reason!r}.')
 
     def complete_answer(self, messages, max_tokens, empty_error):
             finish_reason = None
