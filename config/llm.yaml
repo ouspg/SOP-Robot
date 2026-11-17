@@ -1,0 +1,17 @@
+# llm.yaml - Settings for llm_package (llm_node).
+#
+# The Lehmus AI API key is stored in .env.local as LLM_API_KEY.
+
+llm:
+  base_url: https://api.lehmus-ai.oulu.fi/v1
+  model: azsydsttjnlbfjbgqnwd   # openai/gpt-oss-120b on Lehmus AI
+  max_tokens: 1024              # retried once with double the budget if exhausted
+  max_history_messages: 8       # user + assistant messages kept as conversation memory
+
+rag:
+  # The Q&A file goes into the system prompt; documents are retrieved for every question
+  # from the Lehmus AI RAG endpoint (POST <base_url>/api/<id>/context).
+  questions_file: RAG/Questions   # relative to the project root
+  id: jnksqotwcyroyjdijnlk        # Lehmus AI RAG endpoint id
+  max_chunks: 3
+  timeout_seconds: 5.0

@@ -17,20 +17,32 @@ SST -> LLM response -> TTS
 ```
 ## Usage
 
-Copy the `.env.example` file to `.env.local` and fill in your Lehmus AI credentials.
+Copy the `.env.example` file to `.env.local` and set your Lehmus AI API key. The key is
+the only thing kept in `.env.local`; it is also used by the SST node.
 
 ```terminal
 cp .env.example .env.local
 ```
 
-The default model is `openai/gpt-oss-120b` it's Lehmus AI model id is `azsydsttjnlbfjbgqnwd`
-Change the API key in `.env.local` to your Lehmus AI key.
-
 ```dotenv
-LLM_BASE_URL=https://api.lehmus-ai.oulu.fi/v1
 LLM_API_KEY=your-lehmusai-key
-LLM_MODEL=azsydsttjnlbfjbgqnwd
 ```
+
+All other settings are in [`config/llm.yaml`](../../config/llm.yaml): base URL, model
+(default `openai/gpt-oss-120b`, Lehmus AI id `azsydsttjnlbfjbgqnwd`), token budget,
+conversation memory length and the RAG settings (`rag:`). The prompts are in
+`llm_package/llm_node.py`.
+
+### Knowledge (RAG)
+
+For short Q&A data in `RAG/Questions`, it is included in the system prompt.
+
+The documents in `RAG/*.txt` are the RAG's knowledge base which is uploaded to Lehmus AI RAG.
+Answers are retrieved from the RAG endpoint for every question. 
+
+## Uploading RAG Knowledge
+Files in `RAG/` are not automatically kept in sync with Lehmus AI RAG.
+After making changes or adding files to `RAG/`. Upload them to Lehmus AI RAG from Lehmus AI portal.
 
 Run the LLM client with the following command:
 

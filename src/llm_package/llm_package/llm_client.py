@@ -1,3 +1,6 @@
+# readline makes input() edit by character instead of by byte, so backspacing over
+# multi-byte letters like ä and ö no longer leaves invalid UTF-8 behind.
+import readline  # noqa: F401
 import time
 
 import rclpy
