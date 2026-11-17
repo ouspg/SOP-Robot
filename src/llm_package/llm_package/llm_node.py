@@ -1,58 +1,72 @@
 import os
+import time
 from pathlib import Path
 
+import httpx
 import rclpy
+import yaml
 from dotenv import load_dotenv
 from openai import OpenAI
 from rclpy.node import Node
 from std_msgs.msg import Bool, String
 
-DEFAULT_BASE_URL = 'https://api.lehmus-ai.oulu.fi/v1'
-DEFAULT_MODEL = 'azsydsttjnlbfjbgqnwd'
 DEFAULT_API_KEY = 'your-lehmusai-key'
-MAX_HISTORY_MESSAGES = 8
-MAX_WORD_COUNT = 25
+CONFIG_PATH = Path('config') / 'llm.yaml'
 
-CORRECTION_PROMPT = (
-    'Korjaa viimeisin Faster Whisperin tuottama suomenkielinen litterointi. '
-    'Päättele keskusteluhistorian avulla, mitä käyttäjä todennäköisimmin '
-    'sanoi. Säilytä käyttäjän tarkoitus, älä lisää uutta sisältöä äläkä '
-    'vastaa käyttäjälle. Palauta vain korjattu käyttäjän lause ilman '
-    'selityksiä, lainausmerkkejä tai markdownia.'
-)
 
 RESPONSE_PROMPT = (
     'Olet ystävällinen suomea puhuva humanoidirobotti nimeltä Robotti Roope. '
-    'Vastaa luontevasti ja tiiviisti, yleensä enintään 1 tai 2 virkkeellä.'
-    'Vastauksesi luetaan ääneen, joten älä käytä markdownia, lyhenteitä, luetteloita,'
-    'emojeita tai erikoismerkintöjä. Älä mainitse sanaa konteksti. Älä mainitse metatietoja tai lähteitä'
-    'Älä kerro mihin perustat vastauksesi. Vastaa aina niin kuin tieto olisi sinun omaasi. Älä ikinä mainitse lähteitä tai mistä olet saanut tiedon'
+    'Vastaa luontevasti ja tiiviisti, yleensä enintään 1 tai 2 virkkeellä. '
+    'Vastauksesi luetaan ääneen, joten älä käytä markdownia, lyhenteitä, luetteloita, '
+    'emojeita tai erikoismerkintöjä. '
+    'Sano jokainen luku vain kerran. Kirjoita yksiköt ja merkit sanoina, '
+    'esimerkiksi euroa kuukaudessa ja prosenttia. '
+    'Älä mainitse sanaa konteksti. Älä mainitse metatietoja tai lähteitä. '
+    'Älä kerro mihin perustat vastauksesi. Vastaa aina niin kuin tieto olisi sinun omaasi. '
+    'Älä ikinä mainitse lähteitä tai mistä olet saanut tiedon.'
 )
-
+KNOWLEDGE_PROMPT = (
+    'Alla on taustatietoa, jota käytät vastauksissasi. '
+    'Jos kysymys koskee yliopistoa, opintoja tai hakemista eikä vastausta löydy '
+    'taustatiedosta, älä keksi yksityiskohtia.'
+)
+QA_HEADER = 'Usein kysytyt kysymykset ja niiden vastaukset:'
+RETRIEVED_HEADER = 'Kysymykseen liittyvää taustatietoa:'
 
 def load_local_environment():
     project_root = Path(os.environ.get('SOP_ROBOT_ROOT', Path.cwd())).resolve()
     load_dotenv(project_root / '.env.local')
+    return project_root
 
-# toinen url muuttuja tänne joka johtaa defaultti lehmukseen
+
+def load_config(project_root):
+    with open(project_root / CONFIG_PATH, encoding='utf-8') as config_file:
+        return yaml.safe_load(config_file)
+
+
 class LLMNode(Node):
     def __init__(self):
         super().__init__('llm_node')
 
-        load_local_environment()
-        self.base_url = (
-            os.environ.get(
-                'LLM_BASE_URL',
-                DEFAULT_BASE_URL,
-            )
-            or DEFAULT_BASE_URL
+        project_root = load_local_environment()
+        config = load_config(project_root)
+        llm_config = config['llm']
+        self.base_url = llm_config['base_url']
+        self.model = llm_config['model']
+        self.max_tokens = int(llm_config['max_tokens'])
+        self.max_history_messages = int(llm_config['max_history_messages'])
+        api_key = os.environ.get('LLM_API_KEY', DEFAULT_API_KEY)
+
+        # RAG: the curated Q&A goes into the system prompt, documents are retrieved per
+        # question from the Lehmus AI RAG endpoint.
+        rag_config = config['rag']
+        self.rag_url = f'{self.base_url.rstrip("/")}/api/{rag_config["id"]}/context'
+        self.rag_max_chunks = int(rag_config['max_chunks'])
+        self.rag_client = httpx.Client(
+            headers={'Authorization': f'Bearer {api_key}'},
+            timeout=float(rag_config['timeout_seconds']),
         )
-        self.base_url_speech = (
-            os.environ.get(
-                DEFAULT_BASE_URL,DEFAULT_BASE_URL,)
-        )
-        self.model = os.environ.get('LLM_MODEL') or DEFAULT_MODEL
-        api_key = os.environ.get('LLM_API_KEY') or DEFAULT_API_KEY
+        self.system_prompt = self.build_system_prompt(project_root / rag_config['questions_file'])
 
         self.response_publisher = self.create_publisher(
             String,
@@ -70,17 +84,14 @@ class LLMNode(Node):
             self.speech_callback,
             10,
         )
-        #toinen clientti tähän mihin urli defaulttii
         self.client = OpenAI(
             base_url=self.base_url,
             api_key=api_key,
         )
-        self.client_speech = OpenAI(
-            base_url=self.base_url_speech,
-            api_key=api_key,
-        )
         self.history = []
-        self.get_logger().info(f'OpenAI-compatible client ready with {self.model}.')
+        self.get_logger().info(
+            f'LLM ready: model={self.model}, retrieving context from {self.rag_url}.'
+        )
 
     def speech_callback(self, message):
         transcript = message.data.strip()
@@ -89,7 +100,9 @@ class LLMNode(Node):
 
         self.can_listen_publisher.publish(Bool(data=False))
         try:
-            answer = self.generate_response(transcript)
+            self.get_logger().info(f'Received from SST: {transcript}')
+            answer = self.answer_user(transcript)
+            self.get_logger().info(f'Robot: {answer}')
         except Exception as error:
             self.get_logger().error(f'LLM generation failed: {error}')
             self.can_listen_publisher.publish(Bool(data=True))
@@ -97,47 +110,63 @@ class LLMNode(Node):
 
         self.response_publisher.publish(String(data=answer))
 
-    def generate_response(self, transcript):
-        self.get_logger().info(f'Faster Whisper: {transcript}')
-       # if self.history:
-        #    corrected = self.correct_transcript(transcript)
-         #   self.get_logger().info(f'Interpreted user: {corrected}')
-        #else:
-         #   corrected = transcript
-            #self.get_logger().info('First turn: using the Faster Whisper transcript directly.')
-        answer = self.answer_user(transcript)
-        self.get_logger().info(f'Robot: {answer}')
-        return answer
+    def build_system_prompt(self, questions_file):
+        """Return the response prompt with the curated Q&A appended."""
+        if not questions_file.is_file():
+            self.get_logger().warning(f'{questions_file} not found; no Q&A in the prompt.')
+            return RESPONSE_PROMPT
+        questions = questions_file.read_text(encoding='utf-8').strip()
+        return f'{RESPONSE_PROMPT}\n\n{KNOWLEDGE_PROMPT}\n\n{QA_HEADER}\n{questions}'
 
-    def correct_transcript(self, transcript):
+    def retrieve_context(self, transcript):
+        """Return retrieved passages as a system message, or None if nothing was found."""
+        # Include the previous user turn for follow-up questions.
+        previous_questions = [m['content'] for m in self.history if m['role'] == 'user']
+        query = ' '.join([*previous_questions[-1:], transcript])
+        try:
+            response = self.rag_client.post(
+                self.rag_url,
+                json={'query': query, 'max_chunks': self.rag_max_chunks},
+            )
+            response.raise_for_status()
+            chunks = [str(chunk).strip() for chunk in response.json().get('chunks', [])]
+        except (httpx.HTTPError, ValueError) as error:
+            self.get_logger().warning(f'RAG retrieval failed, answering without it: {error}')
+            return None
+
+        context = '\n\n'.join(chunk for chunk in chunks if chunk)
+        if not context:
+            return None
+        return {'role': 'system', 'content': f'{RETRIEVED_HEADER}\n{context}'}
+
+    def answer_user(self, transcript):
         messages = [
-            {'role': 'system', 'content': CORRECTION_PROMPT},
+            {'role': 'system', 'content': self.system_prompt},
             *self.history,
-            {'role': 'user', 'content': f'Faster Whisperin litterointi:\n{transcript}'},
         ]
-        return self.complete(
-            messages,
-            max_tokens=512,
-            empty_error='The transcript correction was empty.',
-        )
-    # tähän pitää saada tunkattua että käyttää defaultti AI modelia
-    def answer_user(self, corrected):
-        messages = [
-            {'role': 'system', 'content': RESPONSE_PROMPT},
-            *self.history,
-            {'role': 'user', 'content': corrected},
-        ]
+        started = time.monotonic()
+        context_message = self.retrieve_context(transcript)
+        retrieved = time.monotonic()
+        if context_message:
+            messages.append(context_message)
+        messages.append({'role': 'user', 'content': transcript})
+
         answer = self.complete_answer(
             messages,
-            max_tokens=1024,
+            max_tokens=self.max_tokens,
             empty_error='The model response was empty.',
+            )
+
+        self.get_logger().info(
+            f'Answered in {time.monotonic() - started:.2f} s '
+            f'(retrieval {retrieved - started:.2f} s).'
         )
 
         self.history.extend(
             [
                 {
                     'role': 'user',
-                    'content': corrected,
+                    'content': transcript,
                 },
                 {
                     'role': 'assistant',
@@ -145,31 +174,9 @@ class LLMNode(Node):
                 },
             ]
         )
-        self.history = self.history[-MAX_HISTORY_MESSAGES:]
+        self.history = self.history[-self.max_history_messages :]
         return answer
-    #tätä pitää muokata niin että osaa kutsua RAG tehdessä vastauksen ja defaulttia kun tunnistaa puhetta
-    def complete(self, messages, max_tokens, empty_error):
-        finish_reason = None
-        for token_budget in (max_tokens, max_tokens * 2):
-            response = self.client_speech.chat.completions.create(
-                model=DEFAULT_MODEL,
-                messages=messages,
-                max_tokens=token_budget,
-            )
-            choice = response.choices[0]
-            text = str(choice.message.content or '').strip()
-            if text:
-                return text
 
-            finish_reason = choice.finish_reason
-            if finish_reason != 'length':
-                break
-            self.get_logger().warning(
-                'The LLM exhausted its output budget before returning '
-                f'text; retrying with {token_budget * 2} tokens.'
-            )
-
-        raise RuntimeError(f'{empty_error} finish_reason={finish_reason!r}.')
 
     def complete_answer(self, messages, max_tokens, empty_error):
             finish_reason = None
@@ -196,6 +203,7 @@ class LLMNode(Node):
 
     def destroy_node(self):
         self.client.close()
+        self.rag_client.close()
         return super().destroy_node()
 
 
