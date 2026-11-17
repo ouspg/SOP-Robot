@@ -38,6 +38,12 @@ Run the LLM client with the following command:
 pixi run llm
 ```
 
+Test with text input from the terminal
+
+```terminal
+pixi run llm-client
+```
+
 Run the voice chatbot on its own (SST, LLM and TTS connected directly, without face
 tracking) with the following command:
 
